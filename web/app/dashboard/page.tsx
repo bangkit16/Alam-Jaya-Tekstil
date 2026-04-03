@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { getData } from "@/services/getData";
-
 import { useRouter } from "next/navigation";
 
 type Hasil = {
@@ -41,9 +40,9 @@ export default function Dashboard() {
     total: 0,
   });
 
-  const router = useRouter();
-
   const [kodeBarang, setKodeBarang] = useState("");
+
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -63,92 +62,148 @@ export default function Dashboard() {
 
   const updateOrder = (updated: Order) => {
     setOrders((prev) =>
-      prev.map((item) =>
-        item.id === updated.id ? updated : item
-      )
+      prev.map((item) => (item.id === updated.id ? updated : item)),
     );
   };
 
-  const filteredOrders = orders.filter(
-    (item) => item.status === activeTab
-  );
+  const filteredOrders = orders.filter((item) => item.status === activeTab);
 
   const handleLogout = () => {
-  
-  localStorage.removeItem("token");
-
-  
-  router.push("/login");
-};
+    localStorage.removeItem("token");
+    router.push("/login");
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* SIDEBAR */}
+      <div
+        className={`fixed top-0 left-0 h-screen w-64 bg-white border-r border-gray-200 z-50
+  ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+      >
+        <div className="p-5 font-bold text-lg  border-gray-200">
+          ⚡ Production
+        </div>
 
-      {/* HEADER */}
-      <div className="bg-white shadow-sm px-4 py-3 flex items-center justify-between">
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="text-xl"
-        >
-          ☰
-        </button>
+        <div className="p-4 space-y-2 text-sm">
+          {["menunggu", "proses", "selesai"].map((menu) => (
+            <button
+              key={menu}
+              onClick={() => {
+                setActiveTab(menu);
+                setSidebarOpen(false);
+              }}
+              className={`w-full text-left px-3 py-2 rounded-lg transition
+              ${
+                activeTab === menu
+                  ? "bg-blue-50 text-blue-600 font-medium"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              {menu.charAt(0).toUpperCase() + menu.slice(1)}
+            </button>
+          ))}
 
-        <h1 className="font-semibold text-gray-700">
-          Sistem Produksi
-        </h1>
-
-        <div className="text-sm text-gray-500 capitalize">
-          {activeTab}
+          <button
+            onClick={handleLogout}
+            className="w-full text-left px-3 py-2 rounded-lg text-red-500 hover:bg-red-50 mt-4"
+          >
+            Logout
+          </button>
         </div>
       </div>
 
-      {/* SIDEBAR */}
-      <div
-        className={`fixed top-0 left-0 h-full w-60 bg-white shadow-lg transform transition-transform z-50 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="p-4 font-bold border-b">
-          Menu
+      {/* MAIN */}
+      <div className="flex-1 flex flex-col md:ml-64">
+        {/* HEADER */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="md:hidden text-xl"
+          >
+            ☰
+          </button>
+
+          <h1 className="text-lg font-semibold text-gray-800">
+            Dashboard Produksi
+          </h1>
+
+          <div className="text-xs px-3 py-1 bg-gray-100 rounded-full capitalize">
+            {activeTab}
+          </div>
         </div>
 
-        <div className="p-4 flex flex-col gap-3 text-sm">
-          <button
-            onClick={() => {
-              setActiveTab("menunggu");
-              setSidebarOpen(false);
-            }}
-            className="text-left hover:text-blue-600"
-          >
-            Menunggu
-          </button>
+        {/* CONTENT */}
+        <div className="p-6 bg-gray-50 min-h-screen">
+          {loading && <p className="text-sm text-gray-500">Loading data...</p>}
 
-          <button
-            onClick={() => {
-              setActiveTab("proses");
-              setSidebarOpen(false);
-            }}
-            className="text-left hover:text-blue-600"
-          >
-            Proses
-          </button>
+          {!loading && (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {filteredOrders.map((order) => (
+                <div
+                  key={order.id}
+                  className="bg-white rounded-2xl p-5 border hover:shadow-lg transition"
+                >
+                  <h2 className="font-semibold text-gray-800">{order.nama}</h2>
 
-          <button
-            onClick={() => {
-              setActiveTab("selesai");
-              setSidebarOpen(false);
-            }}
-            className="text-left hover:text-blue-600"
-          >
-            Selesai
-          </button>
+                  {order.kodeBarang && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      {order.kodeBarang}
+                    </p>
+                  )}
 
-      <button
-  onClick={handleLogout}
-  className="text-left text-red-500 mt-4 hover:text-red-700"
->
-  Logout
-</button>
+                  {order.pemotong && (
+                    <p className="text-xs text-gray-500 mt-2">
+                      👤 {order.pemotong}
+                    </p>
+                  )}
+
+                  {order.hasil && (
+                    <div className="text-xs mt-3 bg-gray-50 p-2 rounded-lg">
+                      <p>
+                        S:{order.hasil.s} M:{order.hasil.m} L:{order.hasil.l}{" "}
+                        XL:{order.hasil.xl}
+                      </p>
+                      <p className="text-green-600 font-semibold">
+                        Total: {order.hasil.total}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="mt-4">
+                    {activeTab === "menunggu" && (
+                      <button
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          setModalType("proses");
+                        }}
+                        className="w-full bg-gray-900 text-white py-2 rounded-lg text-sm hover:opacity-90"
+                      >
+                        Mulai
+                      </button>
+                    )}
+
+                    {activeTab === "proses" && (
+                      <button
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          setModalType("selesai");
+                        }}
+                        className="w-full bg-blue-600 text-white py-2 rounded-lg text-sm hover:opacity-90"
+                      >
+                        Selesaikan
+                      </button>
+                    )}
+
+                    {activeTab === "selesai" && (
+                      <p className="text-green-600 text-sm font-medium">
+                        ✔ Selesai
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -156,175 +211,110 @@ export default function Dashboard() {
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 bg-black/30 z-40"
+          className="fixed inset-0 bg-black/30 md:hidden"
         />
       )}
 
-      {/* CONTENT */}
-      <div className="p-4">
-
-        {loading && <p className="text-sm">Loading...</p>}
-
-        {!loading && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filteredOrders.map((order) => (
-              <div
-  key={order.id}
-  className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition duration-200"
->
-               <h2 className="font-semibold text-sm text-gray-800">
-  {order.nama}
-</h2>
-
-{order.kodeBarang && (
-  <p className="text-xs text-gray-400">
-    Kode: {order.kodeBarang}
-  </p>
-)}
-
-{order.pemotong && (
-  <p className="text-xs text-gray-500 mt-1">
-    Nama: <span className="font-medium">{order.pemotong}</span>
-  </p>
-)}
-
-{order.hasil && (
-  <div className="text-xs mt-2 text-gray-600 space-y-1">
-    <p>
-      S: {order.hasil.s} | M: {order.hasil.m} | L: {order.hasil.l} | XL: {order.hasil.xl}
-    </p>
-    <p className="text-emerald-600 font-medium">
-      Total: {order.hasil.total}
-    </p>
-  </div>
-)}
-
-                <div className="mt-3">
-                  {activeTab === "menunggu" && (
-                    <button
-                      onClick={() => {
-                        setSelectedOrder(order);
-                        setModalType("proses");
-                      }}
-                      className="w-full bg-gray-100 text-gray-700 py-1.5 rounded-lg text-xs hover:bg-gray-200 transition"
-                    >
-                      Mulai
-                    </button>
-                  )}
-
-                  {activeTab === "proses" && (
-                    <button
-                      onClick={() => {
-                        setSelectedOrder(order);
-                        setModalType("selesai");
-                      }}
-                     className="w-full bg-blue-50 text-blue-600 py-1.5 rounded-lg text-xs hover:bg-blue-100 transition"
-                    >
-                      Selesai
-                    </button>
-                  )}
-
-                  {activeTab === "selesai" && (
-                    <p className="text-green-600 text-xs">
-                      ✔ Selesai
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
       {/* MODAL PROSES */}
       {modalType === "proses" && selectedOrder && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center px-4">
-          <div className="bg-white w-full max-w-sm p-5 rounded-xl">
-            <h2 className="mb-3 text-sm font-semibold">
-              Nama Pemotong
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 animate-scaleIn">
+            <h2 className="text-lg font-semibold text-gray-800 mb-1">
+              Mulai Produksi
             </h2>
+            <p className="text-sm text-gray-400 mb-4">Masukkan nama pemotong</p>
 
             <input
               type="text"
-              className="w-full border p-2 mb-4 rounded"
-              onChange={(e) =>
-                setNamaPemotong(e.target.value)
-              }
+              placeholder="Contoh: Rafi"
+              className="w-full border border-gray-200 rounded-xl p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              onChange={(e) => setNamaPemotong(e.target.value)}
             />
 
-            <button
-              onClick={() => {
-                updateOrder({
-                  ...selectedOrder,
-                  status: "proses",
-                  pemotong: namaPemotong,
-                });
-                setModalType(null);
-              }}
-              className="w-full bg-blue-600 text-white py-2 rounded"
-            >
-              Simpan
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setModalType(null)}
+                className="w-full bg-gray-100 text-gray-600 py-2 rounded-xl hover:bg-gray-200"
+              >
+                Batal
+              </button>
+
+              <button
+                onClick={() => {
+                  updateOrder({
+                    ...selectedOrder,
+                    status: "proses",
+                    pemotong: namaPemotong,
+                  });
+                  setModalType(null);
+                }}
+                className="w-full bg-blue-600 text-white py-2 rounded-xl hover:opacity-90"
+              >
+                Simpan
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* MODAL SELESAI */}
-    
       {modalType === "selesai" && selectedOrder && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center px-4">
-          <div className="bg-white w-full max-w-sm p-5 rounded-xl">
-            <h2 className="mb-3 text-sm font-semibold">
-              Input Hasil
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-1">
+              Hasil Produksi
             </h2>
-              <input
-  type="text"
-  placeholder="Kode Barang"
-  className="w-full border p-2 mb-3 rounded"
-  value={kodeBarang}
-  onChange={(e) => setKodeBarang(e.target.value)}
-/>
+            <p className="text-sm text-gray-400 mb-4">Input jumlah tiap size</p>
 
-            {["s", "m", "l", "xl"].map((size) => (
-              <input
-                key={size}
-                type="number"
-                placeholder={size.toUpperCase()}
-                className="w-full border p-2 mb-2 rounded"
-                onChange={(e) =>
-                  setHasil((prev) => ({
-                    ...prev,
-                    [size]: Number(e.target.value),
-                  }))
-                }
-              />
-            ))}
+            {/* KODE BARANG */}
+            <input
+              type="text"
+              placeholder="Kode Barang"
+              className="w-full border border-gray-200 p-3 rounded-xl mb-4 focus:ring-2 focus:ring-blue-500"
+              value={kodeBarang}
+              onChange={(e) => setKodeBarang(e.target.value)}
+            />
 
+            {/* GRID SIZE */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              {["s", "m", "l", "xl"].map((size) => (
+                <div key={size}>
+                  <label className="text-xs text-gray-400 uppercase">
+                    {size}
+                  </label>
+                  <input
+                    type="number"
+                    className="w-full border p-2 rounded-lg mt-1 focus:ring-2 focus:ring-blue-500"
+                    onChange={(e) =>
+                      setHasil((prev) => ({
+                        ...prev,
+                        [size]: Number(e.target.value),
+                      }))
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* BUTTON */}
             <button
               onClick={() => {
-                const total =
-                  hasil.s + hasil.m + hasil.l + hasil.xl;
+                const total = hasil.s + hasil.m + hasil.l + hasil.xl;
 
-              updateOrder({
-  ...selectedOrder,
-  status: "selesai",
-  kodeBarang: kodeBarang,
-  hasil: { ...hasil, total },
-});
+                updateOrder({
+                  ...selectedOrder,
+                  status: "selesai",
+                  kodeBarang: kodeBarang,
+                  hasil: { ...hasil, total },
+                });
 
                 setKodeBarang("");
-setHasil({
-  s: 0,
-  m: 0,
-  l: 0,
-  xl: 0,
-  total: 0,
-});
-setModalType(null);
+                setHasil({ s: 0, m: 0, l: 0, xl: 0, total: 0 });
+                setModalType(null);
               }}
-              className="w-full bg-green-600 text-white py-2 rounded mt-3"
+              className="w-full bg-green-600 text-white py-3 rounded-xl font-medium hover:opacity-90"
             >
-              Simpan
+              Simpan Hasil
             </button>
           </div>
         </div>
