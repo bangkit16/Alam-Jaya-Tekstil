@@ -30,182 +30,196 @@ export default function GudangPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 pb-24">
-      {/* HEADER */}
-      <div className="flex items-center justify-between mb-6">
-        <button className="text-xl">☰</button>
-        <h1 className="text-lg font-semibold">Admin Gudang</h1>
-        <button>🔔</button>
-      </div>
-
-      {/* SEARCH */}
-      <div className="bg-gray-200 rounded-2xl px-4 py-3 mb-5 text-sm text-gray-500">
-        🔍 Search SKU/Stock...
-      </div>
-
-      {/* STOCK CARDS */}
-      <div className="space-y-4">
-        {/* ITEM 1 */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm flex justify-between items-center">
-          <div>
-            <h2 className="font-semibold">K001</h2>
-            <p className="text-xs text-gray-400">Available Stock</p>
-            <p className="text-2xl font-bold">{getStok("K001")}</p>
+    <div className="min-h-screen bg-[#f8fafc]">
+      {/* 🔥 NAVBAR (SAMA SEPERTI SUPERADMIN) */}
+      <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 border-b border-white/20">
+        <div className="px-4 md:px-8 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold">
+              G
+            </div>
+            <span className="font-semibold text-gray-800">Gudang Panel</span>
           </div>
-          <span className="bg-green-200 text-green-700 px-3 py-1 rounded-lg text-xs">
-            IN STOCK
-          </span>
-        </div>
 
-        {/* ITEM 2 */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm flex justify-between items-center">
-          <div>
-            <h2 className="font-semibold">K002</h2>
-            <p className="text-xs text-gray-400">Available Stock</p>
-            <p className="text-2xl font-bold">{getStok("K002")}</p>
-          </div>
-          <span className="bg-yellow-200 text-yellow-700 px-3 py-1 rounded-lg text-xs">
-            LOW STOCK
-          </span>
+          <button
+            onClick={() => {
+              localStorage.removeItem("role");
+              router.push("/login");
+            }}
+            className="text-sm text-red-500 hover:underline"
+          >
+            Logout
+          </button>
         </div>
       </div>
 
-      {/* REQUEST */}
-      <div className="mt-6">
-        <h2 className="text-sm font-semibold mb-3">Request</h2>
+      {/* CONTENT */}
+      <div className="p-4 md:p-8">
+        {/* HEADER */}
+        <div className="mb-8">
+          <h1 className="text-2xl md:text-3xl font-semibold text-gray-900">
+            Warehouse Control
+          </h1>
+          <p className="text-gray-400 text-sm">
+            Monitor stok & distribusi barang
+          </p>
+        </div>
 
-        {orders.filter((o) => o.status === "request").length === 0 && (
-          <p className="text-xs text-gray-400">Tidak ada request</p>
-        )}
+        {/* STOCK CARDS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <StockCard kode="K001" stok={getStok("K001")} status="in" />
+          <StockCard kode="K002" stok={getStok("K002")} status="low" />
+        </div>
 
-        <div className="space-y-3">
+        {/* REQUEST */}
+        <Section title="Request">
+          {orders.filter((o) => o.status === "request").length === 0 && (
+            <Empty />
+          )}
+
           {orders
             .filter((o) => o.status === "request")
             .map((o) => (
-              <div
-                key={o.id}
-                className="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center"
-              >
+              <CardRow key={o.id}>
                 <div>
-                  <p className="font-medium text-sm">
+                  <p className="font-medium">
                     {o.nama} ({o.kodeBarang})
                   </p>
                   <p className="text-xs text-gray-400">{o.jumlah} pcs</p>
                 </div>
 
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => kirimKePotong(o.id)}
-                    className="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs"
-                  >
+                  <Btn onClick={() => kirimKePotong(o.id)} color="blue">
                     Potong
-                  </button>
-
-                  <button
-                    onClick={() => kirimKeResi(o.id)}
-                    className="bg-green-600 text-white px-3 py-1 rounded-lg text-xs"
-                  >
+                  </Btn>
+                  <Btn onClick={() => kirimKeResi(o.id)} color="green">
                     Resi
-                  </button>
+                  </Btn>
                 </div>
-              </div>
+              </CardRow>
             ))}
-        </div>
-      </div>
+        </Section>
 
-      {/* PRODUKSI */}
-      <div className="mt-6">
-        <h2 className="text-sm font-semibold mb-3">Dalam Produksi</h2>
-
-        <div className="space-y-3">
+        {/* PRODUKSI */}
+        <Section title="Dalam Produksi">
           {orders
             .filter((o) => o.status === "potong")
             .map((o) => (
-              <div
-                key={o.id}
-                className="bg-white p-4 rounded-2xl shadow-sm text-sm"
-              >
+              <CardRow key={o.id}>
                 {o.nama} ({o.kodeBarang})
-              </div>
+              </CardRow>
             ))}
-        </div>
-      </div>
+        </Section>
 
-      {/* KE RESI */}
-      <div className="mt-6">
-        <h2 className="text-sm font-semibold mb-3">Ke Resi</h2>
-
-        <div className="space-y-3">
+        {/* RESI */}
+        <Section title="Ke Resi">
           {orders
             .filter((o) => o.status === "resi")
             .map((o) => (
-              <div
-                key={o.id}
-                className="bg-white p-4 rounded-2xl shadow-sm flex justify-between"
-              >
-                <span className="text-sm">
+              <CardRow key={o.id}>
+                <span>
                   {o.nama} ({o.kodeBarang})
                 </span>
-
-                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                  dikirim
-                </span>
-              </div>
+                <Badge color="green">Dikirim</Badge>
+              </CardRow>
             ))}
-        </div>
-      </div>
+        </Section>
 
-      {/* DARI QC */}
-      <div className="mt-6">
-        <h2 className="text-sm font-semibold mb-3">Barang dari QC</h2>
-
-        <div className="space-y-3">
+        {/* QC */}
+        <Section title="Barang dari QC">
           {orders
             .filter((o) => o.status === "gudang")
             .map((o) => (
-              <div
-                key={o.id}
-                className="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center"
-              >
-                <span className="text-sm">
+              <CardRow key={o.id}>
+                <span>
                   {o.nama} ({o.kodeBarang})
                 </span>
 
-                <button
-                  onClick={() => terimaDariQC(o.id)}
-                  className="bg-green-600 text-white px-3 py-1 rounded-lg text-xs"
-                >
-                  Masukkan Stok
-                </button>
-              </div>
+                <Btn onClick={() => terimaDariQC(o.id)} color="green">
+                  Masukkan
+                </Btn>
+              </CardRow>
             ))}
-        </div>
-      </div>
-
-      {/* FLOAT BUTTON */}
-      <button className="fixed bottom-20 right-6 bg-gray-800 text-white w-14 h-14 rounded-full text-xl shadow-lg">
-        +
-      </button>
-
-      {/* BOTTOM NAV */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-3 flex justify-around text-xs">
-        <div className="flex flex-col items-center text-gray-400">
-          🏠
-          <span>Home</span>
-        </div>
-        <div className="flex flex-col items-center text-black font-medium">
-          📦
-          <span>Orders</span>
-        </div>
-        <div className="flex flex-col items-center text-gray-400">
-          📊
-          <span>Stocks</span>
-        </div>
-        <div className="flex flex-col items-center text-gray-400">
-          👤
-          <span>Profile</span>
-        </div>
+        </Section>
       </div>
     </div>
+  );
+}
+
+/* 🔥 COMPONENTS */
+
+function Section({ title, children }: any) {
+  return (
+    <div className="mb-8">
+      <h2 className="text-sm font-semibold text-gray-700 mb-3">{title}</h2>
+
+      <div className="bg-white rounded-2xl shadow-sm border p-3 space-y-3">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function CardRow({ children }: any) {
+  return (
+    <div className="flex justify-between items-center p-3 rounded-xl hover:bg-gray-50 transition">
+      {children}
+    </div>
+  );
+}
+
+function Btn({ children, onClick, color }: any) {
+  const map: any = {
+    blue: "bg-indigo-600",
+    green: "bg-green-600",
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className={`${map[color]} text-white px-3 py-1 rounded-lg text-xs shadow`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function Badge({ children, color }: any) {
+  const map: any = {
+    green: "bg-green-100 text-green-700",
+  };
+
+  return (
+    <span className={`text-xs px-2 py-1 rounded-full ${map[color]}`}>
+      {children}
+    </span>
+  );
+}
+
+function StockCard({ kode, stok, status }: any) {
+  return (
+    <div className="bg-white rounded-2xl p-5 shadow-sm border flex justify-between items-center">
+      <div>
+        <p className="text-xs text-gray-400">SKU</p>
+        <h2 className="font-semibold">{kode}</h2>
+        <p className="text-2xl font-bold">{stok}</p>
+      </div>
+
+      <span
+        className={`text-xs px-3 py-1 rounded-full ${
+          status === "in"
+            ? "bg-green-100 text-green-700"
+            : "bg-yellow-100 text-yellow-700"
+        }`}
+      >
+        {status === "in" ? "IN STOCK" : "LOW STOCK"}
+      </span>
+    </div>
+  );
+}
+
+function Empty() {
+  return (
+    <p className="text-xs text-gray-400 text-center py-4">Tidak ada data</p>
   );
 }

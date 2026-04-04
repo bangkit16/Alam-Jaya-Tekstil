@@ -53,137 +53,143 @@ export default function ResiPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 pb-24">
-      {/* HEADER */}
-      <div className="flex items-center justify-between mb-6">
-        <button className="text-xl">☰</button>
-        <h1 className="text-lg font-semibold">Resi Management</h1>
-        <button>🔔</button>
-      </div>
+    <div className="min-h-screen bg-[#f8fafc]">
+      {/* 🔥 NAVBAR */}
+      <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 border-b">
+        <div className="px-4 md:px-8 py-3 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold">
+              R
+            </div>
+            <span className="font-semibold text-gray-800">Resi Panel</span>
+          </div>
 
-      {/* INFO STOK */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm mb-5">
-        <h2 className="text-sm font-semibold mb-2">Stock Info</h2>
-        <p className="text-xs text-gray-500">K001: {getStok("K001")}</p>
-        <p className="text-xs text-gray-500">K002: {getStok("K002")}</p>
-      </div>
-
-      {/* FORM */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm mb-6">
-        <h2 className="text-sm font-semibold mb-3">Create Order</h2>
-
-        <input
-          placeholder="Nama Barang"
-          value={nama}
-          onChange={(e) => setNama(e.target.value)}
-          className="w-full bg-gray-100 rounded-xl px-3 py-2 mb-3 text-sm outline-none"
-        />
-
-        <select
-          value={kode}
-          onChange={(e) => setKode(e.target.value)}
-          className="w-full bg-gray-100 rounded-xl px-3 py-2 mb-3 text-sm outline-none"
-        >
-          <option value="K001">K001 (Stok Habis)</option>
-          <option value="K002">K002 (Ada Stok)</option>
-        </select>
-
-        <input
-          type="number"
-          placeholder="Jumlah"
-          value={jumlah}
-          onChange={(e) => setJumlah(Number(e.target.value))}
-          className="w-full bg-gray-100 rounded-xl px-3 py-2 mb-4 text-sm outline-none"
-        />
-
-        <button
-          onClick={handleAdd}
-          className="w-full bg-gray-800 text-white py-3 rounded-xl text-sm font-medium"
-        >
-          Kirim Request
-        </button>
-      </div>
-
-      {/* ORDER SELESAI */}
-      <div className="mb-6">
-        <h2 className="text-sm font-semibold mb-3">Order Selesai</h2>
-
-        <div className="space-y-3">
-          {orders
-            .filter((o) => o.status === "selesai")
-            .map((o) => (
-              <div
-                key={o.id}
-                className="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center"
-              >
-                <span className="text-sm">
-                  {o.nama} ({o.kodeBarang})
-                </span>
-
-                <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-lg">
-                  selesai
-                </span>
-              </div>
-            ))}
-
-          {orders.filter((o) => o.status === "selesai").length === 0 && (
-            <p className="text-xs text-gray-400">Belum ada</p>
-          )}
+          <button
+            onClick={() => {
+              localStorage.removeItem("role");
+              router.push("/login");
+            }}
+            className="text-sm text-red-500 hover:underline"
+          >
+            Logout
+          </button>
         </div>
       </div>
 
-      {/* REQUEST */}
-      <div>
-        <h2 className="text-sm font-semibold mb-3">Request ke Gudang</h2>
-
-        <div className="space-y-3">
-          {orders
-            .filter((o) => o.status === "request")
-            .map((o) => (
-              <div
-                key={o.id}
-                className="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center"
-              >
-                <span className="text-sm">
-                  {o.nama} ({o.kodeBarang})
-                </span>
-
-                <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-lg">
-                  request
-                </span>
-              </div>
-            ))}
-
-          {orders.filter((o) => o.status === "request").length === 0 && (
-            <p className="text-xs text-gray-400">Tidak ada request</p>
-          )}
+      {/* CONTENT */}
+      <div className="p-4 md:p-8">
+        {/* HEADER */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-semibold text-gray-900">
+            Order Management
+          </h1>
+          <p className="text-gray-400 text-sm">
+            Create order & monitor request ke gudang
+          </p>
         </div>
-      </div>
 
-      {/* FLOAT BUTTON */}
-      <button className="fixed bottom-20 right-6 bg-gray-800 text-white w-14 h-14 rounded-full text-xl shadow-lg">
-        +
-      </button>
+        {/* STATS */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+          <Stat title="Stock K001" value={getStok("K001")} />
+          <Stat title="Stock K002" value={getStok("K002")} />
+          <Stat title="Total Order" value={orders.length} />
+        </div>
 
-      {/* BOTTOM NAV */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-3 flex justify-around text-xs">
-        <div className="flex flex-col items-center text-gray-400">
-          🏠
-          <span>Home</span>
+        {/* FORM */}
+        <div className="bg-white rounded-2xl shadow-sm border p-5 mb-8 max-w-xl">
+          <h2 className="text-sm font-semibold mb-4">Create Order</h2>
+
+          <input
+            placeholder="Nama Barang"
+            value={nama}
+            onChange={(e) => setNama(e.target.value)}
+            className="w-full bg-gray-100 rounded-xl px-3 py-2 mb-3 text-sm outline-none"
+          />
+
+          <select
+            value={kode}
+            onChange={(e) => setKode(e.target.value)}
+            className="w-full bg-gray-100 rounded-xl px-3 py-2 mb-3 text-sm outline-none"
+          >
+            <option value="K001">K001</option>
+            <option value="K002">K002</option>
+          </select>
+
+          <input
+            type="number"
+            placeholder="Jumlah"
+            value={jumlah}
+            onChange={(e) => setJumlah(Number(e.target.value))}
+            className="w-full bg-gray-100 rounded-xl px-3 py-2 mb-4 text-sm outline-none"
+          />
+
+          <button
+            onClick={handleAdd}
+            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl text-sm font-medium shadow"
+          >
+            Kirim Order →
+          </button>
         </div>
-        <div className="flex flex-col items-center text-black font-medium">
-          📦
-          <span>Orders</span>
-        </div>
-        <div className="flex flex-col items-center text-gray-400">
-          📊
-          <span>Stocks</span>
-        </div>
-        <div className="flex flex-col items-center text-gray-400">
-          👤
-          <span>Profile</span>
+
+        {/* TABLE */}
+        <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
+          <div className="p-4 border-b flex justify-between">
+            <h3 className="font-medium text-gray-700">Orders</h3>
+            <span className="text-xs text-gray-400">{orders.length} items</span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-gray-400 text-xs">
+                <tr>
+                  <th className="text-left p-4">Nama</th>
+                  <th className="text-left p-4">Kode</th>
+                  <th className="text-left p-4">Jumlah</th>
+                  <th className="text-left p-4">Status</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {orders.map((o) => (
+                  <tr key={o.id} className="border-t hover:bg-gray-50">
+                    <td className="p-4 font-medium">{o.nama}</td>
+                    <td className="p-4 text-gray-500">{o.kodeBarang}</td>
+                    <td className="p-4">{o.jumlah}</td>
+                    <td className="p-4">
+                      <StatusBadge status={o.status} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
+  );
+}
+function Stat({ title, value }: any) {
+  return (
+    <div className="bg-white p-4 rounded-2xl shadow-sm border">
+      <p className="text-xs text-gray-400">{title}</p>
+      <h2 className="text-xl font-semibold">{value}</h2>
+    </div>
+  );
+}
+
+function StatusBadge({ status }: any) {
+  const map: any = {
+    selesai: "bg-green-100 text-green-700",
+    request: "bg-yellow-100 text-yellow-700",
+  };
+
+  return (
+    <span
+      className={`text-xs px-3 py-1 rounded-full ${
+        map[status] || "bg-gray-100 text-gray-600"
+      }`}
+    >
+      {status}
+    </span>
   );
 }
