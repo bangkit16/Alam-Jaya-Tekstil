@@ -24,6 +24,7 @@ type Order = {
 export default function Dashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false); // 🔥 FIX
 
   const [activeTab, setActiveTab] = useState("menunggu");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -44,6 +45,12 @@ export default function Dashboard() {
 
   const router = useRouter();
 
+  // 🔥 MOUNT FIX
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // 🔥 FETCH DATA
   useEffect(() => {
     const fetchData = async () => {
       const res: any = await getData("/api/orders");
@@ -66,22 +73,31 @@ export default function Dashboard() {
     );
   };
 
-  const filteredOrders = orders.filter((item) => item.status === activeTab);
-
   const handleLogout = () => {
     localStorage.removeItem("token");
     router.push("/login");
   };
 
+  // 🔥 STOP SSR MISMATCH
+  if (!mounted || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Loading...
+      </div>
+    );
+  }
+
+  const filteredOrders = orders.filter((item) => item.status === activeTab);
+
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div suppressHydrationWarning className="min-h-screen bg-gray-50 flex">
       {/* SIDEBAR */}
       <div
         className={`fixed top-0 left-0 h-screen w-64 bg-white border-r border-gray-200 z-50
   ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
         <div className="p-5 font-bold text-lg  border-gray-200">
-          ⚡ Production
+          <span>⚡</span> Productions
         </div>
 
         <div className="p-4 space-y-2 text-sm">
@@ -208,7 +224,7 @@ export default function Dashboard() {
       </div>
 
       {/* OVERLAY */}
-      {sidebarOpen && (
+      {mounted && sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
           className="fixed inset-0 bg-black/30 md:hidden"
@@ -216,7 +232,7 @@ export default function Dashboard() {
       )}
 
       {/* MODAL PROSES */}
-      {modalType === "proses" && selectedOrder && (
+      {mounted && modalType === "proses" && selectedOrder && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 animate-scaleIn">
             <h2 className="text-lg font-semibold text-gray-700 mb-1">
@@ -226,8 +242,9 @@ export default function Dashboard() {
 
             <input
               type="text"
+              value={namaPemotong}
               placeholder="Dimas"
-              className="w-full border border-gray-200 rounded-xl p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              className="..."
               onChange={(e) => setNamaPemotong(e.target.value)}
             />
 
@@ -258,7 +275,7 @@ export default function Dashboard() {
       )}
 
       {/* MODAL SELESAI */}
-      {modalType === "selesai" && selectedOrder && (
+      {mounted && modalType === "selesai" && selectedOrder && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6">
             <h2 className="text-lg font-semibold text-gray-700 mb-1">
@@ -284,6 +301,7 @@ export default function Dashboard() {
                   </label>
                   <input
                     type="number"
+                    value={hasil[size as keyof Hasil] || ""}
                     className="w-full border p-2 rounded-lg mt-1 focus:ring-2 focus:ring-blue-500"
                     onChange={(e) =>
                       setHasil((prev) => ({

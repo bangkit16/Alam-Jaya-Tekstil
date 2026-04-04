@@ -10,7 +10,8 @@ export type Order = {
     | "qc"
     | "gudang"
     | "selesai"
-    | "rework";
+    | "rework"
+    | "resi"; // ✅ TAMBAH INI
 };
 
 let orders: Order[] = [
