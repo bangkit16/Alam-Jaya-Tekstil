@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { useSession } from "@/hooks/useSession";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,49 +13,52 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [roleUI, setRoleUI] = useState("resi");
+  const { session } = useSession();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const handleLogin = () => {
-    if (username === "potong" && password === "123") {
-      localStorage.setItem("role", "potong");
-      router.push("/dashboard");
-      return;
-    }
+  const handleLogin = async () => {
+    console.log(username, password);
+    const response = await fetch("http://localhost:3001/auth/login", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email: username, password }),
+    });
+    response.json().then((data) => {
+      console.log(data);
+      localStorage.setItem("accessToken", data.accessToken);
+      localStorage.setItem("role", session.user.role);
 
-    if (username === "admin" && password === "123") {
-      localStorage.setItem("role", "admin");
-      router.push("/gudang");
-      return;
-    }
-
-    if (username === "resi" && password === "123") {
-      localStorage.setItem("role", "resi");
-      router.push("/resi");
-      return;
-    }
-
-    if (username === "jahit" && password === "123") {
-      localStorage.setItem("role", "jahit");
-      router.push("/penjahit");
-      return;
-    }
-
-    if (username === "qc" && password === "123") {
-      localStorage.setItem("role", "qc");
-      router.push("/qc");
-      return;
-    }
-
-    if (username === "superadmin" && password === "123") {
-      localStorage.setItem("role", "superadmin");
-      router.push("/superadmin");
-      return;
-    }
-
-    alert("Login gagal");
+      switch (session.user.role) {
+        case "RESI":
+          router.push("/resi");
+          break;
+        case "ADMIN":
+          router.push("/admin");
+          break;
+        case "POTONG":
+          router.push("/potong");
+          break;
+        case "JAHIT":
+          router.push("/jahit");
+          break;
+        case "QC":
+          router.push("/qc");
+          break;
+        default:
+          break;
+      }
+    });
+    // if (username === "potong" && password === "123") {
+    //   localStorage.setItem("role", "potong");
+    //   router.push("/dashboard");
+    //   return;
+    // }
   };
 
   if (!mounted) return null;
@@ -82,6 +86,9 @@ export default function LoginPage() {
           </h2>
           <p className="text-xs md:text-sm text-gray-400 mb-4 md:mb-6">
             Access your dashboard
+          </p>
+          <p className="text-xs md:text-sm text-gray-400 mb-4 md:mb-6">
+            {session?.user?.role}
           </p>
 
           {/* ROLE */}
@@ -118,7 +125,7 @@ export default function LoginPage() {
                 type="text"
                 value={username}
                 placeholder="Username"
-                className="bg-transparent w-full outline-none text-xs md:text-sm"
+                className="bg-transparent w-full outline-none text-gray-800 text-xs md:text-sm"
                 onChange={(e) => setUsername(e.target.value)}
               />
             </div>
@@ -132,7 +139,7 @@ export default function LoginPage() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 placeholder="Password"
-                className="bg-transparent w-full outline-none text-xs md:text-sm"
+                className="bg-transparent w-full outline-none text-gray-800 text-xs md:text-sm"
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               />

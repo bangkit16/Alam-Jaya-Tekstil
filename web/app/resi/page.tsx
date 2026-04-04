@@ -13,7 +13,7 @@ export default function ResiPage() {
   const [kode, setKode] = useState("K001");
 
   useEffect(() => {
-    if (localStorage.getItem("role") !== "resi") {
+    if (localStorage.getItem("role") !== "RESI") {
       router.push("/login");
     }
   }, []);

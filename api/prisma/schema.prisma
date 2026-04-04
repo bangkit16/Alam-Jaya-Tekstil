@@ -12,8 +12,28 @@ datasource db {
   provider = "postgresql"
 }
 
-model Post {
-  id      Int     @id @default(autoincrement())
-  title   String
-  content String?
+enum Role {
+  SUPERADMIN
+  POTONG
+  PENJAHIT
+  RESI
+  PRINT
 }
+
+model User {
+  id       String   @id @default(uuid())
+  name     String
+  email    String   @unique
+  password String
+  role     Role     @default(POTONG)
+  session  Session? 
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  refreshToken String
+  userId       String   @unique 
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade) 
+  createdAt    DateTime @default(now())
+}
+
