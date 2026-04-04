@@ -20,45 +20,99 @@ export default function LoginPage() {
   }, []);
 
   const handleLogin = async () => {
-    console.log(username, password);
-    const response = await fetch("http://localhost:3001/auth/login", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email: username, password }),
-    });
-    response.json().then((data) => {
-      console.log(data);
-      localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("role", session.user.role);
+    console.log("TRY LOGIN:", username, password);
 
-      switch (session.user.role) {
-        case "RESI":
-          router.push("/resi");
-          break;
-        case "ADMIN":
-          router.push("/admin");
-          break;
-        case "POTONG":
-          router.push("/potong");
-          break;
-        case "JAHIT":
-          router.push("/jahit");
-          break;
-        case "QC":
-          router.push("/qc");
-          break;
-        default:
-          break;
+    try {
+      // =========================
+      // 🔥 SERVER LOGIN (tetap dipakai)
+      // =========================
+      const response = await fetch("http://localhost:3001/auth/login", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: username, password }),
+      });
+
+      // kalau server hidup & response OK
+      if (response.ok) {
+        const data = await response.json();
+
+        console.log("SERVER LOGIN SUCCESS:", data);
+
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("role", data.role);
+
+        switch (data.role) {
+          case "RESI":
+            router.push("/resi");
+            break;
+          case "ADMIN":
+            router.push("/admin");
+            break;
+          case "POTONG":
+            router.push("/dashboard");
+            break;
+          case "JAHIT":
+            router.push("/jahit");
+            break;
+          case "QC":
+            router.push("/qc");
+            break;
+          default:
+            break;
+        }
+
+        return; // ⛔ STOP kalau server berhasil
       }
-    });
-    // if (username === "potong" && password === "123") {
-    //   localStorage.setItem("role", "potong");
-    //   router.push("/dashboard");
-    //   return;
-    // }
+
+      throw new Error("Server response not OK");
+    } catch (error) {
+      console.log("SERVER FAILED → FALLBACK TO DUMMY LOGIN");
+
+      // =========================
+      // 🧪 DUMMY LOGIN (fallback)
+      // =========================
+      const dummyUsers = {
+        resi: "RESI",
+        admin: "ADMIN",
+        potong: "POTONG",
+        jahit: "JAHIT",
+        qc: "QC",
+      };
+
+      if (password === "123" && dummyUsers[username]) {
+        const role = dummyUsers[username];
+
+        localStorage.setItem("accessToken", "dummy-token");
+        localStorage.setItem("role", role);
+
+        console.log("DUMMY LOGIN SUCCESS:", role);
+
+        switch (role) {
+          case "RESI":
+            router.push("/resi");
+            break;
+          case "ADMIN":
+            router.push("/admin");
+            break;
+          case "POTONG":
+            router.push("/dashboard");
+            break;
+          case "JAHIT":
+            router.push("/jahit");
+            break;
+          case "QC":
+            router.push("/qc");
+            break;
+          default:
+            break;
+        }
+      } else {
+        alert("Login gagal (dummy / server)");
+      }
+    }
   };
 
   if (!mounted) return null;
