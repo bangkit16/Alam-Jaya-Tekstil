@@ -21,36 +21,16 @@ export default function PotongMobile(props: any) {
     status: "menunggu" | "proses" | "selesai";
     urgent: boolean;
     hasil: number | null;
+
+    // 🔥 TAMBAHAN
+    kodePotong?: string;
+    pengecek?: string;
   };
 
-  const [jobs, setJobs] = useState<Job[]>([
-    {
-      id: 1,
-      nama: "Kaos tipis hitam L",
-      qty: 40,
-      status: "menunggu",
-      urgent: true,
-      hasil: null,
-    },
-    {
-      id: 2,
-      nama: "Kaos tipis merah cabai M",
-      qty: 50,
-      status: "menunggu",
-      urgent: false,
-      hasil: null,
-    },
-    {
-      id: 3,
-      nama: "Hoodie Biru XXL",
-      qty: 30,
-      status: "menunggu",
-      urgent: false,
-      hasil: null,
-    },
-  ]);
+  const [jobs, setJobs] = useState<Job[]>([]);
 
-  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
+  const selectedJob = jobs.find((j) => j.id === selectedJobId) || null;
 
   const [filterStatus, setFilterStatus] = useState<
     "menunggu" | "proses" | "selesai"
@@ -70,19 +50,72 @@ export default function PotongMobile(props: any) {
   }, []);
 
   useEffect(() => {
-    const saved = localStorage.getItem("jobs");
-    if (saved) setJobs(JSON.parse(saved));
+    try {
+      const saved = localStorage.getItem("jobs");
+
+      if (saved) {
+        const parsed = JSON.parse(saved);
+
+        if (Array.isArray(parsed)) {
+          setJobs(parsed);
+          return;
+        }
+      }
+
+      // fallback dummy kalau kosong
+      setJobs([
+        {
+          id: 1,
+          nama: "Kaos tipis hitam L",
+          qty: 40,
+          status: "menunggu",
+          urgent: true,
+          hasil: null,
+        },
+        {
+          id: 2,
+          nama: "Kaos tipis merah cabai M",
+          qty: 50,
+          status: "menunggu",
+          urgent: false,
+          hasil: null,
+        },
+        {
+          id: 3,
+          nama: "Hoodie Biru XXL",
+          qty: 30,
+          status: "menunggu",
+          urgent: false,
+          hasil: null,
+        },
+      ]);
+    } catch (error) {
+      console.error("LocalStorage error:", error);
+      localStorage.removeItem("jobs");
+    }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("jobs", JSON.stringify(jobs));
-  }, [jobs]);
+    if (!mounted) return;
 
-  if (!mounted) return null;
+    try {
+      localStorage.setItem("jobs", JSON.stringify(jobs));
+    } catch (e) {
+      console.error("Save error:", e);
+    }
+  }, [jobs, mounted]);
 
-  // =========================
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-sm text-gray-500">Loading...</p>
+      </div>
+    );
+  }
+
+  //
   // HOME
-  // =========================
+  //
   if (screen === "home") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e3a8a] to-[#6d28d9] flex justify-center items-center p-4">
@@ -130,9 +163,9 @@ export default function PotongMobile(props: any) {
     );
   }
 
-  // =========================
+  //
   // STOCK MENU
-  // =========================
+  //
   if (screen === "stock") {
     return (
       <div className="min-h-screen flex justify-center items-center p-4">
@@ -161,9 +194,9 @@ export default function PotongMobile(props: any) {
     );
   }
 
-  // =========================
+  //
   // STOCK BAHAN
-  // =========================
+  //
   if (screen === "stockBahan") {
     return (
       <div className="min-h-screen flex justify-center items-center p-4">
@@ -195,9 +228,9 @@ export default function PotongMobile(props: any) {
     );
   }
 
-  // =========================
+  //
   // STOCK PRODUCT
-  // =========================
+  //
   if (screen === "stockProduct") {
     const products = [
       "hoodie",
@@ -249,6 +282,7 @@ export default function PotongMobile(props: any) {
                   />
                 </div>
               </div>
+
               {/* LIST */}
               <div className="flex flex-col gap-3 overflow-y-auto">
                 {filteredProducts.map((item) => (
@@ -275,9 +309,9 @@ export default function PotongMobile(props: any) {
     );
   }
 
-  // =========================
+  //
   // JOBS
-  // =========================
+  //
   if (screen === "jobs") {
     const filteredJobs = jobs.filter((job) => job.status === filterStatus);
     return (
@@ -319,7 +353,7 @@ export default function PotongMobile(props: any) {
               <div
                 key={job.id}
                 onClick={() => {
-                  setSelectedJob(job);
+                  setSelectedJobId(job.id);
                   setHasilSize({ XXL: "", XL: "", L: "", M: "" });
                 }}
                 className="border rounded-xl p-3 cursor-pointer"
@@ -348,12 +382,16 @@ export default function PotongMobile(props: any) {
             ← Back
           </button>
 
-          {/* ========================= */}
           {/* MODAL */}
-          {/* ========================= */}
-          {selectedJob !== null && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-              <div className="bg-white p-4 rounded-xl w-[85%] shadow-lg">
+          {selectedJob && (
+            <div
+              className="absolute inset-0 bg-black/40 flex items-center justify-center"
+              onClick={() => setSelectedJobId(null)} // 👈 klik luar = close
+            >
+              <div
+                className="bg-white p-4 rounded-xl w-[85%] shadow-lg"
+                onClick={(e) => e.stopPropagation()} // 👈 biar klik dalam ga nutup
+              >
                 {selectedJob.urgent && (
                   <p className="text-red-500 text-xs mb-1">Urgent</p>
                 )}
@@ -385,7 +423,7 @@ export default function PotongMobile(props: any) {
                               : j,
                           ),
                         );
-                        setSelectedJob(null);
+                        setSelectedJobId(null);
                       }}
                       className="bg-purple-500 text-white text-xs px-3 py-1 rounded float-right"
                     >
@@ -394,71 +432,94 @@ export default function PotongMobile(props: any) {
                   </>
                 )}
 
-                {/* ================= PROSES (INI YANG KAMU MAU) ================= */}
+                {/* ================= PROSES (NEW UI) ================= */}
                 {selectedJob.status === "proses" && (
                   <>
+                    <p className="text-center font-semibold text-sm mb-2">
+                      kode potongan
+                    </p>
+
                     <input
-                      placeholder="kode kain"
-                      className="w-full border mb-2 px-2 py-1 text-sm rounded"
+                      placeholder="A1 - ......"
+                      className="w-full border mb-2 px-2 py-1 text-sm rounded text-center"
                     />
+
                     <input
-                      placeholder="pemotong"
+                      placeholder="jumlah lolos"
                       className="w-full border mb-2 px-2 py-1 text-sm rounded"
                     />
 
-                    {/* HASIL SESUAI GAMBAR */}
-                    <div className="grid grid-cols-2 gap-2 mb-3">
-                      {["XXL", "XL", "L", "M"].map((size) => (
-                        <input
-                          key={size}
-                          placeholder={size}
-                          value={hasilSize[size as keyof typeof hasilSize]}
-                          onChange={(e) =>
-                            setHasilSize({
-                              ...hasilSize,
-                              [size]: e.target.value,
-                            })
-                          }
-                          className="border px-2 py-1 text-xs rounded"
-                        />
-                      ))}
-                    </div>
+                    <input
+                      placeholder="pengecek"
+                      className="w-full border mb-3 px-2 py-1 text-sm rounded"
+                    />
 
                     <button
                       onClick={() => {
-                        const total =
-                          Number(hasilSize.XXL || 0) +
-                          Number(hasilSize.XL || 0) +
-                          Number(hasilSize.L || 0) +
-                          Number(hasilSize.M || 0);
-
                         setJobs((prev) =>
                           prev.map((j) =>
-                            j.id === selectedJob?.id
+                            j.id === selectedJob.id
                               ? {
                                   ...j,
                                   status: "selesai",
-                                  hasil: total,
+                                  hasil: selectedJob.qty,
+                                  kodePotong: "A1-001",
+                                  pengecek: "Budi",
                                 }
                               : j,
                           ),
                         );
 
-                        setHasilSize({ XXL: "", XL: "", L: "", M: "" });
-                        setSelectedJob(null);
+                        setSelectedJobId(null);
                       }}
-                      className="bg-purple-500 text-white text-xs px-3 py-1 rounded float-right"
+                      className="bg-purple-500 text-white text-xs px-3 py-2 rounded w-full"
                     >
-                      selesai
+                      ok
                     </button>
                   </>
                 )}
 
                 {/* ================= SELESAI ================= */}
                 {selectedJob.status === "selesai" && (
-                  <p className="text-xs text-gray-500 text-center">
-                    Job sudah selesai
-                  </p>
+                  <>
+                    <p className="text-center font-semibold text-sm mb-2">
+                      Hasil potong
+                    </p>
+
+                    <div className="text-center mb-2">
+                      <p className="text-lg font-bold">
+                        {selectedJob.hasil ?? 0}
+                      </p>
+                    </div>
+
+                    <div className="text-xs text-gray-500 mb-2 text-center">
+                      <p>Kode: {selectedJob.kodePotong || "-"}</p>
+                      <p>Pengecek: {selectedJob.pengecek || "-"}</p>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setJobs((prev) =>
+                          prev.map((j) =>
+                            j.id === selectedJob.id
+                              ? {
+                                  ...j,
+                                  status: "menunggu",
+                                  hasil: null,
+                                  kodePotong: undefined,
+                                  pengecek: undefined,
+                                }
+                              : j,
+                          ),
+                        );
+
+                        setSelectedJobId(null);
+                      }}
+                      className="bg-gray-300 text-xs px-3 py-2 rounded w-full"
+                    >
+                      Reset ke menunggu
+                    </button>
+                  </>
                 )}
               </div>
             </div>
