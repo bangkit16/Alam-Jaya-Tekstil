@@ -52,7 +52,10 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   User: 'User',
-  Session: 'Session'
+  Session: 'Session',
+  KategoriProduk: 'KategoriProduk',
+  PermintaanProduk: 'PermintaanProduk',
+  StokPotong: 'StokPotong'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -77,7 +80,9 @@ export const UserScalarFieldEnum = {
   username: 'username',
   email: 'email',
   password: 'password',
-  role: 'role'
+  role: 'role',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -91,6 +96,56 @@ export const SessionScalarFieldEnum = {
 } as const
 
 export type SessionScalarFieldEnum = (typeof SessionScalarFieldEnum)[keyof typeof SessionScalarFieldEnum]
+
+
+export const KategoriProdukScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  kode: 'kode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KategoriProdukScalarFieldEnum = (typeof KategoriProdukScalarFieldEnum)[keyof typeof KategoriProdukScalarFieldEnum]
+
+
+export const PermintaanProdukScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  namaProduk: 'namaProduk',
+  kodeKain: 'kodeKain',
+  ukuran: 'ukuran',
+  pengecek: 'pengecek',
+  pemotong: 'pemotong',
+  jumlah: 'jumlah',
+  hasilPotongan: 'hasilPotongan',
+  isUrgent: 'isUrgent',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PermintaanProdukScalarFieldEnum = (typeof PermintaanProdukScalarFieldEnum)[keyof typeof PermintaanProdukScalarFieldEnum]
+
+
+export const StokPotongScalarFieldEnum = {
+  id: 'id',
+  permintaanId: 'permintaanId',
+  namaProduk: 'namaProduk',
+  pengecek: 'pengecek',
+  penjahit: 'penjahit',
+  kodeKain: 'kodeKain',
+  kodePotong: 'kodePotong',
+  kategoriId: 'kategoriId',
+  ukuran: 'ukuran',
+  status: 'status',
+  admin: 'admin',
+  tanggalKirim: 'tanggalKirim',
+  jumlah: 'jumlah'
+} as const
+
+export type StokPotongScalarFieldEnum = (typeof StokPotongScalarFieldEnum)[keyof typeof StokPotongScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -107,4 +162,12 @@ export const QueryMode = {
 } as const
 
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 

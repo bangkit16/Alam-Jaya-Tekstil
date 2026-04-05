@@ -385,7 +385,10 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   User: 'User',
-  Session: 'Session'
+  Session: 'Session',
+  KategoriProduk: 'KategoriProduk',
+  PermintaanProduk: 'PermintaanProduk',
+  StokPotong: 'StokPotong'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -401,7 +404,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session"
+    modelProps: "user" | "session" | "kategoriProduk" | "permintaanProduk" | "stokPotong"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -553,6 +556,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    KategoriProduk: {
+      payload: Prisma.$KategoriProdukPayload<ExtArgs>
+      fields: Prisma.KategoriProdukFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.KategoriProdukFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KategoriProdukPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.KategoriProdukFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KategoriProdukPayload>
+        }
+        findFirst: {
+          args: Prisma.KategoriProdukFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KategoriProdukPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.KategoriProdukFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KategoriProdukPayload>
+        }
+        findMany: {
+          args: Prisma.KategoriProdukFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KategoriProdukPayload>[]
+        }
+        create: {
+          args: Prisma.KategoriProdukCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KategoriProdukPayload>
+        }
+        createMany: {
+          args: Prisma.KategoriProdukCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.KategoriProdukCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KategoriProdukPayload>[]
+        }
+        delete: {
+          args: Prisma.KategoriProdukDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KategoriProdukPayload>
+        }
+        update: {
+          args: Prisma.KategoriProdukUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KategoriProdukPayload>
+        }
+        deleteMany: {
+          args: Prisma.KategoriProdukDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.KategoriProdukUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.KategoriProdukUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KategoriProdukPayload>[]
+        }
+        upsert: {
+          args: Prisma.KategoriProdukUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KategoriProdukPayload>
+        }
+        aggregate: {
+          args: Prisma.KategoriProdukAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateKategoriProduk>
+        }
+        groupBy: {
+          args: Prisma.KategoriProdukGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KategoriProdukGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.KategoriProdukCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KategoriProdukCountAggregateOutputType> | number
+        }
+      }
+    }
+    PermintaanProduk: {
+      payload: Prisma.$PermintaanProdukPayload<ExtArgs>
+      fields: Prisma.PermintaanProdukFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PermintaanProdukFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PermintaanProdukPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PermintaanProdukFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PermintaanProdukPayload>
+        }
+        findFirst: {
+          args: Prisma.PermintaanProdukFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PermintaanProdukPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PermintaanProdukFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PermintaanProdukPayload>
+        }
+        findMany: {
+          args: Prisma.PermintaanProdukFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PermintaanProdukPayload>[]
+        }
+        create: {
+          args: Prisma.PermintaanProdukCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PermintaanProdukPayload>
+        }
+        createMany: {
+          args: Prisma.PermintaanProdukCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PermintaanProdukCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PermintaanProdukPayload>[]
+        }
+        delete: {
+          args: Prisma.PermintaanProdukDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PermintaanProdukPayload>
+        }
+        update: {
+          args: Prisma.PermintaanProdukUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PermintaanProdukPayload>
+        }
+        deleteMany: {
+          args: Prisma.PermintaanProdukDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PermintaanProdukUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PermintaanProdukUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PermintaanProdukPayload>[]
+        }
+        upsert: {
+          args: Prisma.PermintaanProdukUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PermintaanProdukPayload>
+        }
+        aggregate: {
+          args: Prisma.PermintaanProdukAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePermintaanProduk>
+        }
+        groupBy: {
+          args: Prisma.PermintaanProdukGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PermintaanProdukGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PermintaanProdukCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PermintaanProdukCountAggregateOutputType> | number
+        }
+      }
+    }
+    StokPotong: {
+      payload: Prisma.$StokPotongPayload<ExtArgs>
+      fields: Prisma.StokPotongFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.StokPotongFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StokPotongPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.StokPotongFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StokPotongPayload>
+        }
+        findFirst: {
+          args: Prisma.StokPotongFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StokPotongPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.StokPotongFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StokPotongPayload>
+        }
+        findMany: {
+          args: Prisma.StokPotongFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StokPotongPayload>[]
+        }
+        create: {
+          args: Prisma.StokPotongCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StokPotongPayload>
+        }
+        createMany: {
+          args: Prisma.StokPotongCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.StokPotongCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StokPotongPayload>[]
+        }
+        delete: {
+          args: Prisma.StokPotongDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StokPotongPayload>
+        }
+        update: {
+          args: Prisma.StokPotongUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StokPotongPayload>
+        }
+        deleteMany: {
+          args: Prisma.StokPotongDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.StokPotongUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.StokPotongUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StokPotongPayload>[]
+        }
+        upsert: {
+          args: Prisma.StokPotongUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StokPotongPayload>
+        }
+        aggregate: {
+          args: Prisma.StokPotongAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateStokPotong>
+        }
+        groupBy: {
+          args: Prisma.StokPotongGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StokPotongGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.StokPotongCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StokPotongCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -598,7 +823,9 @@ export const UserScalarFieldEnum = {
   username: 'username',
   email: 'email',
   password: 'password',
-  role: 'role'
+  role: 'role',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -612,6 +839,56 @@ export const SessionScalarFieldEnum = {
 } as const
 
 export type SessionScalarFieldEnum = (typeof SessionScalarFieldEnum)[keyof typeof SessionScalarFieldEnum]
+
+
+export const KategoriProdukScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  kode: 'kode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KategoriProdukScalarFieldEnum = (typeof KategoriProdukScalarFieldEnum)[keyof typeof KategoriProdukScalarFieldEnum]
+
+
+export const PermintaanProdukScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  namaProduk: 'namaProduk',
+  kodeKain: 'kodeKain',
+  ukuran: 'ukuran',
+  pengecek: 'pengecek',
+  pemotong: 'pemotong',
+  jumlah: 'jumlah',
+  hasilPotongan: 'hasilPotongan',
+  isUrgent: 'isUrgent',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PermintaanProdukScalarFieldEnum = (typeof PermintaanProdukScalarFieldEnum)[keyof typeof PermintaanProdukScalarFieldEnum]
+
+
+export const StokPotongScalarFieldEnum = {
+  id: 'id',
+  permintaanId: 'permintaanId',
+  namaProduk: 'namaProduk',
+  pengecek: 'pengecek',
+  penjahit: 'penjahit',
+  kodeKain: 'kodeKain',
+  kodePotong: 'kodePotong',
+  kategoriId: 'kategoriId',
+  ukuran: 'ukuran',
+  status: 'status',
+  admin: 'admin',
+  tanggalKirim: 'tanggalKirim',
+  jumlah: 'jumlah'
+} as const
+
+export type StokPotongScalarFieldEnum = (typeof StokPotongScalarFieldEnum)[keyof typeof StokPotongScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -628,6 +905,14 @@ export const QueryMode = {
 } as const
 
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
 
 
@@ -679,6 +964,20 @@ export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaM
 
 
 /**
+ * Reference to a field of type 'UkuranProduk'
+ */
+export type EnumUkuranProdukFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UkuranProduk'>
+    
+
+
+/**
+ * Reference to a field of type 'UkuranProduk[]'
+ */
+export type ListEnumUkuranProdukFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UkuranProduk[]'>
+    
+
+
+/**
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -689,6 +988,55 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'StatusPermintaan'
+ */
+export type EnumStatusPermintaanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusPermintaan'>
+    
+
+
+/**
+ * Reference to a field of type 'StatusPermintaan[]'
+ */
+export type ListEnumStatusPermintaanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusPermintaan[]'>
+    
+
+
+/**
+ * Reference to a field of type 'StatusStok'
+ */
+export type EnumStatusStokFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusStok'>
+    
+
+
+/**
+ * Reference to a field of type 'StatusStok[]'
+ */
+export type ListEnumStatusStokFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusStok[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 /**
@@ -788,6 +1136,9 @@ export type PrismaClientOptions = ({
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   session?: Prisma.SessionOmit
+  kategoriProduk?: Prisma.KategoriProdukOmit
+  permintaanProduk?: Prisma.PermintaanProdukOmit
+  stokPotong?: Prisma.StokPotongOmit
 }
 
 /* Types for Logging */

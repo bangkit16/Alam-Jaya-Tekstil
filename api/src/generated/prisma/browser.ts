@@ -27,3 +27,18 @@ export type User = Prisma.UserModel
  * 
  */
 export type Session = Prisma.SessionModel
+/**
+ * Model KategoriProduk
+ * 
+ */
+export type KategoriProduk = Prisma.KategoriProdukModel
+/**
+ * Model PermintaanProduk
+ * 
+ */
+export type PermintaanProduk = Prisma.PermintaanProdukModel
+/**
+ * Model StokPotong
+ * 
+ */
+export type StokPotong = Prisma.StokPotongModel

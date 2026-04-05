@@ -18,6 +18,26 @@ enum Role {
   PENJAHIT
   RESI
   PRINT
+  GUDANG
+}
+
+enum StatusPermintaan {
+  MENUNGGU_PROSES
+  PROSES
+  MASUK_STOK_GUDANG
+  SELESAI
+}
+
+enum UkuranProduk {
+  XL
+  XXL
+  L
+  M
+}
+
+enum StatusStok {
+  MASUK
+  KIRIM
 }
 
 model User {
@@ -28,6 +48,9 @@ model User {
   password String
   role     Role     @default(POTONG)
   session  Session? 
+  permintaanProduk PermintaanProduk[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 }
 
 model Session {
@@ -38,3 +61,48 @@ model Session {
   createdAt    DateTime @default(now())
 }
 
+model KategoriProduk {
+  id   String   @id @default(uuid())
+  name String
+  slug String   @unique
+  kode String   @unique
+  stokPotong StokPotong[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PermintaanProduk {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  stokPotong StokPotong?
+  userId     String   
+  namaProduk String 
+  kodeKain   String?
+  ukuran     UkuranProduk
+  pengecek   String?
+  pemotong   String?
+  jumlah     Int
+  hasilPotongan  Int  @default(0)
+  isUrgent   Boolean
+  status     StatusPermintaan
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model StokPotong {
+  id  String   @id @default(uuid())
+  permintaanId String @unique
+  permintaan PermintaanProduk @relation(fields: [permintaanId], references: [id])
+  namaProduk String
+  pengecek   String?
+  penjahit   String?
+  kodeKain   String?
+  kodePotong String?
+  kategori   KategoriProduk @relation(fields: [kategoriId], references: [id])
+  kategoriId String
+  ukuran     UkuranProduk
+  status     StatusStok? @default(MASUK)
+  admin      String?
+  tanggalKirim DateTime?
+  jumlah     Int
+}

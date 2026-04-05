@@ -14,7 +14,36 @@ export const Role = {
   POTONG: 'POTONG',
   PENJAHIT: 'PENJAHIT',
   RESI: 'RESI',
-  PRINT: 'PRINT'
+  PRINT: 'PRINT',
+  GUDANG: 'GUDANG'
 } as const
 
 export type Role = (typeof Role)[keyof typeof Role]
+
+
+export const StatusPermintaan = {
+  MENUNGGU_PROSES: 'MENUNGGU_PROSES',
+  PROSES: 'PROSES',
+  MASUK_STOK_GUDANG: 'MASUK_STOK_GUDANG',
+  SELESAI: 'SELESAI'
+} as const
+
+export type StatusPermintaan = (typeof StatusPermintaan)[keyof typeof StatusPermintaan]
+
+
+export const UkuranProduk = {
+  XL: 'XL',
+  XXL: 'XXL',
+  L: 'L',
+  M: 'M'
+} as const
+
+export type UkuranProduk = (typeof UkuranProduk)[keyof typeof UkuranProduk]
+
+
+export const StatusStok = {
+  MASUK: 'MASUK',
+  KIRIM: 'KIRIM'
+} as const
+
+export type StatusStok = (typeof StatusStok)[keyof typeof StatusStok]

@@ -10,4 +10,7 @@
  */
 export type * from './models/User.js'
 export type * from './models/Session.js'
+export type * from './models/KategoriProduk.js'
+export type * from './models/PermintaanProduk.js'
+export type * from './models/StokPotong.js'
 export type * from './commonInputTypes.js'

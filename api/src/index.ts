@@ -1,12 +1,13 @@
 import express from "express";
 import cors from "cors";
-import postRoutes from "./routes/postRoutes";
+import authRoutes from "./routes/authRoutes";
+import potongRoutes from "./routes/potongRoutes";
 import cookieParser from "cookie-parser";
-import { getSession, login, logout } from "./controller/authController";
 
 const app = express();
 const port = 3001;
 
+app.use(express.json());
 app.use(
   cors({
     origin: "http://localhost:3000",
@@ -15,18 +16,14 @@ app.use(
   }),
 );
 app.use(cookieParser());
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
-  res.json({ message: "Selamat datang di Api Alam Jaya Textile" });
+  res.json({ message: "Selamat datang di API Alam Jaya Textile" });
 });
 
-app.post("/auth/login", login);
-app.post("/auth/logout", logout);
-app.get("/auth/session", getSession);
-
-// app.use(postRoutes);
+app.use("/auth", authRoutes);
+app.use("/potong", potongRoutes);
 
 app.listen(port, () => {
   console.log(`Aplikasi berjalan di http://localhost:${port}`);
