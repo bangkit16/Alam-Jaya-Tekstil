@@ -131,8 +131,8 @@ export default function PenjahitMobile(props: any) {
     const filtered = jobs.filter((j) => j.status === filterStatus);
 
     return (
-      <div className="min-h-screen flex justify-center items-center p-4">
-        <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] p-5 flex flex-col relative">
+      <div className="min-h-[100dvh] flex justify-center items-center p-4 bg-gray-100">
+        <div className="w-full max-w-sm min-h-[90dvh] max-h-[95dvh] bg-white rounded-[40px] p-5 pb-16 flex flex-col relative shadow-xl overflow-hidden">
           <h2 className="text-center font-semibold mb-2">View Jobs</h2>
 
           {/* SEARCH */}
@@ -161,7 +161,7 @@ export default function PenjahitMobile(props: any) {
           </div>
 
           {/* LIST */}
-          <div className="flex flex-col gap-3 overflow-y-auto">
+          <div className="flex-1 flex flex-col gap-3 overflow-y-auto pr-1">
             {filtered.map((job) => (
               <div
                 key={job.id}
@@ -183,7 +183,7 @@ export default function PenjahitMobile(props: any) {
           </div>
 
           {/* ACTION BUTTON */}
-          <div className="mt-auto flex flex-col gap-2">
+          <div className="absolute bottom-0 left-0 w-full p-4 bg-white border-t flex flex-col gap-2">
             {/* RESET */}
             <button
               onClick={handleResetAll}
@@ -233,7 +233,7 @@ export default function PenjahitMobile(props: any) {
                     <div className="text-xs text-gray-600 space-y-2">
                       <div className="flex items-center justify-between">
                         <span>kode potongan</span>
-                        <input className="border rounded-full px-2 py-0.5 w-30 text-xs" />
+                        <input className="border rounded-full px-3 py-1 w-32 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400" />
                       </div>
 
                       <div className="flex items-center justify-between">
@@ -243,13 +243,13 @@ export default function PenjahitMobile(props: any) {
                           onChange={(e) =>
                             setForm({ ...form, penjahit: e.target.value })
                           }
-                          className="border rounded-full px-2 py-0.5 w-30 text-xs"
+                          className="border rounded-full px-3 py-1 w-32 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400"
                         />
                       </div>
 
                       <div className="flex items-center justify-between">
                         <span>kurir</span>
-                        <input className="border rounded-full px-2 py-0.5 w-30 text-xs" />
+                        <input className="border rounded-full px-3 py-1 w-32 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400" />
                       </div>
                     </div>
 
@@ -308,7 +308,7 @@ export default function PenjahitMobile(props: any) {
                           onChange={(e) =>
                             setForm({ ...form, kode: e.target.value })
                           }
-                          className="border rounded-full px-2 py-0.5 w-30 text-xs"
+                          className="border rounded-full px-3 py-1 w-32 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400"
                         />
                       </div>
 
@@ -320,7 +320,7 @@ export default function PenjahitMobile(props: any) {
                           onChange={(e) =>
                             setForm({ ...form, tanggal: e.target.value })
                           }
-                          className="border rounded-full px-2 py-0.5 w-30 text-xs"
+                          className="border rounded-full px-3 py-1 w-32 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400"
                         />
                       </div>
                     </div>
@@ -388,7 +388,7 @@ export default function PenjahitMobile(props: any) {
                           onChange={(e) =>
                             setForm({ ...form, lolos: e.target.value })
                           }
-                          className="border rounded-full px-2 py-0.5 w-30 text-xs"
+                          className="border rounded-full px-3 py-1 w-32 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400"
                         />
                       </div>
 
@@ -399,7 +399,7 @@ export default function PenjahitMobile(props: any) {
                           onChange={(e) =>
                             setForm({ ...form, reject: e.target.value })
                           }
-                          className="border rounded-full px-2 py-0.5 w-30 text-xs"
+                          className="border rounded-full px-3 py-1 w-32 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400"
                         />
                       </div>
                     </div>
