@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getData } from "@/services/useGetPermintaan";
+import { useGetPermintaan } from "@/services/useGetPermintaan";
 import { useRouter } from "next/navigation";
 
 import PotongWeb from "@/container/potong/web/potong-web";
@@ -20,13 +20,13 @@ export default function Page() {
     setIsMobile(window.innerWidth < 768);
   }, []);
 
+  const { data, isLoading } = useGetPermintaan();
+
   useEffect(() => {
-    const fetchData = async () => {
-      const res: any = await getData("/api/orders");
-      setOrders(res.data);
-    };
-    fetchData();
-  }, []);
+    if (data) {
+      setOrders(data);
+    }
+  }, [data]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");

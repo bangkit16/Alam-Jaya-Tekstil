@@ -35,6 +35,9 @@ export default function Jobs({ jobs, setJobs, setScreen }: any) {
               j.nama.toLowerCase().includes(search.toLowerCase()),
           );
 
+  //
+  const [selectedKirim, setSelectedKirim] = useState<any>(null);
+
   return (
     <div className="min-h-screen bg-gray-200 flex justify-center items-center p-4">
       <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-xl p-4 flex flex-col relative">
@@ -122,8 +125,10 @@ export default function Jobs({ jobs, setJobs, setScreen }: any) {
             </>
           )}
 
-          {/* 🔥 ================= JOB LIST ================= */}
+          {/*  */}
+          {/* 🔥 MENUNGGU + PROSES */}
           {filterStatus !== "stok" &&
+            filterStatus !== "kirim" &&
             filteredJobs.map((job: any) => (
               <div
                 key={job.id}
@@ -140,10 +145,52 @@ export default function Jobs({ jobs, setJobs, setScreen }: any) {
                 <p className="text-2xl font-bold">{job.qty}</p>
               </div>
             ))}
+          {/* 🔥 ================= JOB LIST ================= */}
+          {filterStatus === "kirim" &&
+            filteredJobs.map((job: any) => (
+              <div
+                key={job.id}
+                onClick={() => setSelectedKirim(job)}
+                className="border rounded-2xl p-3 cursor-pointer"
+              >
+                <div className="flex justify-between">
+                  <p className="text-sm">{job.nama}</p>
+                  <p className="text-lg font-bold">{job.qty}</p>
+                </div>
+
+                <div className="text-[10px] text-gray-500 mt-2">
+                  <p>Nama Penjahit: {job.penjahit || "-"}</p>
+                  <p>Admin: {job.admin || "-"}</p>
+                  <p>Tanggal: {job.tanggalKirim || "-"}</p>
+                </div>
+              </div>
+            ))}
         </div>
 
         {/* BACK */}
-        <div className="mt-auto">
+        <div className="mt-auto flex flex-col gap-2">
+          {/* RESET */}
+          <button
+            onClick={() => {
+              setJobs((prev: any) =>
+                prev.map((j: any) => ({
+                  ...j,
+                  status: "menunggu",
+                  hasil: null,
+                  kodePotong: undefined,
+                  pengecek: undefined,
+                  penjahit: undefined,
+                  admin: undefined,
+                  tanggalKirim: undefined,
+                })),
+              );
+            }}
+            className="w-full bg-red-500 text-white text-xs py-2 rounded"
+          >
+            Reset Semua ke Menunggu
+          </button>
+
+          {/* BACK */}
           <button
             onClick={() => setScreen("home")}
             className="text-xs text-gray-500"
@@ -212,14 +259,26 @@ export default function Jobs({ jobs, setJobs, setScreen }: any) {
                 <>
                   <input
                     placeholder="kode potongan"
+                    value={form.kode}
+                    onChange={(e) => setForm({ ...form, kode: e.target.value })}
                     className="w-full border mb-2 px-2 py-1 rounded text-center"
                   />
+
                   <input
                     placeholder="jumlah lolos"
+                    value={form.pemotong}
+                    onChange={(e) =>
+                      setForm({ ...form, pemotong: e.target.value })
+                    }
                     className="w-full border mb-2 px-2 py-1 rounded"
                   />
+
                   <input
                     placeholder="pengecek"
+                    value={form.pengecek}
+                    onChange={(e) =>
+                      setForm({ ...form, pengecek: e.target.value })
+                    }
                     className="w-full border mb-3 px-2 py-1 rounded"
                   />
 
@@ -228,10 +287,23 @@ export default function Jobs({ jobs, setJobs, setScreen }: any) {
                       setJobs((prev: any) =>
                         prev.map((j: any) =>
                           j.id === selectedJob.id
-                            ? { ...j, status: "selesai", hasil: 38 }
+                            ? {
+                                ...j,
+                                status: "selesai",
+                                hasil: 38, // nanti bisa dari input
+                                kodePotong: form.kode,
+                                pengecek: form.pengecek,
+                              }
                             : j,
                         ),
                       );
+
+                      setForm({
+                        kode: "",
+                        pemotong: "",
+                        pengecek: "",
+                      });
+
                       setSelectedJob(null);
                     }}
                     className="bg-purple-500 text-white text-xs px-3 py-1 rounded float-right"
@@ -316,6 +388,45 @@ export default function Jobs({ jobs, setJobs, setScreen }: any) {
           </div>
         )}
       </div>
+      {selectedKirim && (
+        <div
+          className="absolute inset-0 bg-black/40 flex items-center justify-center"
+          onClick={() => setSelectedKirim(null)}
+        >
+          <div
+            className="bg-white p-4 rounded-xl w-[85%]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* HEADER */}
+            <div className="flex justify-between mb-3">
+              <p className="text-sm font-semibold">{selectedKirim.nama}</p>
+              <p className="text-xl font-bold">{selectedKirim.hasil || 0}</p>
+            </div>
+
+            {/* PROSES */}
+            <div className="text-xs border-b pb-2 mb-2">
+              <p className="font-semibold text-gray-500 mb-1">PROSES</p>
+              <p>Kode Potong: {selectedKirim.kodePotong || "-"}</p>
+              <p>Jumlah Lolos: {selectedKirim.hasil || 0}</p>
+              <p>Pengecek: {selectedKirim.pengecek || "-"}</p>
+            </div>
+
+            {/* STOK */}
+            <div className="text-xs border-b pb-2 mb-2">
+              <p className="font-semibold text-gray-500 mb-1">STOK POTONG</p>
+              <p>Ready: {selectedKirim.hasil || 0}</p>
+            </div>
+
+            {/* KIRIM */}
+            <div className="text-xs">
+              <p className="font-semibold text-gray-500 mb-1">KIRIM PENJAHIT</p>
+              <p>Penjahit: {selectedKirim.penjahit || "-"}</p>
+              <p>Admin: {selectedKirim.admin || "-"}</p>
+              <p>Tanggal: {selectedKirim.tanggalKirim || "-"}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -23,9 +23,11 @@ export default function PotongMobile(props: any) {
 
     try {
       const saved = localStorage.getItem("jobs");
+
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
+
+        if (Array.isArray(parsed) && parsed.length > 0) {
           setJobs(parsed);
           return;
         }
@@ -34,7 +36,7 @@ export default function PotongMobile(props: any) {
       setJobs([
         {
           id: 1,
-          nama: "Kaos hitam L",
+          nama: "Kaos tipis hitam L",
           qty: 40,
           status: "menunggu",
           urgent: true,
@@ -44,6 +46,30 @@ export default function PotongMobile(props: any) {
           id: 2,
           nama: "Kaos merah M",
           qty: 25,
+          status: "menunggu",
+          urgent: false,
+          hasil: null,
+        },
+        {
+          id: 3,
+          nama: "Hoodie biru XL",
+          qty: 30,
+          status: "menunggu",
+          urgent: true,
+          hasil: null,
+        },
+        {
+          id: 4,
+          nama: "Hoodie hitam L",
+          qty: 50,
+          status: "menunggu",
+          urgent: false,
+          hasil: null,
+        },
+        {
+          id: 5,
+          nama: "Sweater abu M",
+          qty: 20,
           status: "menunggu",
           urgent: false,
           hasil: null,
