@@ -98,7 +98,7 @@ export async function login(req: Request, res: Response) {
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    res.status(200).json({ accessToken, refreshToken });
+    res.status(200).json({ accessToken, role: user.role });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
