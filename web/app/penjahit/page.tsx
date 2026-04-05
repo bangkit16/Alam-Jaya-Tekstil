@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import PenjahitMobile from "./PenjahitMobile";
-import PenjahitWeb from "./PenjahitWeb";
+import PenjahitMobile from "@/container/jahit/mobile/PenjahitMobile";
+import PenjahitWeb from "@/container/jahit/web/PenjahitWeb";
 
 export default function Page() {
   const [orders, setOrders] = useState<any[]>([]);
