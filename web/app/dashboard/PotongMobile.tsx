@@ -43,6 +43,12 @@ export default function PotongMobile(props: any) {
     M: "",
   });
 
+  const [formProses, setFormProses] = useState({
+    kode: "",
+    lolos: "",
+    pengecek: "",
+  });
+
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -441,16 +447,31 @@ export default function PotongMobile(props: any) {
 
                     <input
                       placeholder="A1 - ......"
+                      value={formProses.kode}
+                      onChange={(e) =>
+                        setFormProses({ ...formProses, kode: e.target.value })
+                      }
                       className="w-full border mb-2 px-2 py-1 text-sm rounded text-center"
                     />
 
                     <input
                       placeholder="jumlah lolos"
+                      value={formProses.lolos}
+                      onChange={(e) =>
+                        setFormProses({ ...formProses, lolos: e.target.value })
+                      }
                       className="w-full border mb-2 px-2 py-1 text-sm rounded"
                     />
 
                     <input
                       placeholder="pengecek"
+                      value={formProses.pengecek}
+                      onChange={(e) =>
+                        setFormProses({
+                          ...formProses,
+                          pengecek: e.target.value,
+                        })
+                      }
                       className="w-full border mb-3 px-2 py-1 text-sm rounded"
                     />
 
@@ -462,9 +483,9 @@ export default function PotongMobile(props: any) {
                               ? {
                                   ...j,
                                   status: "selesai",
-                                  hasil: selectedJob.qty,
-                                  kodePotong: "A1-001",
-                                  pengecek: "Budi",
+                                  hasil: Number(formProses.lolos || 0),
+                                  kodePotong: formProses.kode,
+                                  pengecek: formProses.pengecek,
                                 }
                               : j,
                           ),
