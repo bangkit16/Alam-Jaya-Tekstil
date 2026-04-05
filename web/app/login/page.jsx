@@ -86,7 +86,7 @@ export default function LoginPage() {
         const role = dummyUsers[username];
 
         localStorage.setItem("accessToken", "dummy-token");
-        localStorage.setItem("role", role);
+        localStorage.setItem("role", role.toLowerCase());
 
         console.log("DUMMY LOGIN SUCCESS:", role);
 
@@ -101,7 +101,7 @@ export default function LoginPage() {
             router.push("/dashboard");
             break;
           case "JAHIT":
-            router.push("/jahit");
+            router.push("/penjahit");
             break;
           case "QC":
             router.push("/qc");
@@ -120,7 +120,7 @@ export default function LoginPage() {
   const roles = ["resi", "admin", "potong", "jahit", "qc"];
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-[#0f172a] via-[#1e3a8a] to-[#6d28d9]">
+    <div className="min-h-screen flex bg-linear-to-br from-[#0f172a] via-[#1e3a8a] to-[#6d28d9]">
       {/* LEFT DESKTOP */}
       <div className="hidden md:flex flex-col justify-center w-1/2 px-16 text-white">
         <h1 className="text-4xl font-bold mb-4">
@@ -133,7 +133,7 @@ export default function LoginPage() {
 
       {/* LOGIN */}
       <div className="flex w-full md:w-1/2 items-center justify-center px-3 md:px-6">
-        <div className="w-full max-w-[340px] md:max-w-md bg-white rounded-2xl md:rounded-3xl shadow-xl md:shadow-2xl p-5 md:p-8">
+        <div className="w-full max-w-85 md:max-w-md bg-white rounded-2xl md:rounded-3xl shadow-xl md:shadow-2xl p-5 md:p-8">
           {/* TITLE */}
           <h2 className="text-lg md:text-2xl font-bold text-gray-800 mb-1">
             Login System
@@ -161,7 +161,7 @@ export default function LoginPage() {
                   }}
                   className={`px-2.5 md:px-3 py-1 rounded-full text-[11px] md:text-sm ${
                     roleUI === role
-                      ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white"
+                      ? "bg-linear-to-r from-indigo-500 to-purple-500 text-white"
                       : "bg-gray-200 text-gray-600"
                   }`}
                 >
@@ -217,7 +217,7 @@ export default function LoginPage() {
           {/* BUTTON */}
           <button
             onClick={handleLogin}
-            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2.5 md:py-3 rounded-lg md:rounded-xl text-xs md:text-sm font-semibold shadow-lg"
+            className="w-full bg-linear-to-r from-indigo-600 to-purple-600 text-white py-2.5 md:py-3 rounded-lg md:rounded-xl text-xs md:text-sm font-semibold shadow-lg"
           >
             Sign In →
           </button>

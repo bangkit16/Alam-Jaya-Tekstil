@@ -18,42 +18,27 @@ export default function PotongMobile(props: any) {
     id: number;
     nama: string;
     qty: number;
-    status: "menunggu" | "proses" | "selesai";
+    status: "menunggu" | "proses" | "selesai" | "kirim";
     urgent: boolean;
     hasil: number | null;
+
+    // 🔥 TAMBAHAN
+    kodePotong?: string;
+    pengecek?: string;
+
+    //
+    penjahit?: string;
+    admin?: string;
+    tanggalKirim?: string;
   };
 
-  const [jobs, setJobs] = useState<Job[]>([
-    {
-      id: 1,
-      nama: "Kaos tipis hitam L",
-      qty: 40,
-      status: "menunggu",
-      urgent: true,
-      hasil: null,
-    },
-    {
-      id: 2,
-      nama: "Kaos tipis merah cabai M",
-      qty: 50,
-      status: "menunggu",
-      urgent: false,
-      hasil: null,
-    },
-    {
-      id: 3,
-      nama: "Hoodie Biru XXL",
-      qty: 30,
-      status: "menunggu",
-      urgent: false,
-      hasil: null,
-    },
-  ]);
+  const [jobs, setJobs] = useState<Job[]>([]);
 
-  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
+  const selectedJob = jobs.find((j) => j.id === selectedJobId) || null;
 
   const [filterStatus, setFilterStatus] = useState<
-    "menunggu" | "proses" | "selesai"
+    "menunggu" | "proses" | "stok" | "kirim"
   >("menunggu");
 
   const [hasilSize, setHasilSize] = useState({
@@ -63,31 +48,126 @@ export default function PotongMobile(props: any) {
     M: "",
   });
 
+  const [formProses, setFormProses] = useState({
+    kode: "",
+    lolos: "",
+    pengecek: "",
+  });
+
   const [mounted, setMounted] = useState(false);
+
+  const [selectedStok, setSelectedStok] = useState<string | null>(null);
+
+  const [selectedStokItem, setSelectedStokItem] = useState<any>(null);
+
+  const [formKirim, setFormKirim] = useState({
+    penjahit: "",
+    admin: "",
+    tanggal: "",
+  });
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    const saved = localStorage.getItem("jobs");
-    if (saved) setJobs(JSON.parse(saved));
+    try {
+      const saved = localStorage.getItem("jobs");
+
+      if (saved) {
+        const parsed = JSON.parse(saved);
+
+        if (Array.isArray(parsed)) {
+          setJobs(parsed);
+          return;
+        }
+      }
+
+      // fallback dummy kalau kosong
+      setJobs([
+        {
+          id: 1,
+          nama: "Kaos tipis hitam L",
+          qty: 40,
+          status: "menunggu",
+          urgent: true,
+          hasil: null,
+        },
+
+        // 🔽 TAMBAHAN (DI BAWAH)
+        {
+          id: 2,
+          nama: "Kaos merah M",
+          qty: 25,
+          status: "menunggu",
+          urgent: false,
+          hasil: null,
+        },
+        {
+          id: 3,
+          nama: "Hoodie biru XL",
+          qty: 30,
+          status: "menunggu",
+          urgent: true,
+          hasil: null,
+        },
+        {
+          id: 4,
+          nama: "Hoodie hitam L",
+          qty: 50,
+          status: "menunggu",
+          urgent: false,
+          hasil: null,
+        },
+        {
+          id: 5,
+          nama: "Sweater abu M",
+          qty: 20,
+          status: "menunggu",
+          urgent: false,
+          hasil: null,
+        },
+        {
+          id: 6,
+          nama: "Longsleeve putih L",
+          qty: 35,
+          status: "menunggu",
+          urgent: true,
+          hasil: null,
+        },
+      ]);
+    } catch (error) {
+      console.error("LocalStorage error:", error);
+      localStorage.removeItem("jobs");
+    }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("jobs", JSON.stringify(jobs));
-  }, [jobs]);
+    if (!mounted) return;
 
-  if (!mounted) return null;
+    try {
+      localStorage.setItem("jobs", JSON.stringify(jobs));
+    } catch (e) {
+      console.error("Save error:", e);
+    }
+  }, [jobs, mounted]);
 
-  // =========================
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-sm text-gray-500">Loading...</p>
+      </div>
+    );
+  }
+
+  //
   // HOME
-  // =========================
+  //
   if (screen === "home") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e3a8a] to-[#6d28d9] flex justify-center items-center p-4">
+      <div className="min-h-screen bg-linear-to-br from-[#0f172a] via-[#1e3a8a] to-[#6d28d9] flex justify-center items-center p-4">
         <div className="w-full max-w-sm rounded-[40px] bg-white/95 p-5 shadow-2xl">
-          <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-2xl p-4 mb-5">
+          <div className="bg-linear-to-r from-indigo-500 to-purple-500 text-white rounded-2xl p-4 mb-5">
             <h2 className="font-semibold text-sm">ADIT NDONG</h2>
             <p className="text-xs opacity-80">Divisi Potong</p>
           </div>
@@ -130,9 +210,9 @@ export default function PotongMobile(props: any) {
     );
   }
 
-  // =========================
+  //
   // STOCK MENU
-  // =========================
+  //
   if (screen === "stock") {
     return (
       <div className="min-h-screen flex justify-center items-center p-4">
@@ -161,9 +241,9 @@ export default function PotongMobile(props: any) {
     );
   }
 
-  // =========================
+  //
   // STOCK BAHAN
-  // =========================
+  //
   if (screen === "stockBahan") {
     return (
       <div className="min-h-screen flex justify-center items-center p-4">
@@ -195,9 +275,9 @@ export default function PotongMobile(props: any) {
     );
   }
 
-  // =========================
+  //
   // STOCK PRODUCT
-  // =========================
+  //
   if (screen === "stockProduct") {
     const products = [
       "hoodie",
@@ -249,6 +329,7 @@ export default function PotongMobile(props: any) {
                   />
                 </div>
               </div>
+
               {/* LIST */}
               <div className="flex flex-col gap-3 overflow-y-auto">
                 {filteredProducts.map((item) => (
@@ -275,11 +356,17 @@ export default function PotongMobile(props: any) {
     );
   }
 
-  // =========================
+  //
   // JOBS
-  // =========================
+  //
   if (screen === "jobs") {
-    const filteredJobs = jobs.filter((job) => job.status === filterStatus);
+    const filteredJobs =
+      filterStatus === "stok"
+        ? []
+        : filterStatus === "kirim"
+          ? jobs.filter((j) => j.status === "kirim")
+          : jobs.filter((j) => j.status === filterStatus);
+
     return (
       <div className="min-h-screen flex justify-center items-center p-4">
         <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] p-5 flex flex-col relative">
@@ -296,11 +383,13 @@ export default function PotongMobile(props: any) {
 
           {/* FILTER */}
           <div className="flex justify-between text-xs mb-3">
-            {["menunggu", "proses", "selesai"].map((item) => (
+            {["menunggu", "proses", "stok", "kirim"].map((item) => (
               <button
                 key={item}
                 onClick={() =>
-                  setFilterStatus(item as "menunggu" | "proses" | "selesai")
+                  setFilterStatus(
+                    item as "menunggu" | "proses" | "stok" | "kirim",
+                  )
                 }
                 className={`flex-1 text-center py-1 rounded ${
                   filterStatus === item
@@ -315,45 +404,147 @@ export default function PotongMobile(props: any) {
 
           {/* LIST */}
           <div className="flex flex-col gap-3 overflow-y-auto">
-            {filteredJobs.map((job) => (
-              <div
-                key={job.id}
-                onClick={() => {
-                  setSelectedJob(job);
-                  setHasilSize({ XXL: "", XL: "", L: "", M: "" });
-                }}
-                className="border rounded-xl p-3 cursor-pointer"
-              >
-                {job.urgent && <p className="text-red-500 text-xs">Urgent</p>}
+            {/* ================= STOK POTONG ================= */}
+            {filterStatus === "stok" && (
+              <>
+                {/* ================= PILIH PRODUK ================= */}
+                {!selectedStok && (
+                  <>
+                    {[
+                      "hoodie",
+                      "kaos",
+                      "singlet",
+                      "ts hoodie",
+                      "sweater",
+                      "longsleeve",
+                      "kemeja",
+                    ].map((item, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedStok(item)}
+                        className="p-3 rounded-full border text-sm bg-white text-gray-600"
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </>
+                )}
 
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm">{job.nama}</p>
+                {/* ================= DETAIL STOK ================= */}
+                {selectedStok && (
+                  <>
+                    {/* BACK */}
+                    <button
+                      onClick={() => setSelectedStok(null)}
+                      className="text-xs text-gray-500 mb-2"
+                    >
+                      ← Back
+                    </button>
 
-                    {job.status === "selesai" && (
-                      <p className="text-xs italic text-gray-500">
-                        Hasil potong {job.hasil}
-                      </p>
-                    )}
+                    {/* LIST HASIL */}
+                    {jobs
+                      .filter(
+                        (j) =>
+                          j.status === "selesai" &&
+                          j.nama
+                            .toLowerCase()
+                            .includes(selectedStok.toLowerCase()),
+                      )
+                      .map((item, index) => (
+                        <div
+                          key={index}
+                          onClick={() => setSelectedStokItem(item)}
+                          className={`p-3 rounded-xl border ${
+                            index === 1
+                              ? "bg-linear-to-r from-purple-400 to-purple-600 text-white"
+                              : "bg-white"
+                          }`}
+                        >
+                          <div className="flex justify-between items-center">
+                            <p className="text-sm font-semibold">{item.nama}</p>
+                            <p className="text-lg font-bold">{item.hasil}</p>
+                          </div>
+
+                          <div className="text-[10px] mt-2 opacity-80">
+                            <p>KODE POTONGAN: {item.kodePotong || "-"}</p>
+                            <p>PENGECEK: {item.pengecek || "-"}</p>
+                            <p>TANGGAL: -</p>
+                          </div>
+                        </div>
+                      ))}
+                  </>
+                )}
+              </>
+            )}
+            {/* ================= JOB LIST ================= */}
+            {filterStatus !== "stok" &&
+              filteredJobs.map((job) => (
+                <div
+                  key={job.id}
+                  onClick={() => {
+                    setSelectedJobId(job.id);
+                    setHasilSize({ XXL: "", XL: "", L: "", M: "" });
+                  }}
+                  className="border rounded-xl p-3 cursor-pointer"
+                >
+                  {job.urgent && <p className="text-red-500 text-xs">Urgent</p>}
+
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm">{job.nama}</p>
+
+                      {job.status === "selesai" && (
+                        <p className="text-xs italic text-gray-500">
+                          Hasil potong {job.hasil}
+                        </p>
+                      )}
+                    </div>
+
+                    <p className="text-lg font-semibold">{job.qty}</p>
                   </div>
-
-                  <p className="text-lg font-semibold">{job.qty}</p>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
 
           {/* BACK */}
-          <button onClick={() => setScreen("home")} className="mt-auto text-xs">
-            ← Back
-          </button>
+          <div className="mt-auto flex flex-col gap-2">
+            {/* 🔥 RESET SEMUA */}
+            <button
+              onClick={() => {
+                setJobs((prev) =>
+                  prev.map((j) => ({
+                    ...j,
+                    status: "menunggu",
+                    hasil: null,
+                    kodePotong: undefined,
+                    pengecek: undefined,
+                  })),
+                );
+              }}
+              className="w-full bg-red-500 text-white text-xs py-2 rounded"
+            >
+              Reset Semua ke Menunggu
+            </button>
 
-          {/* ========================= */}
+            {/* BACK */}
+            <button
+              onClick={() => setScreen("home")}
+              className="text-xs text-gray-500"
+            >
+              ← Back
+            </button>
+          </div>
+
           {/* MODAL */}
-          {/* ========================= */}
-          {selectedJob !== null && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-              <div className="bg-white p-4 rounded-xl w-[85%] shadow-lg">
+          {selectedJob && (
+            <div
+              className="absolute inset-0 bg-black/40 flex items-center justify-center"
+              onClick={() => setSelectedJobId(null)} // 👈 klik luar = close
+            >
+              <div
+                className="bg-white p-4 rounded-xl w-[85%] shadow-lg"
+                onClick={(e) => e.stopPropagation()} // 👈 biar klik dalam ga nutup
+              >
                 {selectedJob.urgent && (
                   <p className="text-red-500 text-xs mb-1">Urgent</p>
                 )}
@@ -370,8 +561,15 @@ export default function PotongMobile(props: any) {
                       placeholder="kode kain"
                       className="w-full border mb-2 px-2 py-1 text-sm rounded"
                     />
+
                     <input
                       placeholder="pemotong"
+                      className="w-full border mb-2 px-2 py-1 text-sm rounded"
+                    />
+
+                    {/* ✅ TAMBAHAN */}
+                    <input
+                      placeholder="pengecek"
                       className="w-full border mb-3 px-2 py-1 text-sm rounded"
                     />
 
@@ -385,7 +583,7 @@ export default function PotongMobile(props: any) {
                               : j,
                           ),
                         );
-                        setSelectedJob(null);
+                        setSelectedJobId(null);
                       }}
                       className="bg-purple-500 text-white text-xs px-3 py-1 rounded float-right"
                     >
@@ -394,72 +592,265 @@ export default function PotongMobile(props: any) {
                   </>
                 )}
 
-                {/* ================= PROSES (INI YANG KAMU MAU) ================= */}
+                {/* ================= PROSES (NEW UI) ================= */}
                 {selectedJob.status === "proses" && (
                   <>
+                    <p className="text-center font-semibold text-sm mb-2">
+                      kode potongan
+                    </p>
+
                     <input
-                      placeholder="kode kain"
-                      className="w-full border mb-2 px-2 py-1 text-sm rounded"
+                      placeholder="A1 - ......"
+                      value={formProses.kode}
+                      onChange={(e) =>
+                        setFormProses({ ...formProses, kode: e.target.value })
+                      }
+                      className="w-full border mb-2 px-2 py-1 text-sm rounded text-center"
                     />
+
                     <input
-                      placeholder="pemotong"
+                      placeholder="jumlah lolos"
+                      value={formProses.lolos}
+                      onChange={(e) =>
+                        setFormProses({ ...formProses, lolos: e.target.value })
+                      }
                       className="w-full border mb-2 px-2 py-1 text-sm rounded"
                     />
 
-                    {/* HASIL SESUAI GAMBAR */}
-                    <div className="grid grid-cols-2 gap-2 mb-3">
-                      {["XXL", "XL", "L", "M"].map((size) => (
-                        <input
-                          key={size}
-                          placeholder={size}
-                          value={hasilSize[size as keyof typeof hasilSize]}
-                          onChange={(e) =>
-                            setHasilSize({
-                              ...hasilSize,
-                              [size]: e.target.value,
-                            })
-                          }
-                          className="border px-2 py-1 text-xs rounded"
-                        />
-                      ))}
-                    </div>
+                    <input
+                      placeholder="pengecek"
+                      value={formProses.pengecek}
+                      onChange={(e) =>
+                        setFormProses({
+                          ...formProses,
+                          pengecek: e.target.value,
+                        })
+                      }
+                      className="w-full border mb-3 px-2 py-1 text-sm rounded"
+                    />
 
                     <button
                       onClick={() => {
-                        const total =
-                          Number(hasilSize.XXL || 0) +
-                          Number(hasilSize.XL || 0) +
-                          Number(hasilSize.L || 0) +
-                          Number(hasilSize.M || 0);
-
                         setJobs((prev) =>
                           prev.map((j) =>
-                            j.id === selectedJob?.id
+                            j.id === selectedJob.id
                               ? {
                                   ...j,
                                   status: "selesai",
-                                  hasil: total,
+                                  hasil: Number(formProses.lolos || 0),
+                                  kodePotong: formProses.kode,
+                                  pengecek: formProses.pengecek,
                                 }
                               : j,
                           ),
                         );
 
-                        setHasilSize({ XXL: "", XL: "", L: "", M: "" });
-                        setSelectedJob(null);
+                        setFormProses({
+                          kode: "",
+                          lolos: "",
+                          pengecek: "",
+                        });
+
+                        setSelectedJobId(null);
                       }}
-                      className="bg-purple-500 text-white text-xs px-3 py-1 rounded float-right"
+                      className="bg-purple-500 text-white text-xs px-3 py-2 rounded w-full"
                     >
-                      selesai
+                      ok
                     </button>
                   </>
                 )}
 
                 {/* ================= SELESAI ================= */}
                 {selectedJob.status === "selesai" && (
-                  <p className="text-xs text-gray-500 text-center">
-                    Job sudah selesai
-                  </p>
+                  <>
+                    <p className="text-center font-semibold text-sm mb-2">
+                      Hasil potong
+                    </p>
+
+                    <div className="text-center mb-2">
+                      <p className="text-lg font-bold">
+                        {selectedJob.hasil ?? 0}
+                      </p>
+                    </div>
+
+                    <div className="text-xs text-gray-500 mb-2 text-center">
+                      <p>Kode: {selectedJob.kodePotong || "-"}</p>
+                      <p>Pengecek: {selectedJob.pengecek || "-"}</p>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setJobs((prev) =>
+                          prev.map((j) =>
+                            j.id === selectedJob.id
+                              ? {
+                                  ...j,
+                                  status: "menunggu",
+                                  hasil: null,
+                                  kodePotong: undefined,
+                                  pengecek: undefined,
+                                }
+                              : j,
+                          ),
+                        );
+
+                        setSelectedJobId(null);
+                      }}
+                      className="bg-gray-300 text-xs px-3 py-2 rounded w-full"
+                    >
+                      Reset ke menunggu
+                    </button>
+                  </>
                 )}
+                {selectedJob.status === "kirim" && (
+                  <>
+                    <p className="text-center font-semibold text-sm mb-2">
+                      Tracking Produksi
+                    </p>
+
+                    {/* HEADER */}
+                    <div className="flex justify-between items-center mb-3">
+                      <p className="text-sm font-semibold">
+                        {selectedJob.nama}
+                      </p>
+                      <p className="text-lg font-bold">{selectedJob.hasil}</p>
+                    </div>
+
+                    {/* PROSES */}
+                    <div className="text-xs border-b pb-2 mb-2">
+                      <p className="font-semibold text-gray-500 mb-1">PROSES</p>
+                      <p>Kode Potong: {selectedJob.kodePotong || "-"}</p>
+                      <p>Jumlah Lolos: {selectedJob.hasil || 0}</p>
+                      <p>Pengecek: {selectedJob.pengecek || "-"}</p>
+                    </div>
+
+                    {/* STOK */}
+                    <div className="text-xs border-b pb-2 mb-2">
+                      <p className="font-semibold text-gray-500 mb-1">
+                        STOK POTONG
+                      </p>
+                      <p>Ready: {selectedJob.hasil || 0}</p>
+                    </div>
+
+                    {/* KIRIM */}
+                    <div className="text-xs">
+                      <p className="font-semibold text-gray-500 mb-1">
+                        KIRIM PENJAHIT
+                      </p>
+                      <p>Penjahit: {selectedJob.penjahit || "-"}</p>
+                      <p>Admin: {selectedJob.admin || "-"}</p>
+                      <p>Tanggal: {selectedJob.tanggalKirim || "-"}</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* */}
+          {selectedStokItem && (
+            <div
+              className="absolute inset-0 bg-black/40 flex items-center justify-center"
+              onClick={() => setSelectedStokItem(null)}
+            >
+              <div
+                className="bg-white p-4 rounded-xl w-[85%] shadow-lg"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* HEADER */}
+                <div className="flex justify-between items-center mb-2">
+                  <p className="text-sm font-semibold">
+                    {selectedStokItem.nama}
+                  </p>
+                  <p className="text-xl font-bold underline">
+                    {selectedStokItem.hasil}
+                  </p>
+                </div>
+
+                {/* INFO */}
+                <div className="text-[10px] text-gray-600 mb-3">
+                  <p>KODE POTONGAN : {selectedStokItem.kodePotong || "-"}</p>
+                  <p>PENGECEK : {selectedStokItem.pengecek || "-"}</p>
+                </div>
+
+                {/* FORM */}
+                <div className="flex flex-col gap-2 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span>nama penjahit</span>
+                    <input
+                      value={formKirim.penjahit}
+                      onChange={(e) =>
+                        setFormKirim({ ...formKirim, penjahit: e.target.value })
+                      }
+                      className="border rounded px-2 py-1 w-30"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span>admin</span>
+                    <input
+                      value={formKirim.admin}
+                      onChange={(e) =>
+                        setFormKirim({ ...formKirim, admin: e.target.value })
+                      }
+                      className="border rounded px-2 py-1 w-30"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span>tanggal keluar</span>
+                    <input
+                      type="date"
+                      value={formKirim.tanggal}
+                      onChange={(e) =>
+                        setFormKirim({ ...formKirim, tanggal: e.target.value })
+                      }
+                      className="border rounded px-2 py-1 w-30"
+                    />
+                  </div>
+                </div>
+
+                {/* BUTTON */}
+                <div className="mt-4 flex justify-end">
+                  <button
+                    onClick={() => {
+                      setJobs((prev) =>
+                        prev.map((j) =>
+                          j.id === selectedStokItem.id
+                            ? {
+                                ...j,
+                                status: "kirim",
+                                penjahit: formKirim.penjahit,
+                                admin: formKirim.admin,
+                                tanggalKirim: formKirim.tanggal,
+                              }
+                            : j,
+                        ),
+                      );
+
+                      // reset form
+                      setFormKirim({
+                        penjahit: "",
+                        admin: "",
+                        tanggal: "",
+                      });
+
+                      setSelectedStokItem(null);
+
+                      // reset form
+                      setFormKirim({
+                        penjahit: "",
+                        admin: "",
+                        tanggal: "",
+                      });
+
+                      setSelectedStokItem(null);
+                    }}
+                    className="bg-purple-500 text-white text-xs px-4 py-1 rounded"
+                  >
+                    kirim
+                  </button>
+                </div>
               </div>
             </div>
           )}
