@@ -20,7 +20,7 @@ export default function StockProduct({ setScreen }: any) {
       {/* PHONE */}
       <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-xl p-4 flex flex-col">
         {/* HEADER */}
-        <div className="border rounded-2xl py-2 text-center text-sm font-medium mb-4">
+        <div className="border border-gray-300 rounded-2xl py-2 text-center text-sm font-medium mb-4">
           {selectedProduct ? selectedProduct : "Stock Product"}
         </div>
 
@@ -47,13 +47,13 @@ export default function StockProduct({ setScreen }: any) {
         {selectedProduct === "hoodie" && (
           <div className="flex flex-col gap-4 mt-2 text-sm">
             {/* TOTAL */}
-            <div className="border rounded-xl text-center py-3">
+            <div className="border border-gray-300 rounded-xl text-center py-3">
               <p className="text-xs text-gray-500">jumlah total</p>
-              <h1 className="text-3xl font-bold">770</h1>
+              <h1 className="text-3xl font-bold text-gray-900">770</h1>
             </div>
 
             {/* WARNA SELECT */}
-            <div className="flex items-center justify-between border rounded-full overflow-hidden">
+            <div className="flex items-center justify-between border border-gray-300 rounded-full overflow-hidden">
               <span className="px-3 text-gray-600">Hoodie biru</span>
               <span className="bg-purple-500 text-white px-4 py-1">120 ▼</span>
             </div>
@@ -75,14 +75,14 @@ export default function StockProduct({ setScreen }: any) {
 
             {/* LIST WARNA */}
             <div className="flex flex-col gap-2">
-              <div className="flex justify-between border rounded-full px-3 py-2">
-                <span>Hoodie hitam</span>
-                <span>250</span>
+              <div className="flex justify-between border border-gray-300 rounded-full px-3 py-2">
+                <span className="text-gray-600">Hoodie hitam</span>
+                <span className="text-gray-600">250</span>
               </div>
 
-              <div className="flex justify-between border rounded-full px-3 py-2">
-                <span>Hoodie putih</span>
-                <span>400</span>
+              <div className="flex justify-between border border-gray-300 rounded-full px-3 py-2">
+                <span className="text-gray-600">Hoodie putih</span>
+                <span className="text-gray-600">400</span>
               </div>
             </div>
           </div>

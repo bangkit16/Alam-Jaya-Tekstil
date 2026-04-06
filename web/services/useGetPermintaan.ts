@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/axios";
 
-const use_mock = true;
+const use_mock = false;
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -58,7 +58,7 @@ const fetcher = async () => {
 
 export const useGetPermintaan = () => {
   return useQuery({
-    queryKey: ["orders"],
+    queryKey: ["permintaans"],
     queryFn: fetcher,
   });
 };

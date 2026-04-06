@@ -70,14 +70,14 @@ export default function PotongWeb(props: any) {
         </div>
 
         {/* TABLE / LIST */}
-        <div className="bg-white rounded-xl shadow p-4">
+        <div className="bg-white border border-gray-200 rounded-xl shadow p-4">
           <h3 className="font-semibold mb-4 capitalize">Order {activeTab}</h3>
 
           <div className="space-y-3">
             {filteredOrders.map((o: any) => (
               <div
                 key={o.id}
-                className="border rounded-lg p-3 flex justify-between items-center"
+                className="border border-gray-200 rounded-lg p-3 flex justify-between items-center"
               >
                 <div>
                   <p className="font-medium">{o.nama}</p>

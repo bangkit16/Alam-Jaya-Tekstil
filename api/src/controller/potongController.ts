@@ -32,7 +32,7 @@ export default class PermintaanProdukController {
         },
       });
 
-      const data = permintaanProduk.map((item : any) => ({
+      const data = permintaanProduk.map((item: any) => ({
         id_permintaan: item.id, // Ganti nama di sini
         nama_produk: item.namaProduk,
         jumlah: item.jumlah,
@@ -58,9 +58,12 @@ export default class PermintaanProdukController {
 
       const errors: any = {};
 
-      if (kode_kain == null) errors.kode_kain = "Kode kain wajib diisi";
-      if (pemotong == null) errors.pemotong = "Nama pemotong wajib diisi";
-      if (pengecek == null) errors.pengecek = "Nama pengecek wajib diisi";
+      if (kode_kain == null && kode_kain.length == 0)
+        errors.kode_kain = "Kode kain wajib diisi";
+      if (pemotong == null && pemotong.length == 0)
+        errors.pemotong = "Nama pemotong wajib diisi";
+      if (pengecek == null && pengecek.length == 0)
+        errors.pengecek = "Nama pengecek wajib diisi";
 
       if (Object.keys(errors).length > 0) {
         return res.status(400).json({
@@ -116,7 +119,7 @@ export default class PermintaanProdukController {
         },
       });
 
-      const data = permintaanProduk.map((item : any) => ({
+      const data = permintaanProduk.map((item: any) => ({
         id_permintaan: item.id,
         nama_produk: item.namaProduk,
         kode_kain: item.kodeKain,
@@ -173,13 +176,15 @@ export default class PermintaanProdukController {
         },
       });
 
+      const idKategori = await prisma.kategoriProduk.findFirst()
+
       const data = await prisma.stokPotong.create({
         // where: { id: String(id_permintaan) },
         data: {
           kodePotong: kode_potongan,
           kodeKain: permintaan?.kodeKain,
           // ===========
-          kategoriId: String("70dd7ab4-ccb4-423e-848f-0c454672ce88"), //Sementara kategori
+          kategoriId: String(idKategori?.id), //Sementara kategori
           // ===========
           namaProduk: String(permintaan?.namaProduk),
           jumlah: jumlah_lolos,
@@ -243,7 +248,7 @@ export default class PermintaanProdukController {
         },
       });
 
-      const data = stokPotong.map((item : any) => ({
+      const data = stokPotong.map((item: any) => ({
         id_stok_potong: item.id,
         id_permintaan: item.permintaan.id,
         nama_produk: item.namaProduk,
@@ -326,7 +331,7 @@ export default class PermintaanProdukController {
         },
       });
 
-      const data = stokPotong.map((item : any) => ({
+      const data = stokPotong.map((item: any) => ({
         id_stok_potong: item.id,
         id_permintaan: item.permintaan.id,
         ukuran: item.ukuran,

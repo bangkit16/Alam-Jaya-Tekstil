@@ -31,7 +31,7 @@ export default function Jobs({
     <div className="min-h-screen bg-gray-200 flex justify-center items-center p-4">
       <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-xl p-4 flex flex-col relative">
         {/* HEADER */}
-        <div className="border rounded-2xl py-2 text-center text-sm font-medium mb-3">
+        <div className="border border-gray-300 rounded-2xl py-2 text-center text-sm font-medium mb-3 text-gray-700">
           View Jobs
         </div>
 
@@ -40,7 +40,7 @@ export default function Jobs({
           placeholder="Search........"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border rounded px-3 py-1 text-sm mb-2"
+          className="border border-gray-300 rounded px-3 py-1 text-sm mb-2"
         />
 
         {/* FILTER */}
@@ -66,7 +66,7 @@ export default function Jobs({
             <div
               key={job.id}
               onClick={() => setSelectedJob(job)}
-              className="border rounded-2xl p-3 cursor-pointer bg-white"
+              className="border border-gray-300 rounded-2xl p-3 cursor-pointer bg-white"
             >
               <div className="flex justify-between">
                 <p>{job.nama}</p>
@@ -126,31 +126,15 @@ export default function Jobs({
                     placeholder="kode potongan"
                     value={form.kode}
                     onChange={(e) => setForm({ ...form, kode: e.target.value })}
-                    className="w-full border mb-2 px-2 py-1 rounded"
-                  />
-
-                  <input
-                    placeholder="nama penjahit"
+                      className="w-full border border-gray-300 mb-2 px-2 py-1 rounded"
                     value={form.penjahit}
                     onChange={(e) =>
                       setForm({ ...form, penjahit: e.target.value })
                     }
-                    className="w-full border mb-2 px-2 py-1 rounded"
-                  />
-
-                  <input
-                    type="date"
-                    value={form.tanggalJahit}
-                    onChange={(e) =>
+                      className="w-full border border-gray-300 mb-2 px-2 py-1 rounded"
                       setForm({ ...form, tanggalJahit: e.target.value })
                     }
-                    className="w-full border mb-3 px-2 py-1 rounded"
-                  />
-
-                  <button
-                    onClick={() => {
-                      setJobs((prev: any) =>
-                        prev.map((j: any) =>
+                      className="w-full border border-gray-300 mb-3 px-2 py-1 rounded"
                           j.id === selectedJob.id
                             ? {
                                 ...j,
@@ -182,7 +166,7 @@ export default function Jobs({
                       onChange={(e) =>
                         setForm({ ...form, lolos: e.target.value })
                       }
-                      className="w-full border px-2 py-1 rounded"
+                      className="w-full border border-gray-300 px-2 py-1 rounded"
                     />
                     <input
                       placeholder="reject"
@@ -190,7 +174,7 @@ export default function Jobs({
                       onChange={(e) =>
                         setForm({ ...form, reject: e.target.value })
                       }
-                      className="w-full border px-2 py-1 rounded"
+                      className="w-full border border-gray-300 px-2 py-1 rounded"
                     />
                   </div>
 
@@ -203,16 +187,7 @@ export default function Jobs({
                         tanggalSelesai: e.target.value,
                       })
                     }
-                    className="w-full border mb-3 px-2 py-1 rounded"
-                  />
-
-                  <button
-                    onClick={() => {
-                      setJobs((prev: any) =>
-                        prev.map((j: any) =>
-                          j.id === selectedJob.id
-                            ? {
-                                ...j,
+                      className="w-full border border-gray-300 mb-3 px-2 py-1 rounded"
                                 status: "selesai",
                                 lolos: form.lolos,
                                 reject: form.reject,

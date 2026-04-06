@@ -6,7 +6,7 @@ export default function Stock({ setScreen }: any) {
       {/* PHONE FRAME */}
       <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-xl p-4 flex flex-col">
         {/* HEADER */}
-        <div className="border rounded-2xl py-2 text-center text-sm font-medium mb-6">
+        <div className="border rounded-2xl py-2 text-center text-gray-900 text-sm font-medium mb-6">
           View Stock
         </div>
 

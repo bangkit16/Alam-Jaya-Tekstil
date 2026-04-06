@@ -42,7 +42,7 @@ export default function PenjahitWeb({ orders, setOrders, handleLogout }: any) {
           <div
             key={o.id}
             onClick={() => setSelectedOrder(o)}
-            className="bg-white p-4 rounded-xl shadow cursor-pointer"
+            className="bg-white border border-gray-200 p-4 rounded-xl shadow cursor-pointer"
           >
             <div className="flex justify-between">
               <span>{o.nama}</span>
@@ -56,9 +56,10 @@ export default function PenjahitWeb({ orders, setOrders, handleLogout }: any) {
       {/* MODAL */}
       {selectedOrder && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl w-87.5">
-            <h2 className="font-semibold mb-3">{selectedOrder.nama}</h2>
-
+          <div className="bg-white border border-gray-200 p-6 rounded-xl w-87.5">
+            <h2 className="font-semibold mb-3 text-gray-800">
+              {selectedOrder.nama}
+            </h2>
             {selectedOrder.status === "menunggu" && (
               <>
                 <input placeholder="Kode Potongan" className="input" />

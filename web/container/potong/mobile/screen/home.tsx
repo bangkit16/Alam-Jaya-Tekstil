@@ -2,23 +2,28 @@
 
 import { Package, Briefcase, Bell } from "lucide-react";
 
-export default function Home({ setScreen, handleLogout }: any) {
+type HomeProps = {
+  setScreen: (screen: string) => void;
+  handleLogout: () => void;
+};
+
+export default function Home({ setScreen, handleLogout }: HomeProps) {
   return (
     <div className="min-h-screen bg-gray-200 flex justify-center items-center p-4">
       {/* PHONE FRAME */}
       <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-xl p-4 flex flex-col">
         {/* HEADER PROFILE */}
-        <div className="border rounded-2xl p-3 flex gap-3 items-center mb-4">
+        <div className="border rounded-2xl border-gray-300 p-3 flex gap-3 items-center mb-4">
           {/* FOTO */}
-          <div className="w-16 h-16 border rounded-md flex items-center justify-center text-xs text-gray-400">
+          <div className="w-16 h-16 border border-gray-300 rounded-md flex items-center justify-center text-xs text-gray-400">
             FOTO
           </div>
 
           {/* INFO */}
           <div className="text-xs">
-            <p className="font-semibold text-sm">ADIT NDONG</p>
-            <p className="text-gray-500">Divisi Potong</p>
-            <p className="text-gray-400 text-[10px]">00189021</p>
+            <p className="font-semibold text-base text-gray-900">ADIT NDONG</p>
+            <p className="text-gray-500 text-xs font-medium">Divisi Potong</p>
+            <p className="text-gray-500 text-xs">00189021</p>
           </div>
         </div>
 
@@ -29,7 +34,7 @@ export default function Home({ setScreen, handleLogout }: any) {
             onClick={() => setScreen("stock")}
             className="flex flex-col items-center"
           >
-            <div className="bg-white border rounded-xl p-3 shadow-sm">
+            <div className="bg-white border border-gray-300 rounded-xl p-3 shadow-sm">
               <Package size={28} className="text-orange-500" />
             </div>
             <span className="text-xs mt-1 text-gray-600">Stock</span>
@@ -40,15 +45,15 @@ export default function Home({ setScreen, handleLogout }: any) {
             onClick={() => setScreen("jobs")}
             className="flex flex-col items-center"
           >
-            <div className="bg-white border rounded-xl p-3 shadow-sm">
-              <Briefcase size={28} className="text-brown-500" />
+            <div className="bg-white border border-gray-300 rounded-xl p-3 shadow-sm">
+              <Briefcase size={28} className="text-amber-500" />
             </div>
             <span className="text-xs mt-1 text-gray-600">Jobs</span>
           </button>
 
           {/* REPORT */}
           <button className="flex flex-col items-center">
-            <div className="bg-white border rounded-xl p-3 shadow-sm">
+            <div className="bg-white border border-gray-300 rounded-xl p-3 shadow-sm">
               <Bell size={28} className="text-red-500" />
             </div>
             <span className="text-xs mt-1 text-gray-600">Report</span>
@@ -56,7 +61,7 @@ export default function Home({ setScreen, handleLogout }: any) {
         </div>
 
         {/* CONTENT AREA (kosong seperti design) */}
-        <div className="flex-1 border rounded-2xl"></div>
+        <div className="flex-1 border border-gray-300 rounded-2xl"></div>
 
         {/* LOGOUT */}
         <button onClick={handleLogout} className="mt-4 text-xs text-red-500">
