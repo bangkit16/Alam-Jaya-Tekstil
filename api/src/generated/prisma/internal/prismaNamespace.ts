@@ -876,6 +876,9 @@ export const StokPotongScalarFieldEnum = {
   id: 'id',
   permintaanId: 'permintaanId',
   namaProduk: 'namaProduk',
+  jumlah_diterima: 'jumlah_diterima',
+  jumlah_lolos: 'jumlah_lolos',
+  jumlah_reject: 'jumlah_reject',
   pengecek: 'pengecek',
   penjahit: 'penjahit',
   kodeKain: 'kodeKain',
@@ -885,7 +888,11 @@ export const StokPotongScalarFieldEnum = {
   status: 'status',
   admin: 'admin',
   tanggalKirim: 'tanggalKirim',
-  jumlah: 'jumlah'
+  tanggalSampai: 'tanggalSampai',
+  jumlah: 'jumlah',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type StokPotongScalarFieldEnum = (typeof StokPotongScalarFieldEnum)[keyof typeof StokPotongScalarFieldEnum]

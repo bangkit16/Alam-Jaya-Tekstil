@@ -28,7 +28,6 @@ enum Role {
 enum StatusPermintaan {
   MENUNGGU_PROSES
   PROSES
-  MASUK_STOK_GUDANG
   SELESAI
 }
 
@@ -41,6 +40,7 @@ enum UkuranProduk {
 
 enum StatusStok {
   MASUK
+  PROSESPENGECEKAN
   KIRIM
   PROSESKIRIM
   SELESAIKIRIM
@@ -100,6 +100,9 @@ model StokPotong {
   permintaanId String @unique
   permintaan PermintaanProduk @relation(fields: [permintaanId], references: [id])
   namaProduk String
+  jumlah_diterima Int?
+  jumlah_lolos Int?
+  jumlah_reject Int?
   pengecek   String?
   penjahit   String?
   kodeKain   String?
@@ -110,5 +113,9 @@ model StokPotong {
   status     StatusStok?    @default(MASUK)
   admin      String?
   tanggalKirim DateTime?
+  tanggalSampai DateTime?
   jumlah     Int
+  notes       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }

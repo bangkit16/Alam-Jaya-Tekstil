@@ -3,20 +3,7 @@ import { prisma } from "../lib/prisma";
 import { UkuranProduk } from "../generated/prisma/enums";
 
 export default class PermintaanProdukController {
-  public static async getKategori(req: Request, res: Response) {
-    try {
-      const kategori = await prisma.kategoriProduk.findMany({
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-        },
-      });
-      return res.json(kategori);
-    } catch (error) {
-      return res.status(500).json({ message: "Internal server error" });
-    }
-  }
+  
   public static async getPermintaanProduk(req: Request, res: Response) {
     try {
       const permintaanProduk = await prisma.permintaanProduk.findMany({
@@ -166,17 +153,22 @@ export default class PermintaanProdukController {
         return res.status(400).json({ message: "id_permintaan is required" });
       }
 
-      const permintaan = await prisma.permintaanProduk.findUnique({
+      const permintaan = await prisma.permintaanProduk.update({
         where: { id: String(id_permintaan) },
+        data: {
+          status: "SELESAI",
+        },
         select: {
           kodeKain: true,
           namaProduk: true,
           jumlah: true,
           ukuran: true,
+          status: true, // Optional: if you want to confirm the new status
         },
       });
 
-      const idKategori = await prisma.kategoriProduk.findFirst()
+      // SEMENTARA
+      const idKategori = await prisma.kategoriProduk.findFirst();
 
       const data = await prisma.stokPotong.create({
         // where: { id: String(id_permintaan) },
@@ -194,16 +186,9 @@ export default class PermintaanProdukController {
         },
       });
 
-      const permintaanProduk = await prisma.permintaanProduk.update({
-        where: { id: String(id_permintaan) },
-        data: {
-          status: "SELESAI",
-        },
-      });
-
       return res
         .status(200)
-        .json({ message: "Data updated successfully", data: permintaanProduk });
+        .json({ message: "Data updated successfully", data: permintaan });
     } catch (error: any) {
       console.log(error);
 
@@ -219,137 +204,43 @@ export default class PermintaanProdukController {
     }
   }
 
-  public static async getStokPotong(req: Request, res: Response) {
+  public static async getPermintaanSelesai(req: Request, res: Response) {
     try {
-      const { slug } = req.params;
-
-      const id = await prisma.kategoriProduk.findUnique({
-        where: { slug: String(slug) },
-        select: { id: true },
-      });
-
-      if (!id) {
-        return res
-          .status(404)
-          .json({ message: "Kategori produk tidak ditemukan" });
-      }
-
-      const stokPotong = await prisma.stokPotong.findMany({
-        where: { kategoriId: id?.id, status: "MASUK" },
-        include: {
-          permintaan: {
-            select: {
-              id: true,
-              namaProduk: true,
-              jumlah: true,
-              status: true,
-            },
-          },
+      const permintaanProduk = await prisma.permintaanProduk.findMany({
+        where: { status: "SELESAI" },
+        select: {
+          id: true,
+          namaProduk: true,
+          kodeKain: true,
+          jumlah: true,
+          ukuran: true,
+          userId: true,
+          isUrgent: true,
+          pengecek: true,
+          pemotong: true,
         },
       });
 
-      const data = stokPotong.map((item: any) => ({
-        id_stok_potong: item.id,
-        id_permintaan: item.permintaan.id,
+      const data = permintaanProduk.map((item: any) => ({
+        id_permintaan: item.id,
         nama_produk: item.namaProduk,
         kode_kain: item.kodeKain,
-        kode_potongan: item.kodePotong,
-        pengecek: item.pengecek,
-        jumlah_hasil: item.jumlah,
+        jumlah: item.jumlah,
         ukuran: item.ukuran,
+        user_id: item.userId,
+        is_urgent: item.isUrgent,
+        pengecek: item.pengecek,
+        pemotong: item.pemotong,
       }));
 
       return res.json(data);
-    } catch (error) {
-      return res.status(500).json({ message: "Internal server error" });
-    }
-  }
-  public static async putStokPotong(req: Request, res: Response) {
-    try {
-      if (!req.body) {
-        return res.status(400).json({ message: "Field tidak boleh kosong" });
-      }
-
-      const { id_stok_potong } = req.params;
-      const { penjahit, admin, tanggal_kirim } = req.body;
-
-      const errors: any = {};
-
-      if (penjahit == null) errors.penjahit = "Nama Penjahit wajib diisi";
-      if (admin == null) errors.admin = "Admin wajib diisi";
-      if (tanggal_kirim == null)
-        errors.tanggal_kirim = "Tanggal Kirim wajib diisi";
-
-      if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ errors });
-      }
-
-      if (!id_stok_potong) {
-        return res.status(400).json({ message: "id_stok_potong is required" });
-      }
-
-      const stokPotong = await prisma.stokPotong.findUnique({
-        where: { id: String(id_stok_potong) },
-      });
-
-      if (!stokPotong) {
-        return res.status(404).json({ message: "Stok potong tidak ditemukan" });
-      }
-
-      const updatedStokPotong = await prisma.stokPotong.update({
-        where: { id: String(id_stok_potong) },
-        data: {
-          penjahit: penjahit,
-          admin: admin,
-          tanggalKirim: new Date(tanggal_kirim),
-          status: "KIRIM",
-        },
-      });
-
-      return res.json(updatedStokPotong);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: "Internal server error" });
     }
   }
 
-  public static async getStokKirim(req: Request, res: Response) {
-    try {
-      const stokPotong = await prisma.stokPotong.findMany({
-        where: { status: "KIRIM" },
-        include: {
-          kategori: true,
-          permintaan: {
-            select: {
-              id: true,
-              namaProduk: true,
-              jumlah: true,
-              status: true,
-              isUrgent: true,
-            },
-          },
-        },
-      });
+  // =========================================
 
-      const data = stokPotong.map((item: any) => ({
-        id_stok_potong: item.id,
-        id_permintaan: item.permintaan.id,
-        ukuran: item.ukuran,
-        is_urgent: item.permintaan.isUrgent,
-        nama_produk: item.namaProduk,
-        jumlah_lolos: item.jumlah,
-        jumlah_permintaan: item.permintaan.jumlah,
-        kode_potongan: item.kodePotong,
-        kode_kain: item.kodeKain,
-        pengecek: item.pengecek,
-        penjahit: item.penjahit,
-        admin: item.admin,
-        tanggal_kirim: item.tanggalKirim,
-      }));
-
-      return res.json(data);
-    } catch (error) {
-      return res.status(500).json({ message: "Internal server error" });
-    }
-  }
+  
 }

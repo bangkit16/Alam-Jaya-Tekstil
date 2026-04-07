@@ -10,15 +10,16 @@
 */
 
 export const Role = {
-  SUPERADMIN: 'SUPERADMIN',
   POTONG: 'POTONG',
-  PENJAHIT: 'PENJAHIT',
+  STOKPOTONG: 'STOKPOTONG',
+  KURIR: 'KURIR',
+  JAHIT: 'JAHIT',
+  QC: 'QC',
   RESI: 'RESI',
   PRINT: 'PRINT',
   GUDANG: 'GUDANG',
-  KURIR: 'KURIR',
-  QC: 'QC',
-  STOKGUDANG: 'STOKGUDANG'
+  STOKGUDANG: 'STOKGUDANG',
+  SUPERADMIN: 'SUPERADMIN'
 } as const
 
 export type Role = (typeof Role)[keyof typeof Role]
@@ -27,7 +28,6 @@ export type Role = (typeof Role)[keyof typeof Role]
 export const StatusPermintaan = {
   MENUNGGU_PROSES: 'MENUNGGU_PROSES',
   PROSES: 'PROSES',
-  MASUK_STOK_GUDANG: 'MASUK_STOK_GUDANG',
   SELESAI: 'SELESAI'
 } as const
 
@@ -46,7 +46,10 @@ export type UkuranProduk = (typeof UkuranProduk)[keyof typeof UkuranProduk]
 
 export const StatusStok = {
   MASUK: 'MASUK',
-  KIRIM: 'KIRIM'
+  PROSESPENGECEKAN: 'PROSESPENGECEKAN',
+  KIRIM: 'KIRIM',
+  PROSESKIRIM: 'PROSESKIRIM',
+  SELESAIKIRIM: 'SELESAIKIRIM'
 } as const
 
 export type StatusStok = (typeof StatusStok)[keyof typeof StatusStok]
