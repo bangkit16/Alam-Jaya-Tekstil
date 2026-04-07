@@ -41,32 +41,26 @@ function generateToken(credentials: {
   role?: string;
 }) {
   const accessToken = jwt.sign(credentials, jwtSecret, {
-    expiresIn: "1h",
+    expiresIn: "15m",
   });
   const refreshToken = jwt.sign(credentials, jwtSecret, {
-    expiresIn: "5h",
+    expiresIn: "7d",
   });
   return { accessToken, refreshToken };
 }
 
 export async function login(req: Request, res: Response) {
-  const { username, password } = req.body as Pick<
-    UserType,
-    "username" | "password"
-  >;
+  const { username, password } = req.body;
 
   try {
-    if (username == null || password == null)
+    if (!username || !password)
       return res
         .status(400)
-        .json({ message: "username and password are required" });
+        .json({ message: "Username and password are required" });
 
-    const passwordHash = await bcrypt.hash(password, 10);
     const user = await prisma.user.findUnique({ where: { username } });
-
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Compare plain text password with hashed password using bcrypt
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid)
       return res.status(401).json({ message: "Invalid password" });
@@ -78,27 +72,29 @@ export async function login(req: Request, res: Response) {
       role: user.role,
     });
 
-    const session = await prisma.session.findUnique({
+    await prisma.session.upsert({
       where: { userId: user.id },
-    });
-    if (session) {
-      await prisma.session.delete({ where: { id: session.id } });
-    }
-    await prisma.session.create({
-      data: {
-        refreshToken,
-        userId: user.id,
-      },
+      update: { refreshToken },
+      create: { refreshToken, userId: user.id },
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === "production", // true jika production
       sameSite: "lax",
-      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    });
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
 
-    res.status(200).json({ accessToken, role: user.role });
+    res.status(200).json({
+      accessToken,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+      },
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
@@ -149,7 +145,7 @@ export async function getSession(req: Request, res: Response) {
 
 export async function logout(req: Request, res: Response) {
   const cookies = parseCookies(req.headers.cookie);
-  
+
   const refreshToken = cookies.refreshToken;
   if (!refreshToken) {
     return res.status(401).json({ message: "Refresh token is missing" });

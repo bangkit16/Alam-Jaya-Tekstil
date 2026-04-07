@@ -7,7 +7,6 @@ import { useSession } from "@/hooks/useSession";
 import { useGetPermintaan } from "@/services/useGetPermintaan";
 import { useAuthStore } from "@/store/useAuthStore";
 
-
 export default function LoginPage() {
   const router = useRouter();
 
@@ -16,16 +15,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [roleUI, setRoleUI] = useState("resi");
-  const { session } = useSession();
+  // const { session } = useSession();
 
-  const {data, isLoading} = useGetPermintaan();
+  const { data, isLoading } = useGetPermintaan();
+  const { session, setSession, clearSession } = useAuthStore();
 
   console.log(data);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
 
   const handleLogin = async () => {
     console.log("TRY LOGIN:", username, password);
@@ -40,36 +39,31 @@ export default function LoginPage() {
         body: JSON.stringify({ username, password }),
       });
 
-
-    
       if (response.ok) {
-      
         const data = await response.json();
 
         console.log("SERVER LOGIN SUCCESS:", data);
 
         localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("role", data.role);
+        localStorage.setItem("role", data.user.role);
 
-        switch (data.role) {
-          case "RESI":
-            router.push("/resi");
-            break;
-          case "ADMIN":
-            router.push("/admin");
-            break;
-          case "POTONG":
-            router.push("/dashboard");
-            break;
-          case "JAHIT":
-            router.push("/jahit");
-            break;
-          case "QC":
-            router.push("/qc");
-            break;
-          default:
-            break;
-        }
+        setSession({
+          session: {
+            id: data.user.id, // atau session id dari backend
+            user: data.user,
+            createdAt: new Date().toISOString(),
+          },
+        });
+
+        const redirectMap = {
+          RESI: "/resi",
+          ADMIN: "/admin",
+          POTONG: "/dashboard",
+          JAHIT: "/jahit",
+          QC: "/qc",
+        };
+
+        router.push(redirectMap[data.user.role] || "/");
 
         return; // ⛔ STOP kalau server berhasil
       }
