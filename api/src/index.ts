@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/authRoutes";
 import potongRoutes from "./routes/potongRoutes";
+import stokPotongRoutes from "./routes/stokPotongRoutes";
 import cookieParser from "cookie-parser";
 
 const app = express();
@@ -24,6 +25,7 @@ app.get("/", (req, res) => {
 
 app.use("/auth", authRoutes);
 app.use("/potong", potongRoutes);
+app.use("/stokpotong", stokPotongRoutes);
 
 app.listen(port, () => {
   console.log(`Aplikasi berjalan di http://localhost:${port}`);

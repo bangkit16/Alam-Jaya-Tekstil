@@ -31,10 +31,22 @@ async function main() {
       role: Role.POTONG,
     },
     {
-      name: "Budi Penjahit",
-      username: "penjahit",
-      email: "penjahit@gmail.com",
-      role: Role.PENJAHIT,
+      name: "Sisil StokPotong",
+      username: "stokpotong",
+      email: "stokpotong@gmail.com",
+      role: Role.STOKPOTONG,
+    },
+    {
+      name: "Joni Kurir",
+      username: "kurir",
+      email: "kurir@gmail.com",
+      role: Role.KURIR,
+    },
+    {
+      name: "Budi jahit",
+      username: "jahit",
+      email: "jahit@gmail.com",
+      role: Role.JAHIT,
     },
     {
       name: "Dewi Resi",
@@ -55,12 +67,6 @@ async function main() {
       role: Role.GUDANG,
     },
     {
-      name: "Eka kurir",
-      username: "kurir",
-      email: "kurir@gmail.com",
-      role: Role.KURIR,
-    },
-    {
       name: "Sari QC",
       username: "qc",
       email: "qc@gmail.com",
@@ -73,7 +79,6 @@ async function main() {
       role: Role.STOKGUDANG,
     },
   ];
-
 
   console.log("Memulai seeding data user...");
 
