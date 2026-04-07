@@ -56,6 +56,7 @@ export default function LoginPage() {
           POTONG: "/potong",
           JAHIT: "/jahit",
           QC: "/qc",
+          KURIR: "/kurir",
         };
 
         router.push(redirectMap[data.user.role] || "/");
