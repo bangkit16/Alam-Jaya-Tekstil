@@ -1,7 +1,7 @@
 "use client";
 
-import { useGetProses } from "@/services/useGetProses";
-import { usePutProses } from "@/services/usePutProses";
+import { useGetProses } from "@/services/potong/useGetProses";
+import { usePutProses } from "@/services/potong/usePutProses";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,7 +16,6 @@ const prosesSchema = z.object({
 });
 
 type ProsesFormData = z.infer<typeof prosesSchema>;
-
 
 type prosesType = {
   id_permintaan: string;

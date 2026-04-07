@@ -1,8 +1,8 @@
 "use client";
 
-import { useGetKategoriProduk } from "@/services/useGetKategoriProduk";
-import { useGetStokProdukByKategori } from "@/services/useGetStokProdukByKategori";
-import { usePutStokPotong } from "@/services/usePutStokPotong";
+import { useGetKategoriProduk } from "@/services/potong/useGetKategoriProduk";
+import { useGetStokProdukByKategori } from "@/services/potong/useGetStokProdukByKategori";
+import { usePutStokPotong } from "@/services/potong/usePutStokPotong";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

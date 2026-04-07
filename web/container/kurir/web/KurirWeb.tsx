@@ -1,8 +1,8 @@
 "use client";
 
 import { Truck, CheckCircle } from "lucide-react";
-import { useGetStokKirim } from "@/services/useGetStokKirim";
-import { usePutStokPotong } from "@/services/usePutStokPotong";
+import { useGetStokKirim } from "@/services/potong/useGetStokKirim";
+import { usePutStokPotong } from "@/services/potong/usePutStokPotong";
 
 export default function KurirWeb({ handleLogout }: any) {
   const { data, isLoading } = useGetStokKirim();

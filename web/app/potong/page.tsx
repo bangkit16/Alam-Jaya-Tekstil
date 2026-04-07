@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useGetPermintaan } from "@/services/useGetPermintaan";
+import { useGetPermintaan } from "@/services/potong/useGetPermintaan";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 
@@ -17,7 +17,7 @@ export default function Page() {
   // const [modalType, setModalType] = useState(null);
   // const [isMobile, setIsMobile] = useState(false);
 
-  const {  session, clearSession } = useAuthStore();
+  const { session, clearSession } = useAuthStore();
 
   const router = useRouter();
 
@@ -25,7 +25,7 @@ export default function Page() {
 
   const handleLogout = async () => {
     try {
-     const logout = await fetch("http://localhost:3001/auth/logout", {
+      const logout = await fetch("http://localhost:3001/auth/logout", {
         method: "POST",
         credentials: "include",
       });
@@ -41,7 +41,7 @@ export default function Page() {
       clearSession();
       localStorage.removeItem("token");
       router.push("/login");
-      console.log("sukses logout server")
+      console.log("sukses logout server");
     }
   };
 
@@ -57,7 +57,7 @@ export default function Page() {
     // // modalType,
     // setModalType,
     handleLogout,
-    session
+    session,
   };
 
   return isMobile ? (

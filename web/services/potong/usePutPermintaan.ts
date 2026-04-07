@@ -1,15 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "../lib/axios"; // Axios instance kamu
+import { api } from "../../lib/axios"; // Axios instance kamu
 
-type StokBarangKirimType = {
-  penjahit: string;
-  admin: string;
-  tanggal_kirim: string;
+type prosesPermintaanType = {
+  kode_kain: string;
+  pemotong: string;
+  pengecek: string;
 };
 
 type MutationParams = {
   id: string; // ID yang diambil dari URL atau state luar
-  data: StokBarangKirimType; // Data dari form
+  data: prosesPermintaanType; // Data dari form
 };
 
 const use_mock = false;
@@ -23,19 +23,19 @@ const fetcher = async ({ id, data }: MutationParams) => {
     return { success: true };
   }
 
-  const response = await api.put(`/potong/kirim/${id}`, data);
+  const response = await api.put(`/potong/permintaan/${id}`, data);
   return response.data;
 };
 
-export const usePutStokPotong = () => {
+export const usePutPermintaan = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: fetcher,
     // Kaidah Penting: Setelah sukses, beri tahu React Query agar ambil data terbaru (Refetch)
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["stoks"] });
-      queryClient.invalidateQueries({ queryKey: ["stokkirims"] });
+      queryClient.invalidateQueries({ queryKey: ["permintaans"] });
+      queryClient.invalidateQueries({ queryKey: ["prosess"] });
       // alert("Pesanan berhasil dibuat!");
       console.log("Data permintaan berhasil disimpan");
     },

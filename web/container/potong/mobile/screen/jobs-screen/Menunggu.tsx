@@ -1,7 +1,7 @@
 "use client";
 
-import { useGetPermintaan } from "@/services/useGetPermintaan";
-import { usePutPermintaan } from "@/services/usePutPermintaan";
+import { useGetPermintaan } from "@/services/potong/useGetPermintaan";
+import { usePutPermintaan } from "@/services/potong/usePutPermintaan";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

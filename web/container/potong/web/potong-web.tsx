@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { Package, ClipboardList, CheckCircle, Truck } from "lucide-react";
 
-import { useGetPermintaan } from "@/services/useGetPermintaan";
-import { useGetProses } from "@/services/useGetProses";
-import { useGetStokKirim } from "@/services/useGetStokKirim";
-import { usePutPermintaan } from "@/services/usePutPermintaan";
-import { usePutProses } from "@/services/usePutProses";
-import { usePutStokPotong } from "@/services/usePutStokPotong";
+import { useGetPermintaan } from "@/services/potong/useGetPermintaan";
+import { useGetProses } from "@/services/potong/useGetProses";
+import { useGetStokKirim } from "@/services/potong/useGetStokKirim";
+import { usePutPermintaan } from "@/services/potong/usePutPermintaan";
+import { usePutProses } from "@/services/potong/usePutProses";
+import { usePutStokPotong } from "@/services/potong/usePutStokPotong";
 
 type TabType = "menunggu" | "proses" | "kirim";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetStokKirim } from "@/services/useGetStokKirim";
+import { useGetStokKirim } from "@/services/potong/useGetStokKirim";
 import { useState } from "react";
 
 type StokKirimType = {

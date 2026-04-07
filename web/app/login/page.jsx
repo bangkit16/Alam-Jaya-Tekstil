@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useSession } from "@/hooks/useSession";
-import { useGetPermintaan } from "@/services/useGetPermintaan";
+import { useGetPermintaan } from "@/services/potong/useGetPermintaan";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export default function LoginPage() {
