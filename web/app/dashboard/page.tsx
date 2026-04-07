@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useGetPermintaan } from "@/services/useGetPermintaan";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/useAuthStore";
 
 import PotongWeb from "@/container/potong/web/potong-web";
 import PotongMobile from "@/container/potong/mobile/potong-mobile";
@@ -15,34 +16,40 @@ export default function Page() {
   const [modalType, setModalType] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
 
+  const {  session, clearSession } = useAuthStore();
+
   const router = useRouter();
 
   useEffect(() => {
     setIsMobile(window.innerWidth < 768);
   }, []);
 
-  const { data, isLoading } = useGetPermintaan();
 
-  useEffect(() => {
-    if (data) {
-      setOrders(data);
-    }
-  }, [data]);
+  // useEffect(() => {
+  //   if (data) {
+  //     setOrders(data);
+  //   }
+  // }, [data]);
 
   const handleLogout = async () => {
     try {
-      const logout = await api.post("/auth/logout");
-      if (!logout.data) {
+     const logout = await fetch("http://localhost:3001/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!logout.ok) {
         throw new Error("Failed to logout");
       }
-      console.log("sukses logout server");
-      localStorage.removeItem("token");
-      router.push("/login");
     } catch (error) {
       localStorage.removeItem("token");
       router.push("/login");
       console.log("sukses logout dummy");
       console.error("Error logging out:", error);
+    } finally {
+      clearSession();
+      localStorage.removeItem("token");
+      router.push("/login");
+      console.log("sukses logout server")
     }
   };
 
@@ -58,6 +65,7 @@ export default function Page() {
     modalType,
     setModalType,
     handleLogout,
+    session
   };
 
   return isMobile ? (

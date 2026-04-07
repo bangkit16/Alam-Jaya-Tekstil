@@ -1,6 +1,7 @@
 "use client";
 
 import { Package, Briefcase, Bell } from "lucide-react";
+import { useAuthStore } from "@/store/useAuthStore";
 
 type HomeProps = {
   setScreen: (screen: string) => void;
@@ -8,6 +9,7 @@ type HomeProps = {
 };
 
 export default function Home({ setScreen, handleLogout }: HomeProps) {
+  const { session } = useAuthStore();
   return (
     <div className="min-h-screen bg-gray-200 flex justify-center items-center p-4">
       {/* PHONE FRAME */}
@@ -21,9 +23,15 @@ export default function Home({ setScreen, handleLogout }: HomeProps) {
 
           {/* INFO */}
           <div className="text-xs">
-            <p className="font-semibold text-base text-gray-900">ADIT NDONG</p>
-            <p className="text-gray-500 text-xs font-medium">Divisi Potong</p>
-            <p className="text-gray-500 text-xs">00189021</p>
+            <p className="font-semibold text-base text-gray-900">
+              {session?.session.user.name}
+            </p>
+            <p className="text-gray-500 text-xs font-medium">
+              Divisi {session?.session.user.role}
+            </p>
+            <p className="text-gray-500 text-xs">
+              {session?.session.user.email}
+            </p>
           </div>
         </div>
 
