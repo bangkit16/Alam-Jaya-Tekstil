@@ -30,15 +30,15 @@ export default function Kirim() {
       {/* ================= LIST ================= */}
       <div className="flex flex-col gap-3 overflow-y-auto">
         {isLoadingStokKirim ? (
-          <p className="text-center">Loading...</p>
-        ) : (
-          dataStokKirim?.map((stokkirim: StokKirimType, index: number) => (
+          <p className="text-center py-10">Loading...</p>
+        ) : dataStokKirim && dataStokKirim.length > 0 ? (
+          dataStokKirim.map((stokkirim: StokKirimType, index: number) => (
             <div
               key={`${stokkirim.id_permintaan ?? stokkirim.kode_kain}-${index}`}
               onClick={() => {
                 setSelectedStokKirim(stokkirim);
               }}
-              className="border border-gray-300 rounded-2xl p-3 flex justify-between items-center cursor-pointer"
+              className="border border-gray-300 rounded-2xl p-3 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition-colors"
             >
               <div className="flex-row w-full justify-between align-middle items-center">
                 {stokkirim.is_urgent && (
@@ -49,31 +49,43 @@ export default function Kirim() {
                 <p className="text-sm font-semibold text-gray-800 my-1">
                   {stokkirim.nama_produk} - {stokkirim.ukuran}
                 </p>
-                <p className="text-xs font-medium text-gray-400">
-                  NAMA PENJAHIT :{" "}
-                  <span className="font-bold">{stokkirim.penjahit}</span>
-                </p>
-                <p className="text-xs font-medium text-gray-400">
-                  ADMIN : <span className="font-bold">{stokkirim.admin}</span>
-                </p>
-                <p className="text-xs font-medium text-gray-400">
-                  TANGGAL KIRIM :{" "}
-                  <span className="font-bold">
-                    {stokkirim.tanggal_kirim
-                      ? new Date(stokkirim.tanggal_kirim).toLocaleDateString(
-                          "id-ID",
-                        )
-                      : "-"}
-                  </span>
-                </p>
+                <div className="space-y-0.5">
+                  <p className="text-xs font-medium text-gray-400">
+                    NAMA PENJAHIT :{" "}
+                    <span className="font-bold text-gray-600">
+                      {stokkirim.penjahit}
+                    </span>
+                  </p>
+                  <p className="text-xs font-medium text-gray-400">
+                    ADMIN :{" "}
+                    <span className="font-bold text-gray-600">
+                      {stokkirim.admin}
+                    </span>
+                  </p>
+                  <p className="text-xs font-medium text-gray-400">
+                    TANGGAL KIRIM :{" "}
+                    <span className="font-bold text-gray-600">
+                      {stokkirim.tanggal_kirim
+                        ? new Date(stokkirim.tanggal_kirim).toLocaleDateString(
+                            "id-ID",
+                          )
+                        : "-"}
+                    </span>
+                  </p>
+                </div>
               </div>
-              <div>
+              <div className="ml-4">
                 <p className="text-2xl font-bold text-gray-800">
                   {stokkirim.jumlah_permintaan}
                 </p>
               </div>
             </div>
           ))
+        ) : (
+          /* TAMPILAN DATA KOSONG */
+          <div className="text-center py-10 border-2 border-dashed border-gray-200 rounded-2xl">
+            <p className="text-gray-500 font-medium">Data Kosong</p>
+          </div>
         )}
       </div>
 
