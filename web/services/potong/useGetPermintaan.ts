@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/axios";
 
-const use_mock = false;
+const use_mock = true;
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
