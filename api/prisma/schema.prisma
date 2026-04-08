@@ -12,110 +12,344 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role {
-  POTONG
-  STOKPOTONG
-  KURIR
-  JAHIT
-  QC
-  RESI
-  PRINT
-  GUDANG
-  STOKGUDANG
-  SUPERADMIN
-}
-
-enum StatusPermintaan {
-  MENUNGGU_PROSES
-  PROSES
-  SELESAI
-}
-
-enum UkuranProduk {
-  XL
-  XXL
-  L
-  M
-}
-
-enum StatusStok {
-  MASUK
-  PROSESPENGECEKAN
-  KIRIM
-  PROSESKIRIM
-  SELESAIKIRIM
-}
-
 model User {
-  id       String   @id @default(uuid())
-  name     String
-  username String   @unique
-  email    String   @unique
-  password String
-  role     Role     @default(POTONG)
-  session  Session? 
-  permintaanProduk PermintaanProduk[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  id           String   @id @default(uuid())
+  nama         String
+  username     String   @unique
+  password     String
+  noHandphone  String?
+
+  role         Role
+
+  sessions     Session[]
+
+  penanggungJawabBox Box[] @relation("PenanggungJawabBox")
+  penerimaBox        Box[] @relation("PenerimaBox")
+
+  penjahitProses     ProsesStokPotong[] @relation("Penjahit")
+  kurirProses        ProsesStokPotong[] @relation("Kurir")
+
+  pemotongan   StokPotongPemotong[]
+  pengecekan   StokPotongPengecek[]
 }
 
 model Session {
   id           String   @id @default(uuid())
+  userId       String
   refreshToken String
-  userId       String   @unique 
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade) 
-  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id])
 }
 
-model KategoriProduk {
-  id   String   @id @default(uuid())
-  name String
-  slug String   @unique
-  kode String   @unique
-  stokPotong StokPotong[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Kategori {
+  id           String   @id @default(uuid())
+  namaKategori String
+  slug         String   @unique
+  kodeKategori String
+
+  permintaan   Permintaan[]
 }
 
-model PermintaanProduk {
-  id         String   @id @default(uuid())
-  user       User     @relation(fields: [userId], references: [id])
-  stokPotong StokPotong?
-  userId     String   
-  namaProduk String 
-  kodeKain   String?
-  ukuran     UkuranProduk
-  pengecek   String?
-  pemotong   String?
-  jumlah     Int
-  hasilPotongan  Int  @default(0)
-  isUrgent   Boolean
-  status     StatusPermintaan
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+model Permintaan {
+  id                  String   @id @default(uuid())
+  kategoriId          String
+  namaBarang          String
+  ukuran              String
+  jumlahMinta         Int
+  jenisPermintaan     JenisPermintaan
+  isUrgent            Boolean  @default(false)
+  tanggalMasuk        DateTime @default(now())
+
+  status              StatusPermintaan
+
+  kategori            Kategori @relation(fields: [kategoriId], references: [id])
+
+  stokPotong          StokPotong?
+  box                 Box[]
+
+  logs                PermintaanLog[]
+}
+
+model PermintaanLog {
+  id            String   @id @default(uuid())
+  permintaanId  String
+  status        StatusPermintaan
+  keterangan    String?
+  createdAt     DateTime @default(now())
+
+  permintaan    Permintaan @relation(fields: [permintaanId], references: [id])
 }
 
 model StokPotong {
-  id  String   @id @default(uuid())
-  permintaanId String @unique
-  permintaan PermintaanProduk @relation(fields: [permintaanId], references: [id])
-  namaProduk String
-  jumlah_diterima Int?
-  jumlah_lolos Int?
-  jumlah_reject Int?
-  pengecek   String?
-  penjahit   String?
-  kodeKain   String?
-  kodePotong String?
-  kategori   KategoriProduk @relation(fields: [kategoriId], references: [id])
-  kategoriId String
-  ukuran     UkuranProduk
-  status     StatusStok?    @default(MASUK)
-  admin      String?
-  tanggalKirim DateTime?
-  tanggalSampai DateTime?
-  jumlah     Int
-  notes       String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id                 String   @id @default(uuid())
+  permintaanId       String   @unique
+
+  kodeKain           String
+  kodeStokPotongan   String
+
+  tanggalMasuk       DateTime @default(now())
+  tanggalSelesai     DateTime?
+
+  jumlahHasil        Int?
+
+  status             StatusStokPotong
+
+  permintaan         Permintaan @relation(fields: [permintaanId], references: [id])
+
+  proses             ProsesStokPotong?
+  qc                 QCStokPotong?
+
+  pemotong           StokPotongPemotong[]
+  pengecek           StokPotongPengecek[]
 }
+
+model StokPotongPemotong {
+  id            String @id @default(uuid())
+  stokPotongId  String
+  userId        String
+
+  stokPotong    StokPotong @relation(fields: [stokPotongId], references: [id])
+  user          User       @relation(fields: [userId], references: [id])
+}
+
+model StokPotongPengecek {
+  id            String @id @default(uuid())
+  stokPotongId  String
+  userId        String
+
+  stokPotong    StokPotong @relation(fields: [stokPotongId], references: [id])
+  user          User       @relation(fields: [userId], references: [id])
+}
+
+model ProsesStokPotong {
+  id                  String   @id @default(uuid())
+  stokPotongId        String   @unique
+
+  penjahitId          String?
+  kurirId             String?
+
+  tanggalBerangkat    DateTime?
+  tanggalSampai       DateTime?
+  tanggalMulaiJahit   DateTime?
+  tanggalSelesaiJahit DateTime?
+
+  jumlahSelesai       Int?
+  notes               String?
+
+  status              StatusProses
+
+  stokPotong          StokPotong @relation(fields: [stokPotongId], references: [id])
+
+  penjahit            User? @relation("Penjahit", fields: [penjahitId], references: [id])
+  kurir               User? @relation("Kurir", fields: [kurirId], references: [id])
+}
+
+model QCStokPotong {
+  id                 String   @id @default(uuid())
+  stokPotongId       String   @unique
+  boxId              String
+
+  jumlahLolos        Int?
+  jumlahReject       Int?
+  jumlahKotor        Int?
+  jumlahTurunSize    Int?
+  jumlahPermak       Int?
+
+  tanggalQC          DateTime?
+  notes              String?
+
+  status             StatusQC
+
+  stokPotong         StokPotong @relation(fields: [stokPotongId], references: [id])
+  box                Box        @relation(fields: [boxId], references: [id])
+}
+
+model Box {
+  id                      String   @id @default(uuid())
+  permintaanId            String
+
+  kodeBox                 String
+  namaBox                 String
+
+  penanggungJawabId       String?
+  penerimaId              String?
+
+  tanggalMasuk            DateTime?
+  tanggalMasukGudang      DateTime?
+
+  status                  StatusBox
+
+  permintaan              Permintaan @relation(fields: [permintaanId], references: [id])
+  qc                      QCStokPotong[]
+
+  penanggungJawab         User? @relation("PenanggungJawabBox", fields: [penanggungJawabId], references: [id])
+  penerima                User? @relation("PenerimaBox", fields: [penerimaId], references: [id])
+}
+
+enum Role {
+  SUPERADMIN
+  GUDANG
+  POTONG
+  JAHIT
+  QC
+  KURIR
+}
+
+enum JenisPermintaan {
+  RESI
+  BORDIR
+}
+
+enum StatusPermintaan {
+  MENUNGGU_GUDANG
+  MENUNGGU_POTONG
+  PROSES_POTONG
+  MENUNGGU_STOK_POTONG
+  PROSES_STOK_POTONG
+  MENUNGGU_KURIR
+  PROSES_KURIR
+  MENUNGGU_JAHIT
+  PROSES_JAHIT
+  JEDA_JAHIT
+  MENUNGGU_QC
+  PROSES_QC
+  MASUK_BOX
+  ACC_GUDANG
+}
+
+enum StatusStokPotong {
+  MENUNGGU
+  PROSES
+  SELESAI
+  KIRIM
+}
+
+enum StatusProses {
+  MENUNGGU_PENGIRIMAN
+  PROSES_PENGIRIMAN
+  SELESAI_PENGIRIMAN
+  DIKERJAKAN
+  JEDA
+  SELESAI_JAHIT
+}
+
+enum StatusQC {
+  MENUNGGU
+  PROSES
+  MASUK_BOX
+  SELESAI
+}
+
+enum StatusBox {
+  MENUNGGU
+  ACC
+  KIRIM
+}
+
+// enum Role {
+//   POTONG
+//   STOKPOTONG
+//   KURIR
+//   JAHIT
+//   QC
+//   RESI
+//   PRINT
+//   GUDANG
+//   STOKGUDANG
+//   SUPERADMIN
+// }
+
+// enum StatusPermintaan {
+//   MENUNGGU_PROSES
+//   PROSES
+//   SELESAI
+// }
+
+// enum UkuranProduk {
+//   XL
+//   XXL
+//   L
+//   M
+// }
+
+// enum StatusStok {
+//   MASUK
+//   PROSESPENGECEKAN
+//   KIRIM
+//   PROSESKIRIM
+//   SELESAIKIRIM
+// }
+
+// model User {
+//   id       String   @id @default(uuid())
+//   name     String
+//   username String   @unique
+//   email    String   @unique
+//   password String
+//   role     Role     @default(POTONG)
+//   session  Session? 
+//   permintaanProduk PermintaanProduk[]
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @default(now())
+// }
+
+// model Session {
+//   id           String   @id @default(uuid())
+//   refreshToken String
+//   userId       String   @unique 
+//   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade) 
+//   createdAt    DateTime @default(now())
+// }
+
+// model KategoriProduk {
+//   id   String   @id @default(uuid())
+//   name String
+//   slug String   @unique
+//   kode String   @unique
+//   stokPotong StokPotong[]
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
+
+// model PermintaanProduk {
+//   id         String   @id @default(uuid())
+//   user       User     @relation(fields: [userId], references: [id])
+//   stokPotong StokPotong?
+//   userId     String   
+//   namaProduk String 
+//   kodeKain   String?
+//   ukuran     UkuranProduk
+//   pengecek   String?
+//   pemotong   String?
+//   jumlah     Int
+//   hasilPotongan  Int  @default(0)
+//   isUrgent   Boolean
+//   status     StatusPermintaan
+//   createdAt  DateTime @default(now())
+//   updatedAt  DateTime @updatedAt
+// }
+
+// model StokPotong {
+//   id  String   @id @default(uuid())
+//   permintaanId String @unique
+//   permintaan PermintaanProduk @relation(fields: [permintaanId], references: [id])
+//   namaProduk String
+//   jumlah_diterima Int?
+//   jumlah_lolos Int?
+//   jumlah_reject Int?
+//   pengecek   String?
+//   penjahit   String?
+//   kodeKain   String?
+//   kodePotong String?
+//   kategori   KategoriProduk @relation(fields: [kategoriId], references: [id])
+//   kategoriId String
+//   ukuran     UkuranProduk
+//   status     StatusStok?    @default(MASUK)
+//   admin      String?
+//   tanggalKirim DateTime?
+//   tanggalSampai DateTime?
+//   jumlah     Int
+//   notes       String?
+//   createdAt  DateTime @default(now())
+//   updatedAt  DateTime @updatedAt
+// }
