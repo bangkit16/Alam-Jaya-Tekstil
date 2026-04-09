@@ -2,9 +2,10 @@
   "name": "api",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.ts",
   "scripts": {
-    "build": "tsc",
+    "build:tsc": "tsc",
+    "build": "esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js --format=esm --packages=external",
     "start": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx --watch src/index.ts",
@@ -25,6 +26,8 @@
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "dotenv": "^17.4.0",
+    "esbuild": "^0.28.0",
+    "esbuild-register": "^3.6.0",
     "pg": "^8.20.0",
     "prettier": "^3.8.1",
     "prisma": "^7.6.0",
@@ -32,17 +35,19 @@
     "typescript": "^6.0.2"
   },
   "dependencies": {
-    "@prisma/client": "^7.6.0",
     "@prisma/adapter-pg": "^7.6.0",
+    "@prisma/client": "^7.6.0",
+    "esbuild": "^0.28.0",
+    "esbuild-register": "^3.6.0",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "cross-env": "^10.1.0",
+    "dotenv": "^17.4.0",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "dotenv": "^17.4.0",
     "tsx": "^4.21.0"
   }
 }
