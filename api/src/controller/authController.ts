@@ -1,8 +1,8 @@
-import type { Request, Response } from "express";
-import jwt from "jsonwebtoken";
-import { prisma } from "../lib/prisma";
-import * as bcrypt from "bcryptjs";
-import AuthService from "../services/authService";
+import type { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
+import { prisma } from '../lib/prisma';
+import * as bcrypt from 'bcryptjs';
+import AuthService from '../services/authService';
 
 const jwtSecret = process.env.JWT_SECRET!;
 
@@ -10,7 +10,7 @@ type UserType = {
   id: string;
   name: string;
   username: string;
-  email: string;
+  noHandphone: string;
   password: string;
 };
 
@@ -23,28 +23,21 @@ function verifyToken(token: string) {
 }
 
 function parseCookies(cookieHeader: string | undefined) {
-  return (cookieHeader ?? "")
-    .split("; ")
-    .reduce<Record<string, string>>((cookies, pair) => {
-      const [key, ...rest] = pair.split("=");
-      if (key && rest.length > 0) {
-        cookies[key] = rest.join("=");
-      }
-      return cookies;
-    }, {});
+  return (cookieHeader ?? '').split('; ').reduce<Record<string, string>>((cookies, pair) => {
+    const [key, ...rest] = pair.split('=');
+    if (key && rest.length > 0) {
+      cookies[key] = rest.join('=');
+    }
+    return cookies;
+  }, {});
 }
 
-function generateToken(credentials: {
-  email: string;
-  username: string;
-  name: string;
-  role?: string;
-}) {
+function generateToken(credentials: { noHandphone: string; username: string; nama: string; role?: string }) {
   const accessToken = jwt.sign(credentials, jwtSecret, {
-    expiresIn: "15m",
+    expiresIn: '15m',
   });
   const refreshToken = jwt.sign(credentials, jwtSecret, {
-    expiresIn: "7d",
+    expiresIn: '7d',
   });
   return { accessToken, refreshToken };
 }
@@ -53,51 +46,63 @@ export async function login(req: Request, res: Response) {
   const { username, password } = req.body;
 
   try {
-    if (!username || !password)
-      return res
-        .status(400)
-        .json({ message: "Username and password are required" });
+    if (!username || !password) return res.status(400).json({ message: 'Username and password are required' });
 
     const user = await prisma.user.findUnique({ where: { username } });
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid)
-      return res.status(401).json({ message: "Invalid password" });
+    if (!isPasswordValid) return res.status(401).json({ message: 'Inv alid password' });
 
     const { accessToken, refreshToken } = generateToken({
-      email: user.email,
+      noHandphone: user.noHandphone || '',
       username,
-      name: user.name,
+      nama: user.nama,
       role: user.role,
     });
-
-    await prisma.session.upsert({
+    // prisma.session.deleteMany({ where: { userId: user.id } });
+    // await prisma.session.upsert({
+    //   where: { userId: user.id as string },
+    //   update: { refreshToken },
+    //   create: { refreshToken, userId: user.id },
+    // });
+    const existingSession = await prisma.session.findFirst({
       where: { userId: user.id },
-      update: { refreshToken },
-      create: { refreshToken, userId: user.id },
     });
 
-    res.cookie("refreshToken", refreshToken, {
+    if (existingSession) {
+      // 2. Jika ada, update berdasarkan ID utamanya
+      await prisma.session.update({
+        where: { id: existingSession.id },
+        data: { refreshToken },
+      });
+    } else {
+      // 3. Jika tidak ada, buat baru
+      await prisma.session.create({
+        data: { refreshToken, userId: user.id },
+      });
+    }
+
+    res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // true jika production
-      sameSite: "lax",
+      secure: process.env.NODE_ENV === 'production', // true jika production
+      sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
-    })
+    });
 
     res.status(200).json({
       accessToken,
       user: {
         id: user.id,
-        name: user.name,
-        email: user.email,
+        name: user.nama,
+        noHandphone: user.noHandphone,
         username: user.username,
         role: user.role,
       },
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 }
 
@@ -107,7 +112,7 @@ export async function getSession(req: Request, res: Response) {
     const refreshToken = cookies.refreshToken;
 
     if (!refreshToken) {
-      return res.status(401).json({ message: "Refresh token is missing" });
+      return res.status(401).json({ message: 'Refresh token is missing' });
     }
 
     const session = await prisma.session.findFirst({
@@ -116,12 +121,12 @@ export async function getSession(req: Request, res: Response) {
     });
 
     if (!session || !session.user) {
-      return res.status(401).json({ message: "Session not found or invalid" });
+      return res.status(401).json({ message: 'Session not found or invalid' });
     }
 
     const decoded = verifyToken(refreshToken);
     if (!decoded) {
-      return res.status(401).json({ message: "Invalid refresh token" });
+      return res.status(401).json({ message: 'Invalid refresh token' });
     }
 
     return res.status(200).json({
@@ -129,17 +134,16 @@ export async function getSession(req: Request, res: Response) {
         id: session.id,
         user: {
           id: session.user.id,
-          name: session.user.name,
-          email: session.user.email,
+          name: session.user.nama,
+          noHandphone: session.user.noHandphone,
           username: session.user.username,
           role: session.user.role,
         },
-        createdAt: session.createdAt,
       },
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 }
 
@@ -148,13 +152,13 @@ export async function logout(req: Request, res: Response) {
 
   const refreshToken = cookies.refreshToken;
   if (!refreshToken) {
-    return res.status(401).json({ message: "Refresh token is missing" });
+    return res.status(401).json({ message: 'Refresh token is missing' });
   }
   const session = await prisma.session.findFirst({ where: { refreshToken } });
   if (!session) {
-    return res.status(401).json({ message: "Session not found or invalid" });
+    return res.status(401).json({ message: 'Session not found or invalid' });
   }
   await prisma.session.delete({ where: { id: session.id } });
-  res.clearCookie("refreshToken");
-  res.status(200).json({ message: "Logged out successfully" });
+  res.clearCookie('refreshToken');
+  res.status(200).json({ message: 'Logged out successfully' });
 }

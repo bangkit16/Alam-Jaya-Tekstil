@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import "dotenv/config";
 import authRoutes from "./routes/authRoutes";
 import potongRoutes from "./routes/potongRoutes";
 import stokPotongRoutes from "./routes/stokPotongRoutes";
@@ -48,7 +49,6 @@ const swaggerOptions = {
   apis: ["./src/routes/*.ts", "./src/index.ts"],
 };
 
-console.log(process.env["DATABASE_URL"]);
 console.log(urlServerSwagger)
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);

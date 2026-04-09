@@ -63,7 +63,7 @@ router.get("/menunggu", () => {});
  *               status: "PROSES_STOK_POTONG"
  */
 
-router.put("/menunggu/:id_stok_potong", StokPotong.putStokPotong);
+router.put("/menunggu/:id_stok_potong", () => {});
 
 /**
  * @swagger
@@ -92,7 +92,7 @@ router.put("/menunggu/:id_stok_potong", StokPotong.putStokPotong);
  *                 tanggal_selesai_potong: "2023-01-01T00:00:00.000Z"
  */
 
-router.get("/proses/", StokPotong.getStokPotong);
+router.get("/proses/", () => {});
 
 /**
  * @swagger
@@ -140,7 +140,7 @@ router.get("/proses/", StokPotong.getStokPotong);
  *               status : "MENUNGGU_KURIR"
  */
 
-router.put("/proses/:id_stok_potong", StokPotong.putStokPotong);
+router.put("/proses/:id_stok_potong", () => {});
 
 /**
  * @swagger
@@ -171,7 +171,7 @@ router.put("/proses/:id_stok_potong", StokPotong.putStokPotong);
  *                 tanggalMasukPotong: "2023-01-01T00:00:00.000Z"
  */
 
-router.get("/datastok", StokPotong.getStokProsesPengecekan);
+router.get("/datastok", () => {});
 
 /**
  * @swagger
@@ -207,7 +207,7 @@ router.get("/datastok", StokPotong.getStokProsesPengecekan);
  *               status: "MENUNGGU_KURIR"
  */
 
-router.put("/datastok/:id_stok_potong", StokPotong.getStokProsesPengecekan);
+router.put("/datastok/:id_stok_potong", () => {});
 
 /**
  * @swagger
