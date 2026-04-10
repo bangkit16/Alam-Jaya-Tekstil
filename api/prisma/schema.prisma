@@ -57,7 +57,7 @@ model Permintaan {
   id                  String   @id @default(uuid())
   kategoriId          String
   namaBarang          String
-  ukuran              String
+  ukuran              UkuranProduk
   jumlahMinta         Int
   jenisPermintaan     JenisPermintaan
   isUrgent            Boolean  @default(false)
@@ -88,7 +88,7 @@ model StokPotong {
   permintaanId       String   @unique
 
   kodeKain           String
-  kodeStokPotongan   String
+  kodeStokPotongan   String?
 
   tanggalMasuk       DateTime @default(now())
   tanggalSelesai     DateTime?
@@ -190,12 +190,15 @@ model Box {
 }
 
 enum Role {
-  SUPERADMIN
-  GUDANG
   POTONG
+  STOK_POTONG
+  KURIR
   JAHIT
   QC
-  KURIR
+  STOK_GUDANG
+  SUPERADMIN
+  RESI
+  PRINT
 }
 
 enum JenisPermintaan {
@@ -249,6 +252,13 @@ enum StatusBox {
   KIRIM
 }
 
+enum UkuranProduk {
+  XL
+  XXL
+  L
+  M
+}
+
 // enum Role {
 //   POTONG
 //   STOKPOTONG
@@ -268,12 +278,6 @@ enum StatusBox {
 //   SELESAI
 // }
 
-// enum UkuranProduk {
-//   XL
-//   XXL
-//   L
-//   M
-// }
 
 // enum StatusStok {
 //   MASUK

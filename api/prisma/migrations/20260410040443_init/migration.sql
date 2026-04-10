@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('SUPERADMIN', 'GUDANG', 'POTONG', 'JAHIT', 'QC', 'KURIR');
+CREATE TYPE "Role" AS ENUM ('POTONG', 'STOK_POTONG', 'KURIR', 'JAHIT', 'QC', 'STOK_GUDANG', 'SUPERADMIN', 'RESI', 'PRINT');
 
 -- CreateEnum
 CREATE TYPE "JenisPermintaan" AS ENUM ('RESI', 'BORDIR');
@@ -19,14 +19,19 @@ CREATE TYPE "StatusQC" AS ENUM ('MENUNGGU', 'PROSES', 'MASUK_BOX', 'SELESAI');
 -- CreateEnum
 CREATE TYPE "StatusBox" AS ENUM ('MENUNGGU', 'ACC', 'KIRIM');
 
+-- CreateEnum
+CREATE TYPE "UkuranProduk" AS ENUM ('XL', 'XXL', 'L', 'M');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "nama" TEXT NOT NULL,
     "username" TEXT NOT NULL,
     "password" TEXT NOT NULL,
-    "noHandphone" TEXT,
+    "noHandphone" TEXT NOT NULL,
     "role" "Role" NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -34,8 +39,9 @@ CREATE TABLE "User" (
 -- CreateTable
 CREATE TABLE "Session" (
     "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
     "refreshToken" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
 );
@@ -55,7 +61,7 @@ CREATE TABLE "Permintaan" (
     "id" TEXT NOT NULL,
     "kategoriId" TEXT NOT NULL,
     "namaBarang" TEXT NOT NULL,
-    "ukuran" TEXT NOT NULL,
+    "ukuran" "UkuranProduk" NOT NULL,
     "jumlahMinta" INTEGER NOT NULL,
     "jenisPermintaan" "JenisPermintaan" NOT NULL,
     "isUrgent" BOOLEAN NOT NULL DEFAULT false,
@@ -81,7 +87,7 @@ CREATE TABLE "StokPotong" (
     "id" TEXT NOT NULL,
     "permintaanId" TEXT NOT NULL,
     "kodeKain" TEXT NOT NULL,
-    "kodeStokPotongan" TEXT NOT NULL,
+    "kodeStokPotongan" TEXT,
     "tanggalMasuk" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "tanggalSelesai" TIMESTAMP(3),
     "jumlahHasil" INTEGER,
@@ -161,6 +167,12 @@ CREATE TABLE "Box" (
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "User_noHandphone_key" ON "User"("noHandphone");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Session_userId_key" ON "Session"("userId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Kategori_slug_key" ON "Kategori"("slug");
 
 -- CreateIndex
@@ -173,7 +185,7 @@ CREATE UNIQUE INDEX "ProsesStokPotong_stokPotongId_key" ON "ProsesStokPotong"("s
 CREATE UNIQUE INDEX "QCStokPotong_stokPotongId_key" ON "QCStokPotong"("stokPotongId");
 
 -- AddForeignKey
-ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Permintaan" ADD CONSTRAINT "Permintaan_kategoriId_fkey" FOREIGN KEY ("kategoriId") REFERENCES "Kategori"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

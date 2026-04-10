@@ -1,5 +1,6 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
+import StokGudangController from "../controller/stokGudangController";
 
 const router = Router();
 
@@ -171,7 +172,7 @@ router.get("/databox", (req: Request, res: Response) => {
  *               items:
  *                 type: object
  *                 properties:
- *                   id_permintaan:
+ *                   idPermintaan:
  *                     type: string
  *                     format: uuid
  *                     example: "38dfdad1-bae0-46ab-906c-beb1f7bf4636"
@@ -190,7 +191,7 @@ router.get("/databox", (req: Request, res: Response) => {
  *                   isUrgent:
  *                     type: boolean
  *                     example: false
- *                   jumlah_minta:
+ *                   jumlahMinta:
  *                     type: integer
  *                     example: 20
  *                   tanggalMasukPermintaan:
@@ -199,7 +200,7 @@ router.get("/databox", (req: Request, res: Response) => {
  *                     example: "2023-01-01T00:00:00.000Z"
  */
 
-router.get("/permintaan", () => {});
+router.get("/permintaan", StokGudangController.getDataPermintaan);
 
 /**
  * @swagger
@@ -241,7 +242,7 @@ router.post("/permintaan/", () => {});
 
 /**
  * @swagger
- * /stokgudang/permintaan/{id_permintaan}:
+ * /stokgudang/permintaan/{idPermintaan}:
  *   put:
  *     summary: DIVISI Stok Gudang (Tab permintaan - Modal MINTA POTONG KE POTONG)
  *     description: Memproses permintaan dari gudang
@@ -262,7 +263,7 @@ router.post("/permintaan/", () => {});
  *               status: "MENUNGGU_POTONG"
  */
 
-router.put("/permintaan/:id_permintaan", () => {});
+router.put("/permintaan/:idPermintaan", StokGudangController.updateStatusPermintaan);
 
 /**
  * @swagger
@@ -360,14 +361,14 @@ router.post("/permintaanpotong", (req, res) => {
 
 /**
  * @swagger
- * /stokgudang/tracking/{id_permintaan}:
+ * /stokgudang/tracking/{idPermintaan}:
  *   get:
  *     summary: DIVISI Stok Gudang (Tab Tracking )
  *     description: Gudang melihat tracking permintaan
  *     tags: [StokGudang]
  *     parameters:
  *       - in: path
- *         name: id_permintaan
+ *         name: idPermintaan
  *         required: true
  *         schema:
  *           type: string
@@ -377,20 +378,20 @@ router.post("/permintaanpotong", (req, res) => {
  *         content:
  *           application/json:
  *             example:
- *               - id_permintaan: "38dfdad1-bae0-46ab-906c-beb1f7bf4636"
+ *               - idPermintaan: "38dfdad1-bae0-46ab-906c-beb1f7bf4636"
  *                 namaBarang: "Hoodie Green Navy"
  *                 kategori: "hoodie"
  *                 jenisPermintaan: "RESI"
  *                 ukuran: "L"
  *                 isUrgent: false
- *                 jumlah_minta: 20
- *                 logs:
+ *                 jumlahMinta: 20
+ *                 logPermintaan:
  *                   - "Potong sedang di proses"
  *                   - "Potong selesai"
  *                    
  */
 
-router.get("/tracking/:id_permintaan", () => {});
+router.get("/tracking/:idPermintaan", StokGudangController.getTrackingPermintaan);
 
 /**
  * @swagger

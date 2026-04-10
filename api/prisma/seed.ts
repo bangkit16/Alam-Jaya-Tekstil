@@ -4,8 +4,6 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import {
   PrismaClient,
   Role,
-  UkuranProduk,
-  StatusPermintaan,
 } from "../src/generated/prisma/client";
 import * as bcrypt from "bcryptjs";
 
@@ -18,157 +16,156 @@ async function main() {
   const passwordHash = await bcrypt.hash("123", 10);
 
   const users = [
+    // SUPERADMIN
     {
-      name: "Bagas Super Admin",
-      username: "superadmin",
-      email: "superadmin@gmail.com",
+      nama: "Bagas Maulana",
+      username: "superadmin1",
+      noHandphone: "081200000001",
       role: Role.SUPERADMIN,
     },
     {
-      name: "Siti Potong",
-      username: "potong",
-      email: "potong@gmail.com",
+      nama: "Aris Setiawan",
+      username: "superadmin2",
+      noHandphone: "081200000002",
+      role: Role.SUPERADMIN,
+    },
+
+    // POTONG
+    {
+      nama: "Siti Aminah",
+      username: "potong1",
+      noHandphone: "081300000001",
       role: Role.POTONG,
     },
     {
-      name: "Sisil StokPotong",
-      username: "stokpotong",
-      email: "stokpotong@gmail.com",
-      role: Role.STOKPOTONG,
+      nama: "Rahmat Hidayat",
+      username: "potong2",
+      noHandphone: "081300000002",
+      role: Role.POTONG,
+    },
+
+    // STOK_POTONG
+    {
+      nama: "Sisil Melati",
+      username: "stokpotong1",
+      noHandphone: "081400000001",
+      role: Role.STOK_POTONG,
     },
     {
-      name: "Joni Kurir",
-      username: "kurir",
-      email: "kurir@gmail.com",
+      nama: "Feri Irawan",
+      username: "stokpotong2",
+      noHandphone: "081400000002",
+      role: Role.STOK_POTONG,
+    },
+
+    // KURIR
+    {
+      nama: "Joni Iskandar",
+      username: "kurir1",
+      noHandphone: "081500000001",
       role: Role.KURIR,
     },
     {
-      name: "Budi jahit",
-      username: "jahit",
-      email: "jahit@gmail.com",
+      nama: "Eko Prasetyo",
+      username: "kurir2",
+      noHandphone: "081500000002",
+      role: Role.KURIR,
+    },
+
+    // JAHIT
+    {
+      nama: "Budi Santoso",
+      username: "jahit1",
+      noHandphone: "081600000001",
       role: Role.JAHIT,
     },
     {
-      name: "Dewi Resi",
-      username: "resi",
-      email: "resi@gmail.com",
-      role: Role.RESI,
+      nama: "Ratna Sari",
+      username: "jahit2",
+      noHandphone: "081600000002",
+      role: Role.JAHIT,
     },
+
+    // QC
     {
-      name: "Andi Print",
-      username: "print",
-      email: "print@gmail.com",
-      role: Role.PRINT,
-    },
-    {
-      name: "Rian Gudang",
-      username: "gudang",
-      email: "gudang@gmail.com",
-      role: Role.GUDANG,
-    },
-    {
-      name: "Sari QC",
-      username: "qc",
-      email: "qc@gmail.com",
+      nama: "Sari Wahyuni",
+      username: "qc1",
+      noHandphone: "081700000001",
       role: Role.QC,
     },
     {
-      name: "Fajar Stok Gudang",
-      username: "stokgudang",
-      email: "stokgudang@gmail.com",
-      role: Role.STOKGUDANG,
+      nama: "Dian Pratama",
+      username: "qc2",
+      noHandphone: "081700000002",
+      role: Role.QC,
+    },
+
+    // STOK_GUDANG
+    {
+      nama: "Fajar Nugraha",
+      username: "stokgudang1",
+      noHandphone: "081800000001",
+      role: Role.STOK_GUDANG,
+    },
+    {
+      nama: "Gani Wijaya",
+      username: "stokgudang2",
+      noHandphone: "081800000002",
+      role: Role.STOK_GUDANG,
+    },
+
+    // Tambahan Role RESI & PRINT (Jika ada di Enum)
+    {
+      nama: "Dewi Lestari",
+      username: "resi1",
+      noHandphone: "081900000001",
+      role: Role.RESI,
+    },
+    {
+      nama: "Andi Wijaya",
+      username: "print1",
+      noHandphone: "082000000001",
+      role: Role.PRINT,
     },
   ];
 
-  console.log("Memulai seeding data user...");
+  console.log("--- Memulai Seeding Data User ---");
 
   for (const u of users) {
-    const user = await prisma.user.upsert({
-      where: { email: u.email },
+    await prisma.user.upsert({
+      where: { username: u.username }, // Menggunakan username sebagai kunci unik pengecekan
       update: {},
       create: {
-        name: u.name,
-        email: u.email,
+        nama: u.nama,
         username: u.username,
         password: passwordHash,
+        noHandphone: u.noHandphone,
         role: u.role,
       },
     });
-    console.log(`User created/found: ${user.email} with role ${user.role}`);
-  }
-  const userGudang = await prisma.user.findUnique({
-    where: { email: "gudang@gmail.com" },
-  });
-  if (!userGudang) {
-    console.log("User gudang tidak ditemukan, skip seeding produk.");
-    return;
   }
 
-  console.log("Memulai seeding data PermintaanProduk...");
-
-  const permintaanData = [
-    {
-      userId: userGudang.id,
-      namaProduk: "Kaos Polos Cotton Combed",
-      kodeKain: null,
-      ukuran: UkuranProduk.L,
-      pengecek: null,
-      jumlah: 100,
-      isUrgent: true,
-      status: StatusPermintaan.MENUNGGU_PROSES,
-    },
-    {
-      userId: userGudang.id,
-      namaProduk: "Hoodie Jumper",
-      kodeKain: null,
-      ukuran: UkuranProduk.M,
-      pengecek: null,
-      jumlah: 50,
-      isUrgent: false,
-      status: StatusPermintaan.MENUNGGU_PROSES,
-    },
-    {
-      userId: userGudang.id,
-      namaProduk: "Hoodie Merah Maroon",
-      kodeKain: null,
-      ukuran: UkuranProduk.XL,
-      pengecek: null,
-      jumlah: 70,
-      isUrgent: false,
-      status: StatusPermintaan.MENUNGGU_PROSES,
-    },
-    {
-      userId: userGudang.id,
-      namaProduk: "Jaket Kulit Vintage",
-      kodeKain: null,
-      ukuran: UkuranProduk.M,
-      pengecek: null,
-      jumlah: 10,
-      isUrgent: false,
-      status: StatusPermintaan.MENUNGGU_PROSES,
-    },
-  ];
-  await prisma.permintaanProduk.createMany({ data: permintaanData });
+  console.log(`✅ Berhasil seed ${users.length} users.`);
 
   const kategoriData = [
-    { name: "Hoodie", slug: "hoodie", kode: "HD" },
-    { name: "Kaos", slug: "kaos", kode: "KS" },
-    { name: "Singlet", slug: "singlet", kode: "SG" },
-    { name: "TS Hoodie", slug: "ts-hoodie", kode: "TSH" },
-    { name: "Sweater", slug: "sweater", kode: "SW" },
-    { name: "Longsleeve", slug: "longsleeve", kode: "LS" },
-    { name: "Kemeja", slug: "kemeja", kode: "KM" },
+    { namaKategori: "Hoodie", slug: "hoodie", kodeKategori: "HD" },
+    { namaKategori: "Kaos", slug: "kaos", kodeKategori: "KS" },
+    { namaKategori: "Singlet", slug: "singlet", kodeKategori: "SG" },
+    { namaKategori: "TS Hoodie", slug: "ts-hoodieKategori", kode: "TSH" },
+    { namaKategori: "Sweater", slug: "sweater", kodeKategori: "SW" },
+    { namaKategori: "Longsleeve", slug: "longsleeve", kodeKategori: "LS" },
+    { namaKategori: "Kemeja", slug: "kemeja", kodeKategori: "KM" },
   ];
   console.log("Memulai seeding kategori...");
 
   for (const k of kategoriData) {
-    await prisma.kategoriProduk.upsert({
+    await prisma.kategori.upsert({
       where: { id: "" }, // Upsert butuh ID atau unique field
       update: {},
       create: {
-        name: k.name,
+        namaKategori: k.namaKategori,
         slug: k.slug,
-        kode: k.kode,
+        kodeKategori: String(k.kodeKategori),
       },
     });
   }

@@ -1,5 +1,5 @@
-import { Router } from 'express';
-import PotongController from '../controller/potongController';
+import { Router } from "express";
+import PotongController from "../controller/potongController";
 
 const router = Router();
 
@@ -51,7 +51,7 @@ const router = Router();
  *                     example: "2023-01-01T00:00:00.000Z"
  */
 
-router.get('/menunggu', () => {});
+router.get("/menunggu", PotongController.getDataMenunggu);
 
 /**
  * @swagger
@@ -75,7 +75,7 @@ router.get('/menunggu', () => {});
  *               message: "Permintaan berhasil dipindahkan ke proses"
  *               status: "PROSES_POTONG"
  */
-router.put('/menunggu/:idPermintaan', () => {});
+router.put("/menunggu/:idPermintaan", PotongController.updateStatusMenunggu);
 
 /**
  * @swagger
@@ -104,7 +104,7 @@ router.put('/menunggu/:idPermintaan', () => {});
  *                 jumlah_minta: 40
  *                 tanggalMasukPermintaan: "2025-04-08T00:00:00.000Z"
  */
-router.get('/proses', () => {});
+router.get("/proses", PotongController.getDataProses);
 
 /**
  * @swagger
@@ -147,7 +147,7 @@ router.get('/proses', () => {});
  *               status : "MENUNGGU_STOK_POTONG"
  */
 
-router.put('/proses/:idPermintaan', () => {});
+router.put("/proses/:idPermintaan", PotongController.updateStatusProses);
 
 /**
  * @swagger
@@ -164,9 +164,11 @@ router.put('/proses/:idPermintaan', () => {});
  *               - idPermintaan: "dfc3712e-fe64-4343-a275-5b2de4ad8615"
  *                 namaBarang: "Hoodie Green Navy"
  *                 ukuran: "L"
- *                 kodeKain: "AD-0123"
- *                 pemotong: "Budi"
- *                 jumlah_diminta: 15
+ *                 kodeKain: "AD-0125"
+ *                 pemotong:
+ *                  - "Budi"
+ *                  - "Bani"
+ *                 jumlah_diminta: 25
  *                 jumlah_hasil: 20
  *               - idPermintaan: "dfc3712e-fe64-4343-a275-5b2de4kjnnas"
  *                 namaBarang: "Hoodie Black gray"
@@ -178,7 +180,7 @@ router.put('/proses/:idPermintaan', () => {});
  *                 jumlah_diminta: 25
  *                 jumlah_hasil: 20
  */
-router.get('/selesai', () => {});
+router.get("/selesai", PotongController.getDataSelesai);
 
 /**
  * @swagger
@@ -195,6 +197,6 @@ router.get('/selesai', () => {});
  *               - id: "uuid-pemotong-1"
  *                 nama: "Budi Pemotong"
  */
-router.get('/list-pemotong', () => {});
+router.get("/list-pemotong", PotongController.getListPemotong);
 
 export default router;
