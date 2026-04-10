@@ -20,8 +20,7 @@ import { StatusPermintaan } from "./generated/prisma/browser";
 
 // Hanya muat .env jika bukan di production
 if (process.env.NODE_ENV !== "production") {
-  const dotenv = await import("dotenv");
-  dotenv.config();
+  require("dotenv").config();
 }
 
 const app = express();
