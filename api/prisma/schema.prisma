@@ -96,6 +96,10 @@ model StokPotong {
   tanggalSelesai     DateTime?
 
   jumlahHasil        Int?
+  jumlahLolos        Int?
+  jumlahReject       Int?
+
+  notes              String?
 
   status             StatusStokPotong
 
