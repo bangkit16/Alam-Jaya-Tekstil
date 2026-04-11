@@ -1,81 +1,57 @@
-import express, { Request, Response, NextFunction } from 'express';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import swaggerJSDoc from 'swagger-jsdoc';
-import swaggerUi from 'swagger-ui-express';
-import { prisma } from './lib/prisma.js';
-import TrackLog from './lib/trackLog.js';
-import { StatusPermintaan } from './generated/prisma/browser.js';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import 'dotenv/config'; // PERBAIKAN: Cara import dotenv di ES Modules
+import express, { Request, Response } from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import swaggerJSDoc from "swagger-jsdoc";
+import swaggerUi from "swagger-ui-express";
+import { prisma } from "./lib/prisma.js";
+import TrackLog from "./lib/trackLog.js";
+import { StatusPermintaan } from "./generated/prisma/browser.js";
+import path from "path";
+import { fileURLToPath } from "url";
+import "dotenv/config";
 
+// ==========================
+// ES MODULE FIX (__dirname)
+// ==========================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Route imports
-import authRoutes from './routes/authRoutes.js';
-import potongRoutes from './routes/potongRoutes.js';
-import stokPotongRoutes from './routes/stokPotongRoutes.js';
-import kurirRoutes from './routes/kurirRoutes.js';
-import penjahitRoutes from './routes/penjahitRoutes.js';
-import qcRoutes from './routes/qcRoutes.js';
-import stokGudangRoutes from './routes/stokGudangRoutes.js';
+// ==========================
+// ROUTES
+// ==========================
+import authRoutes from "./routes/authRoutes.js";
+import potongRoutes from "./routes/potongRoutes.js";
+import stokPotongRoutes from "./routes/stokPotongRoutes.js";
+import kurirRoutes from "./routes/kurirRoutes.js";
+import penjahitRoutes from "./routes/penjahitRoutes.js";
+import qcRoutes from "./routes/qcRoutes.js";
+import stokGudangRoutes from "./routes/stokGudangRoutes.js";
 
+// ==========================
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middlewares
+// ==========================
+// MIDDLEWARE
+// ==========================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ["GET", "POST", "PUT", "DELETE"],
   })
 );
 
-// // Dynamic Swagger Configuration
-// const swaggerOptions = {
-//   definition: {
-//     openapi: '3.0.0',
-//     info: {
-//       title: 'Alam Jaya Textile API',
-//       version: '1.0.0',
-//       description: 'A simple Express API documented with Swagger',
-//     },
-//     servers: [], // Diisi dinamis oleh middleware di bawah
-//   },
-//   // PERBAIKAN: Vercel menggunakan file hasil compile (.js), lokal pakai .ts
-//   apis: [
-//     path.join(__dirname, './routes/*.ts'), 
-//     path.join(__dirname, './routes/*.js'),
-//     path.join(__dirname, './index.ts'),
-//     path.join(__dirname, './index.js')
-//   ],
-// };
-
-// const swaggerSpec = swaggerJSDoc(swaggerOptions);
-
-// // Middleware Swagger
-// app.use(
-//   '/api-docs',
-//   (req: Request, res: Response, next: NextFunction) => {
-//     const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-//     const host = req.get('host');
-//     const fullUrl = `${protocol}://${host}`;
-//     (swaggerSpec as any).servers = [{ url: fullUrl }];
-//     next();
-//   },
-//   swaggerUi.serve,
-//   swaggerUi.setup(swaggerSpec)
-// );
-
-const urlServerSwagger =
-  process.env.NODE_ENV == "production"
-    ? "https://api-alam.vercel.app/"
+// ==========================
+// SWAGGER FIX FOR VERCEL
+// ==========================
+const serverUrl =
+  process.env.NODE_ENV === "production"
+    ? "https://api-alam.vercel.app"
     : "http://localhost:3001";
 
 const swaggerOptions = {
@@ -84,76 +60,74 @@ const swaggerOptions = {
     info: {
       title: "Alam Jaya Textile API",
       version: "1.0.0",
-      description: "A simple Express API documented with Swagger",
+      description: "REST API Documentation Alam Jaya Textile",
     },
     servers: [
       {
-        url: urlServerSwagger,
+        url: serverUrl,
       },
     ],
   },
-  // Path to the API docs (files containing @swagger comments)
-  apis: ["./src/routes/*.ts", "./src/index.ts" , "./dist/routes/*.js", "./dist/index.js"],
-};
 
-console.log(urlServerSwagger);
+  // Scan hasil build js + source ts
+  apis: [
+    path.join(__dirname, "./routes/*.js"),
+    path.join(__dirname, "./index.js"),
+    path.join(__dirname, "../src/routes/*.ts"),
+    path.join(__dirname, "../src/index.ts"),
+  ],
+};
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Debug
+// console.log("Swagger Paths:", swaggerSpec.paths);
 
+// Swagger UI Fix Vercel
+app.use("/api-docs", swaggerUi.serve);
+app.get("/api-docs", swaggerUi.setup(swaggerSpec));
 
-// Routes
-app.get('/', (req, res) => {
-  res.json({ message: 'Selamat datang di API Alam Jaya Textile' });
+// JSON Swagger
+app.get("/api-docs.json", (req: Request, res: Response) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(swaggerSpec);
 });
 
-// ======= DEBUGGING backdoor =======
+// ==========================
+// ROOT
+// ==========================
+app.get("/", (req: Request, res: Response) => {
+  res.json({
+    message: "Selamat datang di API Alam Jaya Textile",
+  });
+});
+
+// ==========================
+// DEBUGGING BACKDOOR
+// ==========================
 
 /**
  * @swagger
  * /create/permintaan:
  *   post:
- *     summary: BACKDOOR - Buat Permintaan Ke Gudang (Debugging Endpoint)
- *     description: RESI mengirimkan data permintaan ke GUDANG
+ *     summary: BACKDOOR - Buat Permintaan Gudang
  *     tags: [Debugging]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               namaBarang:
- *                 type: string
- *               kategori:
- *                 type: string
- *               jenisPermintaan:
- *                 type: string
- *               ukuran:
- *                 type: string
- *               isUrgent:
- *                 type: boolean
- *               jumlahMinta:
- *                 type: integer
  *           example:
- *             namaBarang: "Hoodie Green Navy"
- *             kategori: "hoodie"
- *             jenisPermintaan: "RESI"
- *             ukuran: "L"
+ *             namaBarang: Hoodie Green Navy
+ *             kategori: hoodie
+ *             jenisPermintaan: RESI
+ *             ukuran: L
  *             isUrgent: false
  *             jumlahMinta: 20
  *     responses:
- *       201:
- *         description: Permintaan produk berhasil dibuat
- *         content:
- *           application/json:
- *             example:
- *               message: "Permintaan produk berhasil dikirim"
- *               status: "MENUNGGU_GUDANG"
+ *       200:
+ *         description: Berhasil membuat permintaan
  */
-
-app.post("/create/permintaan", async (req, res) => {
+app.post("/create/permintaan", async (req: Request, res: Response) => {
   try {
     const {
       namaBarang,
@@ -164,55 +138,75 @@ app.post("/create/permintaan", async (req, res) => {
       jumlahMinta,
     } = req.body;
 
-    const kategoriId = await prisma.kategori.findUnique({
-      where: { slug: kategori },
+    const kategoriData = await prisma.kategori.findUnique({
+      where: {
+        slug: kategori,
+      },
     });
 
-    if (!kategoriId) {
-      return res.status(400).json({ message: "Kategori tidak ditemukan" });
+    if (!kategoriData) {
+      return res.status(400).json({
+        message: "Kategori tidak ditemukan",
+      });
     }
 
     const newPermintaan = await prisma.permintaan.create({
       data: {
         namaBarang,
-        kategoriId: kategoriId?.id, // Gunakan ID kategori yang ditemukan atau fallback ke kategori hoodie
+        kategoriId: kategoriData.id,
         jenisPermintaan,
         ukuran,
         isUrgent,
         jumlahMinta,
-        status: "MENUNGGU_GUDANG",
+        status: StatusPermintaan.MENUNGGU_GUDANG,
       },
     });
-    await TrackLog.logPermintaan(newPermintaan.id, "Permintaan produk berhasil dibuat", StatusPermintaan.MENUNGGU_GUDANG);
-    await TrackLog.logStatus(newPermintaan.id, StatusPermintaan.MENUNGGU_GUDANG);
+
+    await TrackLog.logPermintaan(
+      newPermintaan.id,
+      "Permintaan produk berhasil dibuat",
+      StatusPermintaan.MENUNGGU_GUDANG
+    );
+
+    await TrackLog.logStatus(
+      newPermintaan.id,
+      StatusPermintaan.MENUNGGU_GUDANG
+    );
+
     return res.json({
       message: "Permintaan produk berhasil dikirim",
       status: StatusPermintaan.MENUNGGU_GUDANG,
-      newPermintaan,
+      data: newPermintaan,
     });
   } catch (error) {
-    console.error("Error creating permintaan:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error create permintaan:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
   }
-
-  // Di sini Anda bisa menambahkan logika untuk menyimpan data permintaan ke database
 });
-// ================================
 
-// API Routes
-app.use('/auth', authRoutes);
-app.use('/potong', potongRoutes);
-app.use('/stokpotong', stokPotongRoutes);
-app.use('/kurir', kurirRoutes);
-app.use('/penjahit', penjahitRoutes);
-app.use('/qc', qcRoutes);
-app.use('/stokgudang', stokGudangRoutes);
+// ==========================
+// ROUTES
+// ==========================
+app.use("/auth", authRoutes);
+app.use("/potong", potongRoutes);
+app.use("/stokpotong", stokPotongRoutes);
+app.use("/kurir", kurirRoutes);
+app.use("/penjahit", penjahitRoutes);
+app.use("/qc", qcRoutes);
+app.use("/stokgudang", stokGudangRoutes);
 
-// Server Start (Hanya untuk Lokal)
-if (process.env.NODE_ENV !== 'production') {
+// ==========================
+// LOCAL SERVER ONLY
+// ==========================
+if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`Swagger docs at http://localhost:${PORT}/api-docs`);
   });
 }
 
+// ==========================
 export default app;
