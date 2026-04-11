@@ -1,21 +1,6 @@
 "use client";
 
-import { useGetProses } from "@/services/potong/useGetProses";
-import { usePutProses } from "@/services/potong/usePutProses";
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { toast } from "sonner";
-
-// Validasi Skema
-const prosesSchema = z.object({
-  kode_potongan: z.string().min(1, "Kode potongan wajib diisi"),
-  jumlah_lolos: z.coerce.number().min(1, "Jumlah lolos minimal 1"),
-  pengecek: z.string().min(1, "Nama pengecek wajib diisi"),
-});
-
-type ProsesFormData = z.infer<typeof prosesSchema>;
+import { useState } from "react";
 
 type prosesType = {
   id_permintaan: string;
@@ -29,63 +14,66 @@ type prosesType = {
   pemotong: string;
 };
 
+// ================= DUMMY DATA =================
+const DUMMY_PROSES: prosesType[] = [
+  {
+    id_permintaan: "1",
+    nama_produk: "Hoodie Green",
+    kode_kain: "HD-GREEN",
+    jumlah: 20,
+    ukuran: "L",
+    user_id: "user1",
+    is_urgent: false,
+    pengecek: "-",
+    pemotong: "-",
+  },
+];
+
 export default function Proses() {
   const [selectedProses, setSelectedProses] = useState<prosesType | null>(null);
-  const { data: dataProses, isLoading: isLoadingProses } = useGetProses();
-  const { mutate: mutateProses } = usePutProses();
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    formState: { errors },
-  } = useForm<ProsesFormData>({
-    resolver: zodResolver(prosesSchema),
-    defaultValues: {
-      kode_potongan: "",
-      jumlah_lolos: 0,
-      pengecek: "",
-    },
+  // dummy form state
+  const [form, setForm] = useState({
+    kode_potongan: "",
+    jumlah_lolos: "",
+    pengecek: "",
   });
 
-  // Sinkronisasi data saat item diklik
   const handleSelectProses = (proses: prosesType) => {
     setSelectedProses(proses);
-    setValue("kode_potongan", proses.kode_kain); // Pre-fill kode_potongan dengan kode_kain
-    setValue("jumlah_lolos", 0);
-    setValue("pengecek", "");
+    setForm({
+      kode_potongan: proses.kode_kain,
+      jumlah_lolos: "",
+      pengecek: "",
+    });
   };
 
   const handleCloseModal = () => {
     setSelectedProses(null);
-    reset();
+    setForm({
+      kode_potongan: "",
+      jumlah_lolos: "",
+      pengecek: "",
+    });
   };
 
-  const onSubmit = (data: ProsesFormData) => {
-    if (!selectedProses) return;
+  const handleSubmit = (e: any) => {
+    e.preventDefault();
 
-    const submitData = {
-      id: selectedProses.id_permintaan,
-      data: data,
-    };
-
-    mutateProses(submitData, {
-      onSuccess: () => {
-        handleCloseModal();
-        toast.success("Permintaan berhasil di proses");
-      },
+    console.log("DATA SUBMIT:", {
+      id: selectedProses?.id_permintaan,
+      ...form,
     });
+
+    handleCloseModal();
   };
 
   return (
     <>
       {/* ================= LIST ================= */}
       <div className="flex flex-col gap-3 overflow-y-auto">
-        {isLoadingProses ? (
-          <p className="text-center py-10">Loading...</p>
-        ) : dataProses && dataProses.length > 0 ? (
-          dataProses.map((proses: prosesType, index: number) => (
+        {DUMMY_PROSES.length > 0 ? (
+          DUMMY_PROSES.map((proses, index) => (
             <div
               key={`${proses.id_permintaan}-${index}`}
               onClick={() => handleSelectProses(proses)}
@@ -97,9 +85,11 @@ export default function Proses() {
                     Urgent
                   </p>
                 )}
+
                 <p className="text-sm font-semibold text-gray-800 my-1">
                   {proses.nama_produk} - {proses.ukuran}
                 </p>
+
                 <div className="space-y-0.5">
                   <p className="text-xs font-medium text-gray-400 uppercase">
                     KODE PRODUK :{" "}
@@ -107,12 +97,14 @@ export default function Proses() {
                       {proses.kode_kain}
                     </span>
                   </p>
+
                   <p className="text-xs font-medium text-gray-400 uppercase">
                     PEMOTONG :{" "}
                     <span className="font-bold text-gray-600">
                       {proses.pemotong}
                     </span>
                   </p>
+
                   <p className="text-xs font-medium text-gray-400 uppercase">
                     PENGECEK :{" "}
                     <span className="font-bold text-gray-600">
@@ -121,6 +113,7 @@ export default function Proses() {
                   </p>
                 </div>
               </div>
+
               <div className="ml-4">
                 <p className="text-2xl font-bold text-gray-800">
                   {proses.jumlah}
@@ -129,14 +122,13 @@ export default function Proses() {
             </div>
           ))
         ) : (
-          /* Tampilan Data Kosong */
           <div className="text-center py-10 border-2 border-dashed border-gray-200 rounded-2xl">
             <p className="text-gray-500 font-medium">Data Kosong</p>
           </div>
         )}
       </div>
 
-      {/* ================= MODAL PROSES ================= */}
+      {/* ================= MODAL ================= */}
       {selectedProses && (
         <div
           className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
@@ -145,7 +137,7 @@ export default function Proses() {
           <form
             className="bg-white p-5 rounded-2xl w-full max-w-sm shadow-2xl"
             onClick={(e) => e.stopPropagation()}
-            onSubmit={handleSubmit(onSubmit)}
+            onSubmit={handleSubmit}
           >
             {/* HEADER */}
             <div className="flex justify-between items-start mb-3">
@@ -163,41 +155,30 @@ export default function Proses() {
 
             {/* INPUT */}
             <div className="space-y-3">
-              {/* KODE KAIN */}
               <input
-                {...register("kode_potongan")}
+                value={form.kode_potongan}
+                onChange={(e) =>
+                  setForm({ ...form, kode_potongan: e.target.value })
+                }
                 placeholder="Kode Kain"
                 className="w-full bg-gray-100 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
               />
-              {errors.kode_potongan && (
-                <p className="text-[10px] text-red-500 -mt-2">
-                  {errors.kode_potongan.message}
-                </p>
-              )}
 
-              {/* PEMOTONG (gunakan pengecek kalau memang sesuai backend) */}
               <input
-                {...register("pengecek")}
+                value={form.pengecek}
+                onChange={(e) => setForm({ ...form, pengecek: e.target.value })}
                 placeholder="Pemotong / Pengecek"
                 className="w-full bg-gray-100 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
               />
-              {errors.pengecek && (
-                <p className="text-[10px] text-red-500 -mt-2">
-                  {errors.pengecek.message}
-                </p>
-              )}
 
-              {/* JUMLAH HASIL */}
               <input
-                {...register("jumlah_lolos")}
+                value={form.jumlah_lolos}
+                onChange={(e) =>
+                  setForm({ ...form, jumlah_lolos: e.target.value })
+                }
                 placeholder="Jumlah hasil"
                 className="w-full bg-gray-100 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
               />
-              {errors.jumlah_lolos && (
-                <p className="text-[10px] text-red-500 -mt-2">
-                  {errors.jumlah_lolos.message}
-                </p>
-              )}
             </div>
 
             {/* BUTTON */}

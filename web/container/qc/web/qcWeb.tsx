@@ -1,10 +1,10 @@
 "use client";
 
 export default function QCWeb({
-  qcList,
-  orders,
-  handleGagal,
-  handleLolos,
+  qcList = [], // 🔥 default
+  orders = [], // 🔥 default
+  handleGagal = () => {}, // 🔥 default
+  handleLolos = () => {}, // 🔥 default
   handleLogout,
 }: any) {
   return (
@@ -45,26 +45,34 @@ export default function QCWeb({
             </thead>
 
             <tbody>
-              {qcList.map((o: any) => (
-                <tr key={o.id} className="border-t">
-                  <td className="p-3">{o.nama}</td>
-                  <td className="p-3">{o.kodeBarang}</td>
-                  <td className="p-3 text-right space-x-2">
-                    <button
-                      onClick={() => handleGagal(o.id)}
-                      className="bg-red-500 text-white px-3 py-1 rounded text-xs"
-                    >
-                      Gagal
-                    </button>
-                    <button
-                      onClick={() => handleLolos(o.id)}
-                      className="bg-green-600 text-white px-3 py-1 rounded text-xs"
-                    >
-                      Lolos
-                    </button>
+              {qcList.length === 0 ? (
+                <tr>
+                  <td colSpan={3} className="p-4 text-center text-gray-400">
+                    Tidak ada data QC
                   </td>
                 </tr>
-              ))}
+              ) : (
+                qcList.map((o: any) => (
+                  <tr key={o.id} className="border-t">
+                    <td className="p-3">{o.nama}</td>
+                    <td className="p-3">{o.kodeBarang}</td>
+                    <td className="p-3 text-right space-x-2">
+                      <button
+                        onClick={() => handleGagal(o.id)}
+                        className="bg-red-500 text-white px-3 py-1 rounded text-xs"
+                      >
+                        Gagal
+                      </button>
+                      <button
+                        onClick={() => handleLolos(o.id)}
+                        className="bg-green-600 text-white px-3 py-1 rounded text-xs"
+                      >
+                        Lolos
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

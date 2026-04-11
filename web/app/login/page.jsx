@@ -89,33 +89,47 @@ export default function LoginPage() {
         localStorage.setItem("accessToken", "dummy-token");
         localStorage.setItem("role", role.toLowerCase());
 
+        // 🔥 WAJIB: SET SESSION
+        setSession({
+          session: {
+            id: "dummy-id",
+            user: {
+              id: "dummy-id",
+              name: username,
+              role: role.toLowerCase(),
+              email: `${username}@dummy.com`,
+            },
+            createdAt: new Date().toISOString(),
+          },
+        });
+
         console.log("DUMMY LOGIN SUCCESS:", role);
 
-        switch (role) {
-          case "RESI":
-            router.push("/resi");
-            break;
-          case "ADMIN":
-            router.push("/admin");
-            break;
-          case "POTONG":
-            router.push("/potong");
-            break;
-          case "STOK_POTONG":
-            router.push("/stok-potong");
-            break;
-          case "JAHIT":
-            router.push("/penjahit");
-            break;
-          case "QC":
-            router.push("/qc");
-            break;
-          case "KURIR":
-            router.push("/kurir");
-            break;
-          default:
-            break;
-        }
+        setTimeout(() => {
+          switch (role) {
+            case "RESI":
+              router.push("/resi");
+              break;
+            case "ADMIN":
+              router.push("/admin");
+              break;
+            case "POTONG":
+              router.push("/potong");
+              break;
+            case "STOK_POTONG":
+              router.push("/stok-potong");
+              break;
+            case "JAHIT":
+              router.push("/penjahit");
+              break;
+            case "QC":
+              router.push("/qc");
+              break;
+            case "KURIR":
+              router.push("/kurir");
+              break;
+          }
+        }, 100); // 🔥 anti bug
       } else {
         alert("Login gagal (dummy / server)");
       }

@@ -1,10 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
-
-import { useGetPermintaan } from "@/services/potong/useGetPermintaan";
-import { usePutPermintaan } from "@/services/potong/usePutPermintaan";
 
 type permintaanType = {
   id_permintaan: string;
@@ -16,46 +12,59 @@ type permintaanType = {
   status?: string;
 };
 
+// ================= DUMMY DATA =================
+const DUMMY_DATA: permintaanType[] = [
+  {
+    id_permintaan: "1",
+    nama_produk: "Hoodie Green Navy",
+    jumlah: 35,
+    ukuran: "L",
+    user_id: "user-1",
+    is_urgent: false,
+    status: "proses",
+  },
+];
+
 export default function Proses() {
   const [selectedPermintaan, setSelectedPermintaan] =
     useState<permintaanType | null>(null);
 
-  const { data: dataPermintaan, isLoading } = useGetPermintaan();
-  const { mutate: mutatePermintaan } = usePutPermintaan();
+  const [form, setForm] = useState({
+    pengecek: "",
+    kode_potongan: "",
+    jumlah_lolos: "",
+    jumlah_reject: "",
+    catatan: "",
+  });
 
-  // ✅ FILTER DATA PROSES
-  const dataProses = dataPermintaan?.filter(
-    (item: permintaanType) => item.status === "proses",
-  );
+  const dataProses = DUMMY_DATA.filter((item) => item.status === "proses");
 
-  // ✅ HANDLE SELESAI
-  const handleSelesai = () => {
-    if (!selectedPermintaan) return;
+  const handleClose = () => {
+    setSelectedPermintaan(null);
+    setForm({
+      pengecek: "",
+      kode_potongan: "",
+      jumlah_lolos: "",
+      jumlah_reject: "",
+      catatan: "",
+    });
+  };
 
-    mutatePermintaan(
-      {
-        id: selectedPermintaan.id_permintaan,
-        data: {
-          status: "selesai",
-        },
-      },
-      {
-        onSuccess: () => {
-          toast.success("Berhasil dipindahkan ke stock!");
-          setSelectedPermintaan(null);
-        },
-      },
-    );
+  const handleSubmit = () => {
+    console.log("DATA:", {
+      ...form,
+      id: selectedPermintaan?.id_permintaan,
+    });
+
+    handleClose();
   };
 
   return (
     <>
-      {/* LIST */}
+      {/* ================= LIST ================= */}
       <div className="flex flex-col flex-1 overflow-y-auto gap-3">
-        {isLoading ? (
-          <p className="text-center py-4">Loading...</p>
-        ) : dataProses && dataProses.length > 0 ? (
-          dataProses.map((item: permintaanType, index: number) => (
+        {dataProses.length > 0 ? (
+          dataProses.map((item, index) => (
             <div
               key={`${item.id_permintaan}-${index}`}
               onClick={() => setSelectedPermintaan(item)}
@@ -67,6 +76,7 @@ export default function Proses() {
                     Urgent
                   </p>
                 )}
+
                 <p className="text-sm font-semibold text-gray-800">
                   {item.nama_produk} - {item.ukuran}
                 </p>
@@ -82,39 +92,80 @@ export default function Proses() {
         )}
       </div>
 
-      {/* MODAL */}
+      {/* ================= MODAL FORM ================= */}
       {selectedPermintaan && (
         <div
-          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-          onClick={() => setSelectedPermintaan(null)}
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
+          onClick={handleClose}
         >
           <div
-            className="bg-white p-4 rounded-xl w-[85%]"
+            className="bg-white p-4 w-full max-w-sm shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            {selectedPermintaan.is_urgent && (
-              <p className="text-red-500 text-md font-bold uppercase mb-1">
-                Urgent
+            {/* HEADER */}
+            <div className="flex justify-between items-center mb-3">
+              <p className="text-sm font-medium text-gray-800">
+                {selectedPermintaan.nama_produk} - {selectedPermintaan.ukuran}
               </p>
-            )}
 
-            <div className="flex justify-between mb-2">
-              <p className="text-md font-semibold text-gray-800">
-                {selectedPermintaan.nama_produk}
-              </p>
-              <p className="font-bold text-gray-800">
+              <p className="text-lg font-bold text-gray-900">
                 {selectedPermintaan.jumlah}
               </p>
             </div>
 
-            <hr className="mb-3 border-gray-300" />
+            {/* FORM */}
+            <div className="space-y-2">
+              <input
+                placeholder="Nama Pengecek"
+                value={form.pengecek}
+                onChange={(e) => setForm({ ...form, pengecek: e.target.value })}
+                className="w-full bg-gray-100 px-3 py-2 text-xs outline-none"
+              />
 
-            <button
-              onClick={handleSelesai}
-              className="bg-green-500 text-white text-xs px-3 py-1 rounded float-right hover:bg-green-600 active:scale-95"
-            >
-              Selesai → Stock
-            </button>
+              <input
+                placeholder="Kode Stok Potongan"
+                value={form.kode_potongan}
+                onChange={(e) =>
+                  setForm({ ...form, kode_potongan: e.target.value })
+                }
+                className="w-full bg-gray-100 px-3 py-2 text-xs outline-none"
+              />
+
+              <input
+                placeholder="Jumlah Potongan Yang Lolos (kirim 31)"
+                value={form.jumlah_lolos}
+                onChange={(e) =>
+                  setForm({ ...form, jumlah_lolos: e.target.value })
+                }
+                className="w-full bg-gray-100 px-3 py-2 text-xs outline-none"
+              />
+
+              <input
+                placeholder="Jumlah Potongan Reject ( Optional )"
+                value={form.jumlah_reject}
+                onChange={(e) =>
+                  setForm({ ...form, jumlah_reject: e.target.value })
+                }
+                className="w-full bg-gray-100 px-3 py-2 text-xs outline-none"
+              />
+
+              <input
+                placeholder="Catatan Potongan ( Optional )"
+                value={form.catatan}
+                onChange={(e) => setForm({ ...form, catatan: e.target.value })}
+                className="w-full bg-gray-100 px-3 py-2 text-xs outline-none"
+              />
+            </div>
+
+            {/* BUTTON */}
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={handleSubmit}
+                className="bg-gray-200 text-gray-700 text-xs px-4 py-1.5 rounded-sm hover:bg-gray-300 active:scale-95 transition"
+              >
+                Selesai
+              </button>
+            </div>
           </div>
         </div>
       )}

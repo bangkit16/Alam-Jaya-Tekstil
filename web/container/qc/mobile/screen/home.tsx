@@ -4,42 +4,92 @@ import { Package, Briefcase, Bell } from "lucide-react";
 
 export default function Home({ setScreen, handleLogout }: any) {
   return (
-    <div className="min-h-screen bg-gray-200 flex justify-center items-center p-4">
-      <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-xl p-4 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400 flex justify-center items-center p-4">
+      <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-2xl p-4 flex flex-col">
         {/* HEADER */}
-        <div className="border border-gray-300 rounded-2xl p-3 mb-4">
-          <p className="text-sm font-semibold">QC USER</p>
-          <p className="text-xs text-gray-400">Divisi QC</p>
+        <div className="bg-gradient-to-r from-orange-400 to-amber-500 text-white rounded-2xl p-4 mb-4 shadow-md">
+          <p className="text-sm opacity-90">Welcome 👋</p>
+        </div>
+
+        {/* PROFILE CARD */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-3 flex gap-3 items-center mb-4 shadow-sm">
+          <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center text-xs text-gray-400">
+            IMG
+          </div>
+
+          <div className="text-xs">
+            <p className="text-gray-500">
+              Nama:
+              <span className="text-gray-900 font-medium ml-1">QC USER</span>
+            </p>
+
+            <p className="text-gray-500">
+              Divisi:
+              <span className="text-gray-900 font-medium ml-1">QC</span>
+            </p>
+
+            <p className="text-gray-500">
+              ID:
+              <span className="text-gray-900 font-medium ml-1">0001</span>
+            </p>
+          </div>
         </div>
 
         {/* MENU */}
-        <div className="flex justify-around mb-6">
-          <button className="flex flex-col items-center">
-            <Package size={28} className="text-orange-500" />
-            <span className="text-xs mt-1">Stock</span>
+        <div className="flex justify-between mb-6 px-2">
+          {/* STOCK */}
+          <button className="flex flex-col items-center group">
+            <div className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm group-hover:scale-110 transition">
+              <Package size={26} className="text-orange-500" />
+            </div>
+            <span className="text-xs mt-1 text-gray-600 group-hover:text-black">
+              Stock
+            </span>
           </button>
 
+          {/* QC JOBS */}
           <button
             onClick={() => setScreen("jobs")}
-            className="flex flex-col items-center"
+            className="flex flex-col items-center group"
           >
-            <Briefcase size={28} className="text-purple-500" />
-            <span className="text-xs mt-1">QC Jobs</span>
+            <div className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm group-hover:scale-110 transition">
+              <Briefcase size={26} className="text-purple-500" />
+            </div>
+            <span className="text-xs mt-1 text-gray-600 group-hover:text-black">
+              QC Jobs
+            </span>
           </button>
 
-          <button className="flex flex-col items-center">
-            <Bell size={28} className="text-red-500" />
-            <span className="text-xs mt-1">Report</span>
+          {/* REPORT */}
+          <button className="flex flex-col items-center group">
+            <div className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm group-hover:scale-110 transition">
+              <Bell size={26} className="text-red-500" />
+            </div>
+            <span className="text-xs mt-1 text-gray-600 group-hover:text-black">
+              Report
+            </span>
           </button>
         </div>
 
         {/* CONTENT */}
-        <div className="flex-1 border rounded-2xl flex items-center justify-center text-gray-400 text-sm">
-          Dashboard QC
+        <div className="flex-1 bg-gray-50 rounded-2xl p-3 shadow-inner">
+          <p className="text-sm text-gray-500">Aktivitas QC</p>
+
+          <div className="mt-3 space-y-2 text-xs">
+            <div className="bg-white p-2 rounded-lg shadow-sm">
+              Barang masuk QC
+            </div>
+            <div className="bg-white p-2 rounded-lg shadow-sm">
+              QC selesai diproses
+            </div>
+          </div>
         </div>
 
         {/* LOGOUT */}
-        <button onClick={handleLogout} className="mt-4 text-xs text-red-500">
+        <button
+          onClick={handleLogout}
+          className="mt-4 text-sm text-red-500 font-medium hover:opacity-70"
+        >
           Logout
         </button>
       </div>
