@@ -6,11 +6,12 @@ import swaggerUi from 'swagger-ui-express';
 import { prisma } from './lib/prisma.js';
 import TrackLog from './lib/trackLog.js';
 import { StatusPermintaan } from './generated/prisma/browser.js';
-import path from 'path'
-import { fileURLToPath } from 'url'
+import path from 'path';
+import { fileURLToPath } from 'url';
+import 'dotenv/config'; // PERBAIKAN: Cara import dotenv di ES Modules
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Route imports
 import authRoutes from './routes/authRoutes.js';
@@ -21,15 +22,10 @@ import penjahitRoutes from './routes/penjahitRoutes.js';
 import qcRoutes from './routes/qcRoutes.js';
 import stokGudangRoutes from './routes/stokGudangRoutes.js';
 
-// 1. Load ENV
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config();
-}
-
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// 2. Middlewares
+// Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -41,7 +37,7 @@ app.use(
   })
 );
 
-// 3. Dynamic Swagger Configuration
+// Dynamic Swagger Configuration
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
@@ -50,63 +46,36 @@ const swaggerOptions = {
       version: '1.0.0',
       description: 'A simple Express API documented with Swagger',
     },
-    // Kita kosongkan servers di sini agar diisi secara dinamis oleh middleware
-    servers: [],
+    servers: [], // Diisi dinamis oleh middleware di bawah
   },
-  apis: ['./src/routes/*.ts', './src/index.ts'],
+  // PERBAIKAN: Vercel menggunakan file hasil compile (.js), lokal pakai .ts
+  apis: [
+    path.join(__dirname, './routes/*.ts'), 
+    path.join(__dirname, './routes/*.js'),
+    path.join(__dirname, './index.ts'),
+    path.join(__dirname, './index.js')
+  ],
 };
 
-const swaggerSpec = swaggerJSDoc(swaggerOptions) as any;
+const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
-// Middleware untuk menyuntikkan Server URL secara otomatis berdasarkan host saat ini
+// Middleware Swagger
 app.use(
   '/api-docs',
   (req: Request, res: Response, next: NextFunction) => {
-    const protocol = req.protocol;
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
     const host = req.get('host');
     const fullUrl = `${protocol}://${host}`;
-
-    // Update server URL di spek swagger secara dinamis
-    swaggerSpec.servers = [{ url: fullUrl }];
-
+    (swaggerSpec as any).servers = [{ url: fullUrl }];
     next();
   },
   swaggerUi.serve,
   swaggerUi.setup(swaggerSpec)
 );
 
-// 4. Routes
+// Routes
 app.get('/', (req, res) => {
   res.json({ message: 'Selamat datang di API Alam Jaya Textile' });
-});
-
-// Debugging Backdoor Route
-app.post('/create/permintaan', async (req, res) => {
-  try {
-    const { namaBarang, kategori, jenisPermintaan, ukuran, isUrgent, jumlahMinta } = req.body;
-    const kategoriData = await prisma.kategori.findUnique({ where: { slug: kategori } });
-
-    if (!kategoriData) return res.status(400).json({ message: 'Kategori tidak ditemukan' });
-
-    const newPermintaan = await prisma.permintaan.create({
-      data: {
-        namaBarang,
-        kategoriId: kategoriData.id,
-        jenisPermintaan,
-        ukuran,
-        isUrgent,
-        jumlahMinta,
-        status: 'MENUNGGU_GUDANG',
-      },
-    });
-
-    await TrackLog.logPermintaan(newPermintaan.id, 'Permintaan produk dibuat', StatusPermintaan.MENUNGGU_GUDANG);
-    await TrackLog.logStatus(newPermintaan.id, StatusPermintaan.MENUNGGU_GUDANG);
-
-    return res.json({ message: 'Berhasil', status: StatusPermintaan.MENUNGGU_GUDANG, newPermintaan });
-  } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
-  }
 });
 
 // API Routes
@@ -118,11 +87,11 @@ app.use('/penjahit', penjahitRoutes);
 app.use('/qc', qcRoutes);
 app.use('/stokgudang', stokGudangRoutes);
 
-// 5. Start Server
+// Server Start (Hanya untuk Lokal)
 if (process.env.NODE_ENV !== 'production') {
-  const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
   });
 }
-export default app; 
+
+export default app;
