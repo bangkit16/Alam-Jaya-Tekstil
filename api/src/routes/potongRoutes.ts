@@ -168,8 +168,8 @@ router.put("/proses/:idPermintaan", PotongController.updateStatusProses);
  *                 pemotong:
  *                  - "Budi"
  *                  - "Bani"
- *                 jumlah_diminta: 25
- *                 jumlah_hasil: 20
+ *                 jumlahDiminta: 25
+ *                 jumlahHasil: 20
  *               - idPermintaan: "dfc3712e-fe64-4343-a275-5b2de4kjnnas"
  *                 namaBarang: "Hoodie Black gray"
  *                 ukuran: "L"
@@ -177,8 +177,8 @@ router.put("/proses/:idPermintaan", PotongController.updateStatusProses);
  *                 pemotong:
  *                  - "Budi"
  *                  - "Bani"
- *                 jumlah_diminta: 25
- *                 jumlah_hasil: 20
+ *                 jumlahDiminta: 25
+ *                 jumlahHasil: 20
  */
 router.get("/selesai", PotongController.getDataSelesai);
 

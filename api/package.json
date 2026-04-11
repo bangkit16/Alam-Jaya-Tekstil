@@ -4,10 +4,11 @@
   "description": "",
   "main": "src/index.ts",
   "scripts": {
-    "build:tsc": "tsc",
+    "build:tsc": "npx tsc --build",
     "build:esbuild": "npx esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js --format=esm",
-    "build": "npx prisma generate && npx esbuild src/index.ts --bundle --platform=node --format=cjs --packages=external --outfile=dist/index.js",
-    "start": "node dist/index.js",
+    "build:esbuild:external": "npx esbuild src/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/index.mjs",
+    "build": "npx esbuild src/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/index.js",
+    "start": "node dist/index.mjs",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx --watch src/index.ts",
     "seed": "prisma db seed"

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import StokPotong from "../controller/stokPotongController";
+import StokPotongController from "../controller/stokPotongController";
 
 const router = Router();
 /**
@@ -22,34 +22,36 @@ const router = Router();
  *         content:
  *           application/json:
  *             example:
- *               - id_permintaan: "dfc3712e-fe64-4343-a275-5b2de4ad8615"
+ *               - idPermintaan: "dfc3712e-fe64-4343-a275-5b2de4ad8615"
+ *                 idStokPotong: "dfFDSHFSUDI712e-fe64-4343-a275-5b2de4ad8615"
  *                 namaBarang: "Hoodie Green Navy"
  *                 ukuran: "L"
- *                 kode_kain: "AD-0123"
+ *                 kodeKain: "AD-0123"
  *                 pemotong: "Budi"
- *                 jumlah_hasil: 20
- *                 tanggal_selesai_potong: "2023-01-01T00:00:00.000Z"
- *               - id_permintaan: "dfc3712e-fe64-4343-a275-5b2de4kjnnas"
+ *                 jumlahHasil: 20
+ *                 tanggalSelesaiPotong: "2023-01-01T00:00:00.000Z"
+ *               - idPermintaan: "dfc3712e-fe64-4343-a275-5b2de4kjnnas"
+ *                 idStokPotong: "MBNJKYTU12e-fe64-4343-a275-5b2de4ad8615"
  *                 namaBarang: "Hoodie Black gray"
  *                 ukuran: "L"
- *                 kode_kain: "AD-0125"
+ *                 kodeKain: "AD-0125"
  *                 pemotong: "Budi"
- *                 jumlah_hasil: 20
- *                 tanggal_selesai_potong: "2023-01-01T00:00:00.000Z"
+ *                 jumlahHasil: 20
+ *                 tanggalSelesaiPotong: "2023-01-01T00:00:00.000Z"
  */
 
-router.get("/menunggu", () => {});
+router.get("/menunggu", StokPotongController.getDataMenunggu);
 
 /**
  * @swagger
- * /stokpotong/menunggu/{id_stok_potong}:
+ * /stokpotong/menunggu/{idStokPotong}:
  *   put:
  *     summary: DIVISI STOK POTONG (Tab Menunggu - Modal Pindah ke Proses - Cek Potong)
  *     description: Memproses permintaan dari stok dan merubah status ke PROSES
  *     tags: [StokPotong]
  *     parameters:
  *       - in: path
- *         name: id_stok_potong
+ *         name: idStokPotong
  *         required: false
  *         schema:
  *           type: string
@@ -59,51 +61,56 @@ router.get("/menunggu", () => {});
  *         content:
  *           application/json:
  *             example:
- *               message: "Potong berhasil dipindahkan ke proses"
+ *               message: "Potong sedang diproses pengecekan oleh divisi Stok Potong"
  *               status: "PROSES_STOK_POTONG"
  */
 
-router.put("/menunggu/:id_stok_potong", () => {});
+router.put(
+  "/menunggu/:idStokPotong",
+  StokPotongController.updateStatusMenunggu,
+);
 
 /**
  * @swagger
  * /stokpotong/proses:
  *   get:
- *     summary: Mendapatkan List Potong (Tab Menunggu)
+ *     summary: Mendapatkan List Potong (Tab Proses)
  *     tags: [StokPotong]
  *     responses:
  *       200:
  *         content:
  *           application/json:
  *             example:
- *               - id_permintaan: "dfc3712e-fe64-4343-a275-5b2de4ad8615"
+ *               - idPermintaan: "dfc3712e-fe64-4343-a275-5b2de4ad8615"
+ *                 idStokPotong: "dfFDSHFSUDI712e-fe64-4343-a275-5b2de4ad8615"              
  *                 namaBarang: "Hoodie Green Navy"
  *                 ukuran: "L"
- *                 kode_kain: "AD-0123"
+ *                 kodeKain: "AD-0123"
  *                 pemotong: "Budi"
- *                 jumlah_hasil: 20
- *                 tanggal_selesai_potong: "2023-01-01T00:00:00.000Z"
- *               - id_permintaan: "dfc3712e-fe64-4343-a275-5b2de4kjnnas"
+ *                 jumlahHasil: 20
+ *                 tanggalSelesaiPotong: "2023-01-01T00:00:00.000Z"
+ *               - idPermintaan: "dfc3712e-fe64-4343-a275-5b2de4kjnnas"
+ *                 idStokPotong: "dfFDSHFSUDADe-fe64-4343-a275-5b2de4ad8615"   
  *                 namaBarang: "Hoodie Black gray"
  *                 ukuran: "L"
- *                 kode_kain: "AD-0125"
+ *                 kodeKain: "AD-0125"
  *                 pemotong: "Budi"
- *                 jumlah_hasil: 20
- *                 tanggal_selesai_potong: "2023-01-01T00:00:00.000Z"
+ *                 jumlahHasil: 20
+ *                 tanggalSelesaiPotong: "2023-01-01T00:00:00.000Z"
  */
 
-router.get("/proses/", () => {});
+router.get("/proses/", StokPotongController.getDataProses);
 
 /**
  * @swagger
- * /stokpotong/proses/{id_stok_potong}:
+ * /stokpotong/proses/{idStokPotong}:
  *   put:
  *     summary: Input hasil cek potong (Update Proses ke data stok)
  *     description: Memproes data stok potong dan merubah status menjadi selesai
  *     tags: [StokPotong]
  *     parameters:
  *       - in: path
- *         name: id_stok_potong
+ *         name: idStokPotong
  *         required: true
  *         schema:
  *           type: string
@@ -114,21 +121,23 @@ router.get("/proses/", () => {});
  *           schema:
  *             type: object
  *             properties:
- *               id_pengecek:
+ *               idPengecek:
  *                 type: string
- *               kode_stok_potongan:
+ *               kodeStokPotongan:
  *                 type: string
- *               jumlah_potongan_lolos:
+ *               jumlahPotonganLolos:
  *                 type: integer
- *               jumlah_potongan_reject:
+ *               jumlahPotonganReject:
  *                 type: integer
  *               catatan:
  *                 type: string
  *           example:
- *             id_pengecek: "dfcsad2e-fe64-4343-a275-5b2de4ad8615"
- *             kode_stok_potongan: "AD-0123-A1"
- *             jumlah_potongan_lolos: 20
- *             jumlah_potongan_reject: 0
+ *             idPengecek: 
+ *             - "dfcsad2e-fe64-4343-a275-5b2de4ad8615"
+ *             - "kjhgrfgb-fe64-4343-a275-5b2de4ad8615"
+ *             kodeStokPotongan: "AD-0123-A1"
+ *             jumlahPotonganLolos: 20
+ *             jumlahPotonganReject: 0
  *             catatan: "Perlu dikembalikan"
  *     responses:
  *       200:
@@ -140,7 +149,7 @@ router.get("/proses/", () => {});
  *               status : "MENUNGGU_KURIR"
  */
 
-router.put("/proses/:id_stok_potong", () => {});
+router.put("/proses/:idStokPotong", StokPotongController.updateStatusProses);
 
 /**
  * @swagger
@@ -153,16 +162,16 @@ router.put("/proses/:id_stok_potong", () => {});
  *         content:
  *           application/json:
  *             example:
- *               - id_permintaan: "dfc3712e-fe64-4343-a275-5b2de4ad8615"
- *                 id_stok_potong: "bcvc3sad22e-fe64-4343-a275-5b2de4ad8615"
+ *               - idPermintaan: "dfc3712e-fe64-4343-a275-5b2de4ad8615"
+ *                 idStokPotong: "bcvc3sad22e-fe64-4343-a275-5b2de4ad8615"
  *                 namaBarang: "Hoodie Green Navy"
  *                 status: "SELESAI"
  *                 ukuran: "L"
  *                 kodeStokPotongan: "AD-0123-A1"
  *                 jumlahLolos: 20
  *                 tanggalMasukPotong: "2023-01-01T00:00:00.000Z"
- *               - id_permintaan: "nhc3712e-fe64-4343-a275-5b2de8615"
- *                 id_stok_potong: "bcvc3sad22e-fe64-4343-a275-5b2de4ad8615"
+ *               - idPermintaan: "nhc3712e-fe64-4343-a275-5b2de8615"
+ *                 idStokPotong: "bcvc3sad22e-fe64-4343-a275-5b2de4ad8615"
  *                 namaBarang: "Hoodie Green Navy"
  *                 status: "KIRIM"
  *                 ukuran: "L"
@@ -171,18 +180,18 @@ router.put("/proses/:id_stok_potong", () => {});
  *                 tanggalMasukPotong: "2023-01-01T00:00:00.000Z"
  */
 
-router.get("/datastok", () => {});
+router.get("/datastok", StokPotongController.getDataStok);
 
 /**
  * @swagger
- * /stokpotong/datastok/{id_stok_potong}:
+ * /stokpotong/datastok/{idStokPotong}:
  *   put:
  *     summary: DIVISI STOK POTONG (Tab Data Stok - Modal Pindah Kirim ke kurir - Kirim ke Kurir)
  *     description: Memproses data stok potong dari stok potong dikirm ke kurir dan merubah status ke KIRIM dan MENUNGGU_KURIR
  *     tags: [StokPotong]
  *     parameters:
  *       - in: path
- *         name: id_stok_potong
+ *         name: idStokPotong
  *         required: false
  *         schema:
  *           type: string
@@ -193,21 +202,21 @@ router.get("/datastok", () => {});
  *           schema:
  *             type: object
  *             properties:
- *               id_penjahit:
+ *               idPenjahit:
  *                 type: string
  *           example:
- *             id_penjahit: "dfcsad2e-mku1-4343-a275-5b2de4ad8615"
+ *             idPenjahit: "dfcsad2e-mku1-4343-a275-5b2de4ad8615"
  *     responses:
  *       200:
  *         description: Berhasil memproses permintaan
  *         content:
  *           application/json:
  *             example:
- *               message: "Potong berhasil dipindahkan ke proses"
+ *               message: "Potong sedang menunggu kurir untuk diambil"
  *               status: "MENUNGGU_KURIR"
  */
 
-router.put("/datastok/:id_stok_potong", () => {});
+router.put("/datastok/:idStokPotong", StokPotongController.updateStatusKirim);
 
 /**
  * @swagger
@@ -224,9 +233,9 @@ router.put("/datastok/:id_stok_potong", () => {});
  *               - id: "uuid-pengecek-1"
  *                 nama: "Andi Pengecek"
  */
-router.get("/list-pengecek", () => {});
+router.get("/list-pengecek", StokPotongController.getListPengecek);
 
-/** 
+/**
  * @swagger
  * /stokpotong/list-penjahit:
  *   get:
@@ -241,8 +250,6 @@ router.get("/list-pengecek", () => {});
  *               - id: "uuid-penjahit-1"
  *                 nama: "Siti Penjahit"
  */
-router.get("/list-penjahit", () => {}); 
-
-
+router.get("/list-penjahit", StokPotongController.getListPenjahit);
 
 export default router;

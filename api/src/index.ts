@@ -147,15 +147,8 @@ router.post("/create/permintaan", async (req, res) => {
         status: "MENUNGGU_GUDANG",
       },
     });
-    await TrackLog.logPermintaan(
-      newPermintaan.id,
-      "Permintaan produk berhasil dibuat",
-      StatusPermintaan.MENUNGGU_GUDANG,
-    );
-    await TrackLog.logStatus(
-      newPermintaan.id,
-      StatusPermintaan.MENUNGGU_GUDANG,
-    );
+    await TrackLog.logPermintaan(newPermintaan.id, "Permintaan produk berhasil dibuat", StatusPermintaan.MENUNGGU_GUDANG);
+    await TrackLog.logStatus(newPermintaan.id, StatusPermintaan.MENUNGGU_GUDANG);
     return res.json({
       message: "Permintaan produk berhasil dikirim",
       status: StatusPermintaan.MENUNGGU_GUDANG,
