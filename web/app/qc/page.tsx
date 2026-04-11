@@ -1,48 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getOrders, updateOrder } from "../data/orders";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/useAuthStore";
+import useIsMobile from "@/hooks/useIsMobile";
+
 import QCMobile from "@/container/qc/mobile/qcMobile";
 import QCWeb from "@/container/qc/web/qcWeb";
 
-export default function QCPage() {
+export default function Page() {
   const router = useRouter();
+  const isMobile = useIsMobile();
 
-  const [orders, setOrders] = useState(getOrders());
-  const [isMobile, setIsMobile] = useState(false);
+  const { session, clearSession } = useAuthStore();
 
-  useEffect(() => {
-    if (localStorage.getItem("role") !== "QC") {
+  const handleLogout = async () => {
+    try {
+      await fetch("http://localhost:3001/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.log("fallback logout");
+    } finally {
+      clearSession();
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("role");
       router.push("/login");
     }
-
-    setIsMobile(window.innerWidth < 768);
-  }, []);
-
-  const handleGagal = (id: number) => {
-    updateOrder(id, "rework");
-    setOrders([...getOrders()]);
   };
-
-  const handleLolos = (id: number) => {
-    updateOrder(id, "gudang");
-    setOrders([...getOrders()]);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("role");
-    router.push("/login");
-  };
-
-  const qcList = orders.filter((o) => o.status === "qc");
 
   const sharedProps = {
-    orders,
-    qcList,
-    handleGagal,
-    handleLolos,
     handleLogout,
+    session,
   };
 
   return isMobile ? <QCMobile {...sharedProps} /> : <QCWeb {...sharedProps} />;

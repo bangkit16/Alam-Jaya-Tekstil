@@ -1,88 +1,104 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-export default function Jobs({ setScreen }: any) {
-  const [jobs, setJobs] = useState<any[]>([]);
-  const [filterStatus, setFilterStatus] = useState("menunggu");
+type statusType = "qc" | "rework" | "gudang";
+
+// ================= DUMMY DATA =================
+const DUMMY_ORDERS = [
+  {
+    id: 1,
+    nama: "Hoodie Green Navy - L",
+    qty: 25,
+    kodeBarang: "HD-GN-L",
+    penjahit: "Adit",
+    tanggalJahit: "2026-04-10",
+    tanggalSelesai: null,
+    status: "qc",
+  },
+  {
+    id: 2,
+    nama: "Kaos Hitam - M",
+    qty: 40,
+    kodeBarang: "TS-BLK-M",
+    penjahit: "Budi",
+    tanggalJahit: "2026-04-09",
+    tanggalSelesai: null,
+    status: "qc",
+  },
+  {
+    id: 3,
+    nama: "Jaket Abu - XL",
+    qty: 15,
+    kodeBarang: "JK-GRY-XL",
+    penjahit: "Rudi",
+    tanggalJahit: "2026-04-08",
+    tanggalSelesai: "2026-04-11",
+    status: "gudang",
+  },
+  {
+    id: 4,
+    nama: "Sweater Navy - L",
+    qty: 20,
+    kodeBarang: "SW-NV-L",
+    penjahit: "Deni",
+    tanggalJahit: "2026-04-07",
+    tanggalSelesai: null,
+    status: "rework",
+  },
+];
+
+export default function Jobs({
+  setScreen,
+  orders = [],
+  handleGagal = () => {},
+  handleLolos = () => {},
+}: any) {
+  const [filterStatus, setFilterStatus] = useState<statusType>("qc");
   const [search, setSearch] = useState("");
-  const [selectedJob, setSelectedJob] = useState<any>(null);
 
-  const [form, setForm] = useState({
-    hasil: "",
-    admin: "",
-    tanggal: "",
-    kodeBox: "",
-    permak: 0,
-    reject: 0,
-    turunSize: 0,
-    kotor: 0,
-    lolos: 0,
-  });
+  // ================= DATA SOURCE =================
+  const dataSource = orders.length ? orders : DUMMY_ORDERS;
 
-  // 🔥 DUMMY DATA QC
-  useEffect(() => {
-    setJobs([
-      {
-        id: 1,
-        nama: "Hoodie hitam XL",
-        qty: 40,
-        status: "menunggu",
-        hasil: "",
-        admin: "",
-        tanggal: "",
-        kodeBox: "",
-      },
-      {
-        id: 2,
-        nama: "Kaos merah M",
-        qty: 25,
-        status: "menunggu",
-        hasil: "",
-        admin: "",
-        tanggal: "",
-        kodeBox: "",
-      },
-    ]);
-  }, []);
-
-  const filteredJobs = jobs.filter(
-    (j: any) =>
-      j.status === filterStatus &&
-      j.nama.toLowerCase().includes(search.toLowerCase()),
+  // ================= FILTER =================
+  const filteredData = dataSource.filter(
+    (o: any) =>
+      o.status === filterStatus &&
+      o.nama?.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
-    <div className="min-h-screen bg-gray-200 flex justify-center items-center p-4">
-      <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-xl p-4 flex flex-col relative">
+    <div className="min-h-screen bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400 flex justify-center items-center p-4">
+      <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-2xl p-4 flex flex-col">
         {/* HEADER */}
-        <div className="border border-gray-300 rounded-2xl py-2 text-center text-sm font-medium mb-3">
-          View Jobs
+        <div className="bg-gradient-to-r from-orange-400 to-amber-500 text-white rounded-2xl py-2 text-center text-sm font-medium mb-4 shadow">
+          QC Jobs
         </div>
 
         {/* SEARCH */}
-        <input
-          placeholder="Search........"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-1 text-sm mb-2"
-        />
+        <div className="mb-3">
+          <input
+            placeholder="Search jobs..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-gray-100 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
+          />
+        </div>
 
         {/* FILTER */}
-        <div className="flex justify-between text-xs mb-3">
+        <div className="grid grid-cols-3 gap-2 mb-4 bg-gray-100 p-1 rounded-xl text-xs">
           {[
-            { label: "menunggu", value: "menunggu" },
-            { label: "sedang proses", value: "proses" },
-            { label: "input box", value: "input" },
-            { label: "selesai", value: "selesai" },
+            { label: "QC", value: "qc" },
+            { label: "Rework", value: "rework" },
+            { label: "Selesai", value: "gudang" },
           ].map((item) => (
             <button
               key={item.value}
-              onClick={() => setFilterStatus(item.value)}
-              className={`flex-1 text-center py-1 ${
+              onClick={() => setFilterStatus(item.value as statusType)}
+              className={`py-1.5 rounded-lg transition ${
                 filterStatus === item.value
-                  ? "font-semibold text-black"
-                  : "text-gray-400"
+                  ? "bg-white shadow text-gray-900 font-medium"
+                  : "text-gray-500"
               }`}
             >
               {item.label}
@@ -90,255 +106,42 @@ export default function Jobs({ setScreen }: any) {
           ))}
         </div>
 
-        {/* LIST */}
-        <div className="flex flex-col gap-3 overflow-y-auto">
-          {filteredJobs.map((job: any) => (
-            <div
-              key={job.id}
-              onClick={() => setSelectedJob(job)}
-              className="border border-gray-300 rounded-2xl p-3 cursor-pointer bg-white"
-            >
-              <div className="flex justify-between">
-                <p>{job.nama}</p>
-                <p className="text-2xl font-bold">{job.qty}</p>
-              </div>
+        {/* CONTENT */}
+        <div className="flex-1 overflow-auto space-y-2">
+          {filteredData.length === 0 ? (
+            <p className="text-center text-gray-400 text-sm">Tidak ada data</p>
+          ) : (
+            filteredData.map((o: any) => (
+              <div
+                key={o.id}
+                className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm"
+              >
+                {/* TITLE */}
+                <div className="flex justify-between">
+                  <p className="text-sm font-medium">{o.nama}</p>
+                  <p className="text-lg font-bold">{o.qty}</p>
+                </div>
 
-              <div className="text-[10px] mt-2">
-                <p>HASIL: {job.hasil || "-"}</p>
-                <p>ADMIN: {job.admin || "-"}</p>
-                <p>TANGGAL: {job.tanggal || "-"}</p>
-                <p>KODE BOX: {job.kodeBox || "-"}</p>
+                {/* DETAIL */}
+                <div className="text-[10px] text-gray-500 mt-1 space-y-0.5">
+                  <p>Kode Stok Potongan : {o.kodeBarang || "-"}</p>
+                  <p>Nama Penjahit : {o.penjahit || "-"}</p>
+                  <p>Tgl Selesai: {o.tanggalSelesai || "-"}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
-        {/* ACTION */}
-        <div className="mt-auto flex flex-col gap-2">
-          <button
-            onClick={() =>
-              setJobs((prev) => prev.map((j) => ({ ...j, status: "menunggu" })))
-            }
-            className="w-full bg-red-500 text-white text-xs py-2 rounded"
-          >
-            Reset Semua ke Menunggu
-          </button>
-
+        {/* BACK */}
+        <div className="mt-3">
           <button
             onClick={() => setScreen("home")}
-            className="text-xs text-gray-500"
+            className="w-full bg-gray-100 text-gray-700 text-xs py-2 rounded-xl font-medium hover:bg-gray-200 active:scale-95 transition"
           >
-            ← Back
+            Kembali
           </button>
         </div>
-
-        {/* ================= MODAL ================= */}
-        {selectedJob && (
-          <div
-            className="absolute inset-0 bg-black/40 flex items-center justify-center"
-            onClick={() => setSelectedJob(null)}
-          >
-            <div
-              className="bg-white p-4 rounded-xl w-[85%]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-between mb-2">
-                <p>{selectedJob.nama}</p>
-                <p className="font-bold">{selectedJob.qty}</p>
-              </div>
-
-              <hr className="mb-3" />
-
-              {/* MENUNGGU */}
-              {selectedJob.status === "menunggu" && (
-                <>
-                  <input
-                    placeholder="admin"
-                    className="w-full border mb-2 px-2 py-1 rounded"
-                    onChange={(e) =>
-                      setForm({ ...form, admin: e.target.value })
-                    }
-                  />
-
-                  <input
-                    type="date"
-                    className="w-full border mb-3 px-2 py-1 rounded"
-                    onChange={(e) =>
-                      setForm({ ...form, tanggal: e.target.value })
-                    }
-                  />
-
-                  <button
-                    onClick={() => {
-                      setJobs((prev) =>
-                        prev.map((j) =>
-                          j.id === selectedJob.id
-                            ? {
-                                ...j,
-                                status: "proses",
-                                admin: form.admin,
-                                tanggal: form.tanggal,
-                              }
-                            : j,
-                        ),
-                      );
-                      setSelectedJob(null);
-                    }}
-                    className="bg-purple-500 text-white text-xs px-3 py-1 rounded float-right"
-                  >
-                    proses
-                  </button>
-                </>
-              )}
-
-              {/* PROSES */}
-              {selectedJob.status === "proses" && (
-                <>
-                  <p className="text-center text-sm mb-2">hasil</p>
-
-                  {/* GRID HASIL */}
-                  <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
-                    {[
-                      { label: "permak", key: "permak" },
-                      { label: "reject", key: "reject" },
-                      { label: "turun size", key: "turunSize" },
-                      { label: "kotor", key: "kotor" },
-                    ].map((item) => (
-                      <div
-                        key={item.key}
-                        className="flex flex-col items-center"
-                      >
-                        <input
-                          type="number"
-                          className="w-full border px-2 py-1 rounded text-center"
-                          placeholder="0"
-                          onChange={(e) =>
-                            setForm({
-                              ...form,
-                              [item.key]: Number(e.target.value),
-                            })
-                          }
-                        />
-                        <span className="text-[10px] mt-1">{item.label}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* LOLOS */}
-                  <input
-                    type="number"
-                    placeholder="lolos"
-                    className="w-full border mb-3 px-2 py-1 rounded text-center"
-                    onChange={(e) =>
-                      setForm({ ...form, lolos: Number(e.target.value) })
-                    }
-                  />
-
-                  {/* BUTTON */}
-                  <button
-                    onClick={() => {
-                      setJobs((prev) =>
-                        prev.map((j) =>
-                          j.id === selectedJob.id
-                            ? {
-                                ...j,
-                                status: "input",
-                                hasil: `Lolos:${form.lolos} | Permak:${form.permak} | Reject:${form.reject}`,
-                              }
-                            : j,
-                        ),
-                      );
-                      setSelectedJob(null);
-                    }}
-                    className="bg-purple-500 text-white text-xs px-3 py-1 rounded float-right"
-                  >
-                    selesai
-                  </button>
-                </>
-              )}
-
-              {/* INPUT BOX */}
-              {selectedJob.status === "input" && (
-                <>
-                  <p className="text-center font-medium mb-3">Masuk Box</p>
-
-                  {/* INFO */}
-                  <div className="text-[10px] text-gray-500 mb-3">
-                    <p>DI PINDAHKAN KE BOX : 2</p>
-                    <p>JUMLAH : {selectedJob.qty}</p>
-                  </div>
-
-                  {/* ADMIN */}
-                  <input
-                    placeholder="admin"
-                    className="w-full border mb-2 px-2 py-1 rounded text-center"
-                    onChange={(e) =>
-                      setForm({ ...form, admin: e.target.value })
-                    }
-                  />
-
-                  {/* TANGGAL */}
-                  <input
-                    type="date"
-                    className="w-full border mb-2 px-2 py-1 rounded text-center"
-                    onChange={(e) =>
-                      setForm({ ...form, tanggal: e.target.value })
-                    }
-                  />
-
-                  {/* KODE BOX */}
-                  <input
-                    placeholder="nomor / kode"
-                    className="w-full border mb-3 px-2 py-1 rounded text-center"
-                    onChange={(e) =>
-                      setForm({ ...form, kodeBox: e.target.value })
-                    }
-                  />
-
-                  {/* BUTTON */}
-                  <button
-                    onClick={() => {
-                      setJobs((prev) =>
-                        prev.map((j) =>
-                          j.id === selectedJob.id
-                            ? {
-                                ...j,
-                                status: "selesai",
-                                kodeBox: form.kodeBox,
-                                admin: form.admin,
-                                tanggal: form.tanggal,
-                              }
-                            : j,
-                        ),
-                      );
-                      setSelectedJob(null);
-                    }}
-                    className="bg-purple-500 text-white text-xs px-4 py-1 rounded float-right"
-                  >
-                    kirim
-                  </button>
-                </>
-              )}
-
-              {/* SELESAI */}
-              {selectedJob.status === "selesai" && (
-                <div className="text-xs space-y-1">
-                  <p>HASIL: {selectedJob.hasil}</p>
-                  <p>ADMIN: {selectedJob.admin}</p>
-                  <p>TANGGAL: {selectedJob.tanggal}</p>
-                  <p>KODE BOX: {selectedJob.kodeBox}</p>
-
-                  <button
-                    onClick={() => setSelectedJob(null)}
-                    className="mt-3 w-full bg-gray-300 text-[10px] py-1 rounded"
-                  >
-                    close
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

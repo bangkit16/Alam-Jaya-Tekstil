@@ -89,33 +89,47 @@ export default function LoginPage() {
         localStorage.setItem("accessToken", "dummy-token");
         localStorage.setItem("role", role.toLowerCase());
 
+        // 🔥 WAJIB: SET SESSION
+        setSession({
+          session: {
+            id: "dummy-id",
+            user: {
+              id: "dummy-id",
+              name: username,
+              role: role.toLowerCase(),
+              email: `${username}@dummy.com`,
+            },
+            createdAt: new Date().toISOString(),
+          },
+        });
+
         console.log("DUMMY LOGIN SUCCESS:", role);
 
-        switch (role) {
-          case "RESI":
-            router.push("/resi");
-            break;
-          case "ADMIN":
-            router.push("/admin");
-            break;
-          case "POTONG":
-            router.push("/potong");
-            break;
-          case "STOK_POTONG":
-            router.push("/stok-potong");
-            break;
-          case "JAHIT":
-            router.push("/penjahit");
-            break;
-          case "QC":
-            router.push("/qc");
-            break;
-          case "KURIR":
-            router.push("/kurir");
-            break;
-          default:
-            break;
-        }
+        setTimeout(() => {
+          switch (role) {
+            case "RESI":
+              router.push("/resi");
+              break;
+            case "ADMIN":
+              router.push("/admin");
+              break;
+            case "POTONG":
+              router.push("/potong");
+              break;
+            case "STOK_POTONG":
+              router.push("/stok-potong");
+              break;
+            case "JAHIT":
+              router.push("/penjahit");
+              break;
+            case "QC":
+              router.push("/qc");
+              break;
+            case "KURIR":
+              router.push("/kurir");
+              break;
+          }
+        }, 100); // 🔥 anti bug
       } else {
         alert("Login gagal (dummy / server)");
       }
@@ -135,38 +149,45 @@ export default function LoginPage() {
   ];
 
   return (
-    <div className="min-h-screen flex bg-linear-to-br from-[#0f172a] via-[#1e3a8a] to-[#6d28d9]">
+    <div className="min-h-screen flex bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400">
       {/* LEFT DESKTOP */}
-      <div className="hidden md:flex flex-col justify-center w-1/2 px-16 text-white">
-        <h1 className="text-4xl font-bold mb-4">
-          The Ethereal <br /> Architect of Scale.
-        </h1>
-        <p className="text-gray-300 max-w-md">
-          Manage your textile ecosystem with precision.
-        </p>
+      <div className="hidden md:flex flex-col justify-center w-1/2 px-16">
+        <div className="max-w-md">
+          <h1 className="text-4xl font-bold mb-4 text-gray-800">
+            Textile System
+          </h1>
+          <p className="text-gray-600">
+            Manage your workflow, stock, and production in one place.
+          </p>
+
+          {/* decorative card */}
+          <div className="mt-8 bg-white rounded-2xl p-4 shadow-md">
+            <p className="text-sm text-gray-500">System Status</p>
+            <p className="text-lg font-semibold text-green-500">● Online</p>
+          </div>
+        </div>
       </div>
 
       {/* LOGIN */}
-      <div className="flex w-full md:w-1/2 items-center justify-center px-3 md:px-6">
-        <div className="w-full max-w-85 md:max-w-md bg-white rounded-2xl md:rounded-3xl shadow-xl md:shadow-2xl p-5 md:p-8">
-          {/* TITLE */}
-          <h2 className="text-lg md:text-2xl font-bold text-gray-800 mb-1">
-            Login System
-          </h2>
-          <p className="text-xs md:text-sm text-gray-400 mb-4 md:mb-6">
-            Access your dashboard
-          </p>
-          <p className="text-xs md:text-sm text-gray-400 mb-4 md:mb-6">
-            {session?.user?.role}
-          </p>
+      <div className="flex w-full md:w-1/2 items-center justify-center px-4">
+        <div className="w-full max-w-sm md:max-w-md bg-white rounded-3xl shadow-2xl p-6 md:p-8">
+          {/* HEADER */}
+          <div className="mb-6">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+              Welcome Back 👋
+            </h2>
+            <p className="text-xs md:text-sm text-gray-400">
+              Login to continue
+            </p>
+          </div>
 
           {/* ROLE */}
-          <div className="mb-3 md:mb-4">
+          <div className="mb-4">
             <p className="text-[10px] md:text-xs text-gray-400 mb-2">
               OPERATION ROLE
             </p>
 
-            <div className="flex flex-wrap gap-1.5 md:gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {roles.map((role) => (
                 <button
                   key={role}
@@ -174,10 +195,10 @@ export default function LoginPage() {
                     setRoleUI(role);
                     setUsername(role);
                   }}
-                  className={`px-2.5 md:px-3 py-1 rounded-full text-[11px] md:text-sm ${
+                  className={`py-1.5 rounded-full text-xs text-center transition ${
                     roleUI === role
-                      ? "bg-linear-to-r from-indigo-500 to-purple-500 text-white"
-                      : "bg-gray-200 text-gray-600"
+                      ? "bg-gradient-to-r from-orange-400 to-amber-500 text-white shadow"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
                   {role}
@@ -187,28 +208,28 @@ export default function LoginPage() {
           </div>
 
           {/* USERNAME */}
-          <div className="mb-3 md:mb-4">
-            <div className="flex items-center bg-gray-100 rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3">
-              <span className="mr-2 text-gray-400 text-sm">📧</span>
+          <div className="mb-4">
+            <div className="flex items-center bg-gray-100 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-orange-400">
+              <span className="mr-2 text-gray-400">📧</span>
               <input
                 type="text"
                 value={username}
                 placeholder="Username"
-                className="bg-transparent w-full outline-none text-gray-800 text-xs md:text-sm"
+                className="bg-transparent w-full outline-none text-gray-800 text-sm"
                 onChange={(e) => setUsername(e.target.value)}
               />
             </div>
           </div>
 
           {/* PASSWORD */}
-          <div className="mb-3 md:mb-4">
-            <div className="flex items-center bg-gray-100 rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3">
-              <span className="mr-2 text-gray-400 text-sm">🔒</span>
+          <div className="mb-4">
+            <div className="flex items-center bg-gray-100 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-orange-400">
+              <span className="mr-2 text-gray-400">🔒</span>
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
                 placeholder="Password"
-                className="bg-transparent w-full outline-none text-gray-800 text-xs md:text-sm"
+                className="bg-transparent w-full outline-none text-gray-800 text-sm"
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               />
@@ -216,31 +237,34 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="text-gray-400"
+                className="text-gray-400 hover:text-gray-600"
               >
                 {mounted &&
-                  (showPassword ? <EyeOff size={16} /> : <Eye size={16} />)}
+                  (showPassword ? <EyeOff size={18} /> : <Eye size={18} />)}
               </button>
             </div>
           </div>
 
           {/* FORGOT */}
-          <div className="text-right text-[11px] md:text-sm text-indigo-500 mb-4 md:mb-6">
+          <div className="text-right text-xs text-orange-500 mb-6 cursor-pointer hover:underline">
             Forgot Password?
           </div>
 
           {/* BUTTON */}
           <button
             onClick={handleLogin}
-            className="w-full bg-linear-to-r from-indigo-600 to-purple-600 text-white py-2.5 md:py-3 rounded-lg md:rounded-xl text-xs md:text-sm font-semibold shadow-lg"
+            className="w-full bg-gradient-to-r from-orange-400 to-amber-500 text-white py-3 rounded-xl text-sm font-semibold shadow-lg hover:scale-[1.02] active:scale-[0.98] transition"
           >
             Sign In →
           </button>
 
           {/* FOOTER */}
-          <div className="mt-4 md:mt-6 text-center text-[10px] md:text-xs text-gray-400">
-            Demo: potong / admin / resi / jahit / qc <br />
-            Password: 123
+          <div className="mt-6 bg-gray-50 rounded-xl p-3 text-center">
+            <p className="text-[11px] text-gray-500">Demo Accounts</p>
+            <p className="text-xs text-gray-700 font-medium mt-1">
+              potong · admin · resi · jahit · qc
+            </p>
+            <p className="text-[11px] text-gray-400 mt-1">Password: 123</p>
           </div>
         </div>
       </div>

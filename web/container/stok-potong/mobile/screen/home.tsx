@@ -13,68 +13,99 @@ type HomeProps = {
 export default function Home({ setScreen, handleLogout }: HomeProps) {
   const { session } = useAuthStore();
   return (
-    <div className="min-h-screen bg-gray-200 flex justify-center items-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400 flex justify-center items-center p-4">
       {/* PHONE FRAME */}
-      <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-xl p-4 flex flex-col">
-        {/* HEADER PROFILE */}
-        <div className="border rounded-2xl border-gray-300 p-3 flex gap-3 items-center mb-4">
-          {/* FOTO */}
-          <div className="w-16 h-16 border border-gray-300 rounded-md flex items-center justify-center text-xs text-gray-400">
-            FOTO
+      <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-2xl p-4 flex flex-col">
+        {/* HEADER */}
+        <div className="bg-gradient-to-r from-orange-400 to-amber-500 text-white rounded-2xl p-4 mb-4 shadow-md">
+          <p className="text-sm opacity-90">Welcome Back 👋</p>
+          <p className="font-bold text-lg">{session?.session.user.name}</p>
+          <p className="text-xs opacity-80">{session?.session.user.role}</p>
+        </div>
+
+        {/* PROFILE */}
+        <div className="bg-gray-50 rounded-2xl p-3 flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-gray-400 shadow-sm">
+            IMG
           </div>
 
-          {/* INFO */}
-          <div className="text-xs">
-            <p className="font-semibold text-base text-gray-900">
-              {session?.session.user.name}
+          <div className="text-xs leading-relaxed">
+            <p className="text-gray-500">
+              Nama :
+              <span className="text-gray-900 font-medium ml-1">
+                {session?.session.user.name}
+              </span>
             </p>
-            <p className="text-gray-500 text-xs font-medium">
-              Divisi {session?.session.user.role}
+
+            <p className="text-gray-500">
+              Divisi :
+              <span className="text-gray-900 font-medium ml-1">
+                {session?.session.user.role}
+              </span>
             </p>
-            <p className="text-gray-500 text-xs">
-              {session?.session.user.email}
+
+            <p className="text-gray-500 truncate">
+              Email :
+              <span className="text-gray-900 font-medium ml-1">
+                {session?.session.user.email}
+              </span>
             </p>
           </div>
         </div>
 
         {/* MENU */}
-        <div className="flex justify-around mb-6">
-          {/* STOCK */}
-          <button
-            onClick={() => setScreen("stock")}
-            className="flex flex-col items-center"
-          >
-            <div className="bg-white border border-gray-300 rounded-xl p-3 shadow-sm">
-              <Package size={28} className="text-orange-500" />
-            </div>
-            <span className="text-xs mt-1 text-gray-600">Stock</span>
-          </button>
-
-          {/* JOBS */}
-          <button
-            onClick={() => setScreen("jobs")}
-            className="flex flex-col items-center"
-          >
-            <div className="bg-white border border-gray-300 rounded-xl p-3 shadow-sm">
-              <Briefcase size={28} className="text-amber-500" />
-            </div>
-            <span className="text-xs mt-1 text-gray-600">Jobs</span>
-          </button>
-
-          {/* REPORT */}
-          <button className="flex flex-col items-center">
-            <div className="bg-white border border-gray-300 rounded-xl p-3 shadow-sm">
-              <Bell size={28} className="text-red-500" />
-            </div>
-            <span className="text-xs mt-1 text-gray-600">Report</span>
-          </button>
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          {[
+            {
+              label: "Stock",
+              icon: <Package size={24} />,
+              color: "text-orange-500",
+              onClick: () => setScreen("stock"),
+            },
+            {
+              label: "Jobs",
+              icon: <Briefcase size={24} />,
+              color: "text-amber-500",
+              onClick: () => setScreen("jobs"),
+            },
+            {
+              label: "Report",
+              icon: <Bell size={24} />,
+              color: "text-red-500",
+            },
+          ].map((item, i) => (
+            <button
+              key={i}
+              onClick={item.onClick}
+              className="flex flex-col items-center justify-center bg-gray-50 rounded-xl py-3 shadow-sm active:scale-95 transition"
+            >
+              <div className={item.color}>{item.icon}</div>
+              <span className="text-[11px] mt-1 text-gray-600">
+                {item.label}
+              </span>
+            </button>
+          ))}
         </div>
 
-        {/* CONTENT AREA (kosong seperti design) */}
-        <div className="flex-1 border border-gray-300 rounded-2xl"></div>
+        {/* CONTENT */}
+        <div className="flex-1 bg-gray-50 rounded-2xl p-3">
+          <p className="text-xs text-gray-500 mb-2">Aktivitas terbaru</p>
+
+          <div className="space-y-2 text-xs">
+            <div className="bg-white p-2 rounded-lg shadow-sm">
+              Stock kain masuk +20
+            </div>
+            <div className="bg-white p-2 rounded-lg shadow-sm">
+              Job jahit baru dibuat
+            </div>
+          </div>
+        </div>
 
         {/* LOGOUT */}
-        <button onClick={handleLogout} className="mt-4 text-xs text-red-500">
+        <button
+          onClick={handleLogout}
+          className="mt-3 text-xs text-red-500 font-medium hover:opacity-70"
+        >
           Logout
         </button>
       </div>

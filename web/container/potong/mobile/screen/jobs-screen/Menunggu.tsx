@@ -81,20 +81,24 @@ export default function Menunggu() {
             <div
               key={`${permintaan.id_permintaan}-${index}`}
               onClick={() => setSelectedPermintaan(permintaan)}
-              className="border border-gray-300 rounded-2xl p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition-colors"
+              className="bg-white border border-gray-100 rounded-xl px-3 py-2 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition"
             >
-              <div className="flex flex-col">
+              {/* LEFT */}
+              <div className="flex flex-col leading-tight">
                 {permintaan.is_urgent && (
-                  <p className="text-red-500 text-xs uppercase font-bold">
-                    Urgent
-                  </p>
+                  <span className="text-[10px] text-red-500 font-semibold">
+                    URGENT
+                  </span>
                 )}
-                <p className="text-sm font-semibold text-gray-800">
+
+                <p className="text-xs font-medium text-gray-800">
                   {permintaan.nama_produk} - {permintaan.ukuran}
                 </p>
               </div>
+
+              {/* RIGHT */}
               <div className="text-right">
-                <p className="text-2xl font-bold text-gray-800">
+                <p className="text-lg font-bold text-gray-900">
                   {permintaan.jumlah}
                 </p>
               </div>
@@ -111,80 +115,93 @@ export default function Menunggu() {
       {/* ================= MODAL JOB ================= */}
       {selectedPermintaan && (
         <div
-          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
           onClick={handleCloseModal}
         >
-          <form
-            className="bg-white p-4 rounded-xl w-[85%]"
+          <div
+            className="bg-white p-4 rounded-2xl w-full max-w-sm shadow-2xl"
             onClick={(e) => e.stopPropagation()}
-            onSubmit={handleSubmit(onSubmit)}
           >
+            {/* URGENT BADGE */}
             {selectedPermintaan.is_urgent && (
-              <p className="text-red-500 text-md uppercase font-bold mb-1">
-                Urgent
-              </p>
+              <div className="mb-2">
+                <span className="bg-red-100 text-red-500 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                  URGENT
+                </span>
+              </div>
             )}
 
-            <div className="flex justify-between mb-2">
-              <p className="text-md text-gray-800 font-semibold">
-                {selectedPermintaan.nama_produk}
+            {/* HEADER */}
+            <div className="flex justify-between items-start gap-2 mb-3">
+              <p className="text-sm font-semibold text-gray-800 leading-snug">
+                {selectedPermintaan.nama_produk} - {selectedPermintaan.ukuran}
               </p>
-              <p className="font-bold text-gray-800">
+
+              <p className="text-xl font-bold text-gray-900">
                 {selectedPermintaan.jumlah}
               </p>
             </div>
 
-            <hr className="mb-3 border-gray-300" />
+            {/* DIVIDER */}
+            <div className="h-px bg-gray-200 mb-3" />
 
-            {/* Input Kode Kain */}
-            <div className="mb-2">
-              <input
-                {...register("kode_kain")}
-                placeholder="kode kain"
-                className={`w-full border ${errors.kode_kain ? "border-red-500" : "border-gray-300"} text-gray-900 px-2 py-1 rounded`}
-              />
-              {errors.kode_kain && (
-                <p className="text-[10px] text-red-500 mt-1">
-                  {errors.kode_kain.message}
-                </p>
-              )}
+            {/* DETAIL */}
+            <div className="text-xs text-gray-600 space-y-1 mb-4">
+              <p>
+                Jumlah diminta :
+                <span className="font-medium text-gray-800 ml-1">
+                  {selectedPermintaan.jumlah}
+                </span>
+              </p>
+              <p>
+                Kategori :
+                <span className="font-medium text-gray-800 ml-1">
+                  {selectedPermintaan.nama_produk}
+                </span>
+              </p>
             </div>
 
-            {/* Input Pemotong */}
-            <div className="mb-2">
-              <input
-                {...register("pemotong")}
-                placeholder="pemotong"
-                className={`w-full border ${errors.pemotong ? "border-red-500" : "border-gray-300"} text-gray-900 px-2 py-1 rounded`}
-              />
-              {errors.pemotong && (
-                <p className="text-[10px] text-red-500 mt-1">
-                  {errors.pemotong.message}
-                </p>
-              )}
-            </div>
+            {/* ACTION TEXT */}
+            <p className="text-xs text-gray-500 text-center mb-3">
+              Lanjut ke proses?
+            </p>
 
-            {/* Input Pengecek */}
-            <div className="mb-3">
-              <input
-                {...register("pengecek")}
-                placeholder="pengecek"
-                className={`w-full border ${errors.pengecek ? "border-red-500" : "border-gray-300"} text-gray-900 px-2 py-1 rounded`}
-              />
-              {errors.pengecek && (
-                <p className="text-[10px] text-red-500 mt-1">
-                  {errors.pengecek.message}
-                </p>
-              )}
-            </div>
+            {/* BUTTON */}
+            <div className="flex gap-2">
+              {/* PROSES */}
+              <button
+                onClick={() => {
+                  mutatePermintaan(
+                    {
+                      id: selectedPermintaan.id_permintaan,
+                      data: {
+                        kode_kain: "-",
+                        pemotong: "-",
+                        pengecek: "-",
+                      },
+                    },
+                    {
+                      onSuccess: () => {
+                        handleCloseModal();
+                        toast.success("Dipindah ke proses");
+                      },
+                    },
+                  );
+                }}
+                className="flex-1 bg-gradient-to-r from-orange-400 to-amber-500 text-white text-xs py-2.5 rounded-xl font-semibold shadow hover:opacity-90 active:scale-95 transition"
+              >
+                PROSES
+              </button>
 
-            <button
-              type="submit"
-              className="bg-purple-500 text-white text-xs px-3 py-1 rounded float-right hover:bg-purple-600 active:scale-95 transition-all"
-            >
-              cek
-            </button>
-          </form>
+              {/* TIDAK */}
+              <button
+                onClick={handleCloseModal}
+                className="flex-1 bg-gray-100 text-gray-700 text-xs py-2.5 rounded-xl font-medium hover:bg-gray-200 active:scale-95 transition"
+              >
+                TIDAK
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </>

@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import Home from "./screen/home";
 import Jobs from "./screen/jobs";
 
+type ScreenType = "home" | "jobs";
+
 export default function PenjahitMobile(props: any) {
   const handleLogout = props?.handleLogout || (() => {});
 
-  const [screen, setScreen] = useState<"home" | "jobs">("home");
+  const [screen, setScreen] = useState<ScreenType>("home");
   const [jobs, setJobs] = useState<any[]>([]);
   const [mounted, setMounted] = useState(false);
 
@@ -67,20 +69,18 @@ export default function PenjahitMobile(props: any) {
 
   if (!mounted) return null;
 
-  return (
-    <>
-      {screen === "home" && (
-        <Home setScreen={setScreen} handleLogout={handleLogout} />
-      )}
+  // 🔥 SCREEN MAPPING
+  const screens: Record<ScreenType, () => JSX.Element> = {
+    home: () => <Home setScreen={setScreen} handleLogout={handleLogout} />,
+    jobs: () => (
+      <Jobs
+        jobs={jobs}
+        setJobs={setJobs}
+        setScreen={setScreen}
+        handleResetJobs={handleResetJobs}
+      />
+    ),
+  };
 
-      {screen === "jobs" && (
-        <Jobs
-          jobs={jobs}
-          setJobs={setJobs}
-          setScreen={setScreen}
-          handleResetJobs={handleResetJobs}
-        />
-      )}
-    </>
-  );
+  return screens[screen]();
 }

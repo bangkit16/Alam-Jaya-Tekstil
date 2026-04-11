@@ -13,33 +13,35 @@ export default function Jobs({ setScreen }: any) {
   const [search, setSearch] = useState("");
 
   return (
-    <div className="min-h-screen bg-gray-200 flex justify-center items-center p-4">
-      <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-xl p-4 flex flex-col relative">
+    <div className="min-h-screen bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400 flex justify-center items-center p-4">
+      <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-2xl p-4 flex flex-col relative">
         {/* HEADER */}
-        <div className="border border-gray-300 rounded-2xl py-2 text-center text-sm font-medium mb-3 text-gray-700">
+        <div className="bg-gradient-to-r from-orange-400 to-amber-500 text-white rounded-2xl py-2 text-center text-sm font-medium mb-4 shadow">
           View Jobs
         </div>
 
         {/* SEARCH */}
-        <input
-          placeholder="Search........"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-1 text-sm mb-2 text-gray-700"
-        />
+        <div className="mb-3">
+          <input
+            placeholder="Search jobs..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-gray-100 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
+          />
+        </div>
 
         {/* FILTER */}
-        <div className="flex justify-between text-xs mb-3">
+        <div className="grid grid-cols-3 gap-2 mb-4 bg-gray-100 p-1 rounded-xl text-xs">
           {["menunggu", "proses", "selesai"].map((item) => (
             <button
               key={item}
               onClick={() => {
                 setFilterStatus(item as statusType);
               }}
-              className={`flex-1 text-center py-1 ${
+              className={`py-1.5 rounded-lg transition ${
                 filterStatus === item
-                  ? "font-semibold text-black"
-                  : "text-gray-400"
+                  ? "bg-white shadow text-gray-900 font-medium"
+                  : "text-gray-500"
               }`}
             >
               {item}
@@ -48,18 +50,19 @@ export default function Jobs({ setScreen }: any) {
         </div>
 
         {/* ================= CONTENT ================= */}
-        {filterStatus === "menunggu" && <Menunggu />}
-        {filterStatus === "proses" && <Proses />}
-        {filterStatus === "selesai" && <Selesai />}
+        <div className="flex-1 overflow-auto">
+          {filterStatus === "menunggu" && <Menunggu />}
+          {filterStatus === "proses" && <Proses />}
+          {filterStatus === "selesai" && <Selesai />}
+        </div>
 
         {/* BACK */}
-        <div className="mt-auto flex flex-col gap-2">
-          {/* BACK */}
+        <div className="mt-3">
           <button
             onClick={() => setScreen("home")}
-            className="text-xs text-gray-500"
+            className="w-full bg-gray-100 text-gray-700 text-xs py-2 rounded-xl font-medium hover:bg-gray-200 active:scale-95 transition"
           >
-            ← Back
+            Kembali
           </button>
         </div>
       </div>

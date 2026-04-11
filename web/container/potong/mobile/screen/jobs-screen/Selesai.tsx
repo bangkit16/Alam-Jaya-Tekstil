@@ -14,20 +14,64 @@ export default function Selesai() {
         data.map((item: any, index: number) => (
           <div
             key={`${item.id_permintaan}-${index}`}
-            className="border border-gray-300 rounded-2xl p-4 flex justify-between items-center"
+            className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
           >
-            <div>
-              <p className="text-sm font-semibold text-gray-800">
-                {item.nama_produk}
+            {/* HEADER */}
+            <div className="flex justify-between items-start mb-2">
+              <p className="text-sm font-semibold text-gray-800 leading-snug">
+                {item.nama_produk} - {item.ukuran}
               </p>
-              <p className="text-sm font-semibold text-gray-800">
-                {item.jumlah}
+
+              <p className="text-lg font-bold text-gray-900">{item.jumlah}</p>
+            </div>
+
+            {/* DIVIDER */}
+            <div className="h-px bg-gray-200 mb-3" />
+
+            {/* DETAIL */}
+            <div className="text-xs text-gray-600 space-y-1">
+              <p>
+                Nama Produk :
+                <span className="text-gray-800 font-medium ml-1">
+                  {item.nama_produk}
+                </span>
               </p>
-              <p className="text-sm font-semibold text-gray-800">
-                {item.ukuran}
+
+              <p>
+                Ukuran :
+                <span className="text-gray-800 font-medium ml-1">
+                  {item.ukuran}
+                </span>
+              </p>
+
+              <p>
+                Kode Kain :
+                <span className="text-gray-800 font-medium ml-1">
+                  {item.kode_kain || "-"}
+                </span>
+              </p>
+
+              <p>
+                Nama Pemotong :
+                <span className="text-gray-800 font-medium ml-1">
+                  {item.pemotong || "-"}
+                </span>
+              </p>
+
+              <p>
+                Jumlah Diminta :
+                <span className="text-gray-800 font-medium ml-1">
+                  {item.jumlah}
+                </span>
+              </p>
+
+              <p>
+                Jumlah Hasil :
+                <span className="text-gray-800 font-medium ml-1">
+                  {item.jumlah_lolos || item.jumlah}
+                </span>
               </p>
             </div>
-            <p className="text-xl font-bold">{item.jumlah}</p>
           </div>
         ))
       ) : (
