@@ -15,7 +15,6 @@ import "dotenv/config";
 // ==========================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const CSS_URL = "https://cloudflare.com";
 
 // ==========================
 // ROUTES
@@ -44,7 +43,7 @@ app.use(
     origin: process.env.CLIENT_URL || "http://localhost:3000",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
-  })
+  }),
 );
 
 // ==========================
@@ -89,8 +88,12 @@ app.use(
   "/api-docs",
   swaggerUi.serve,
   swaggerUi.setup(swaggerSpec, {
-    customCssUrl: CSS_URL,
-    customJs: ["https://cloudflare.com", "https://cloudflare.com"],
+    customCssUrl:
+      "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.8.0/swagger-ui.css",
+    customJs: [
+      "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.8.0/swagger-ui-bundle.js",
+      "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.8.0/swagger-ui-standalone-preset.js",
+    ],
   }),
 );
 app.get("/api-docs", swaggerUi.setup(swaggerSpec));
@@ -173,12 +176,12 @@ app.post("/create/permintaan", async (req: Request, res: Response) => {
     await TrackLog.logPermintaan(
       newPermintaan.id,
       "Permintaan produk berhasil dibuat",
-      StatusPermintaan.MENUNGGU_GUDANG
+      StatusPermintaan.MENUNGGU_GUDANG,
     );
 
     await TrackLog.logStatus(
       newPermintaan.id,
-      StatusPermintaan.MENUNGGU_GUDANG
+      StatusPermintaan.MENUNGGU_GUDANG,
     );
 
     return res.json({
