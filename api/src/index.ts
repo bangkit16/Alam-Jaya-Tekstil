@@ -64,7 +64,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: "https://api-alam.vercel.app",
+        url: "serverUrl",
       },
     ],
   },
