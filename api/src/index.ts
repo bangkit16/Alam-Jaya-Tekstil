@@ -15,6 +15,7 @@ import "dotenv/config";
 // ==========================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const CSS_URL = "https://cloudflare.com";
 
 // ==========================
 // ROUTES
@@ -84,7 +85,14 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions);
 // console.log("Swagger Paths:", swaggerSpec.paths);
 
 // Swagger UI Fix Vercel
-app.use("/api-docs", swaggerUi.serve);
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    customCssUrl: CSS_URL,
+    customJs: ["https://cloudflare.com", "https://cloudflare.com"],
+  }),
+);
 app.get("/api-docs", swaggerUi.setup(swaggerSpec));
 
 // JSON Swagger
