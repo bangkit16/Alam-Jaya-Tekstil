@@ -64,7 +64,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: serverUrl,
+        url: "https://api-alam.vercel.app",
       },
     ],
   },
@@ -96,7 +96,7 @@ app.use(
     ],
   }),
 );
-app.get("/api-docs", swaggerUi.setup(swaggerSpec));
+// app.get("/api-docs", swaggerUi.setup(swaggerSpec));
 
 // JSON Swagger
 app.get("/api-docs.json", (req: Request, res: Response) => {
