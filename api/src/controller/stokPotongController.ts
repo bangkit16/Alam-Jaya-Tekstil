@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
-import { prisma } from '../lib/prisma';
-import { StatusPermintaan, StatusStokPotong } from '../generated/prisma/enums';
-import TrackLog from '../lib/trackLog';
+import { prisma } from '../lib/prisma.js';
+import { StatusPermintaan, StatusStokPotong } from '../generated/prisma/enums.js';
+import TrackLog from '../lib/trackLog.js';
 // import { UkuranProduk } from "../generated/prisma/enums";
 export default class StokPotongController {
   public static async getDataMenunggu(req: Request, res: Response) {

@@ -1,5 +1,6 @@
 import { Router } from "express";
-import StokPotong from "../controller/stokPotongController";
+import StokPotong from "../controller/kurirController.js";
+import KurirController from "../controller/kurirController.js";
 
 const router = Router();
 
@@ -21,32 +22,34 @@ const router = Router();
  *         content:
  *           application/json:
  *             example:
- *               - id_proses_stok_potong: "bcvc3sad22e-fe64-4343-a275-5b2de4ad8615"
+ *               - idProsesStokPotong: "bcvc3sad22e-fe64-4343-a275-5b2de4ad8615"
  *                 namaBarang: "Hoodie Green Navy"
  *                 ukuran: "L"
  *                 namaPenjahit: "Sari"
+ *                 isUrgent: false
  *                 kodeStokPotongan: "AD-0123-A1"
  *                 jumlahLolos: 20
- *               - id_proses_stok_potong: "bcvc3sad22e-fe64-4343-a275-5b2de4ad8615"
+ *               - idProsesStokPotong: "bcvc3sad22e-fe64-4343-a275-5b2de4ad8615"
  *                 namaBarang: "Hoodie Green Navy"
  *                 ukuran: "L"
  *                 namaPenjahit: "Roti"
+ *                 isUrgent: false
  *                 kodeStokPotongan: "AD-5678-A4"
  *                 jumlahLolos: 40
  */
 
-router.get("/menunggu" , () => {});
+router.get("/menunggu", KurirController.getDataMenunggu);
 
 /**
  * @swagger
- * /kurir/menunggu/{id_proses_stok_potong}:
+ * /kurir/menunggu/{idProsesStokPotong}:
  *   put:
  *     summary: Input nama kurir (Update Proses ke data stok)
  *     description: Memproes data stok potong dan merubah status menjadi selesai
  *     tags: [Kurir]
  *     parameters:
  *       - in: path
- *         name: id_proses_stok_potong
+ *         name: idProsesStokPotong
  *         required: true
  *         schema:
  *           type: string
@@ -57,10 +60,10 @@ router.get("/menunggu" , () => {});
  *           schema:
  *             type: object
  *             properties:
- *               id_kurir:
+ *               idKurir:
  *                 type: string
  *           example:
- *             id_kurir: "dfcsad2e-mku1-4343-a275-5b2de4ad8615"
+ *             idKurir: "dfcsad2e-mku1-4343-a275-5b2de4ad8615"
  *     responses:
  *       200:
  *         description: Stok potong sedang dikirimkan
@@ -71,7 +74,10 @@ router.get("/menunggu" , () => {});
  *               status : "PROSES_KURIR"
  */
 
-router.put("/menunggu/id_stok_potong", () => {});
+router.put(
+  "/menunggu/:idProsesStokPotong",
+  KurirController.updateProsesMenunggu,
+);
 
 /**
  * @swagger
@@ -84,28 +90,28 @@ router.put("/menunggu/id_stok_potong", () => {});
  *         content:
  *           application/json:
  *             example:
- *               - id_proses_stok_potong: "bcvc3sad22e-fe64-4343-a275-5b2de4ad8615"
+ *               - idProsesStokPotong: "bcvc3sad22e-fe64-4343-a275-5b2de4ad8615"
  *                 namaBarang: "Hoodie Green Navy"
  *                 ukuran: "L"
  *                 namaPenjahit: "Sari"
  *                 jumlahLolos: 20
  *                 kodeStokPotongan: "AD-0123-A1"
  *                 tanggalBerangkat: "2023-10-27T10:00:00Z"
- * 
+ *
  */
 
- router.get("/proses", () => {});
+router.get("/proses", KurirController.getDataProses);
 
- /**
+/**
  * @swagger
- * /kurir/proses/{id_proses_stok_potong}:
+ * /kurir/proses/{idProsesStokPotong}:
  *   put:
  *     summary: Konfirmasi Selesai Kirim (Update Status ke Selesai)
  *     description: Mengubah status pengiriman dari PROSES_KURIR menjadi SELESAI
  *     tags: [Kurir]
  *     parameters:
  *       - in: path
- *         name: id_proses_stok_potong
+ *         name: idProsesStokPotong
  *         required: true
  *         schema:
  *           type: string
@@ -119,7 +125,7 @@ router.put("/menunggu/id_stok_potong", () => {});
  *               status: "MENUNGGU_JAHIT"
  */
 
-router.put("/proses/:id_proses_stok_potong", () => {});
+router.put("/proses/:idProsesStokPotong", KurirController.updateProsesSelesai);
 
 /**
  * @swagger
@@ -132,18 +138,20 @@ router.put("/proses/:id_proses_stok_potong", () => {});
  *         content:
  *           application/json:
  *             example:
- *               - id_proses_stok_potong: "bcvc3sad22e-fe64-4343-a275-5b2de4ad8615"
+ *               - idProsesStokPotong: "bcvc3sad22e-fe64-4343-a275-5b2de4ad8615"
  *                 namaBarang: "Hoodie Green Navy"
  *                 ukuran: "L"
  *                 jumlahLolos: 20
  *                 namaPenjahit: "Sari"
+ *                 namaKurir: "Agus Kurir"
+ *                 isUrgent: true
  *                 kodeStokPotongan: "AD-0123-A1"
+ *                 tanggalBerangkat: "2023-10-27T14:00:00Z"
  *                 tanggalSampai: "2023-10-27T14:00:00Z"
- * 
+ *
  */
 
-
-router.get("/selesai", () => {});
+router.get("/selesai", KurirController.getDataSelesai);
 
 /**
  * @swagger
@@ -160,8 +168,6 @@ router.get("/selesai", () => {});
  *               - id: "uuid-kurir-1"
  *                 nama: "Agus Kurir"
  */
-router.get("/list-kurir", () => {});
-
-
+router.get("/list-kurir", KurirController.getListKurir);
 
 export default router;

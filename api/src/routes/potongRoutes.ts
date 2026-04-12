@@ -1,5 +1,5 @@
 import { Router } from "express";
-import PotongController from "../controller/potongController";
+import PotongController from "../controller/potongController.js";
 
 const router = Router();
 

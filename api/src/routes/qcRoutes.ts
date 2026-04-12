@@ -1,6 +1,7 @@
 import {  Router } from "express";
 import type { Request, Response } from "express";
-import StokPotong from "../controller/stokPotongController";
+import StokPotong from "../controller/stokPotongController.js";
+import QCController from "../controller/qcController.js";
 
 const router = Router();
 
@@ -39,7 +40,7 @@ const router = Router();
  *
  */
 
-router.get("/menunggu", () => {});
+router.get("/menunggu", QCController.getDataMenunggu);
 
 /**
  * @swagger
@@ -63,7 +64,7 @@ router.get("/menunggu", () => {});
  *               status : "PROSES_QC"
  */
 
-router.put("/menunggu/:id_stok_potong", () => {});
+router.put("/menunggu/:idQC", QCController.updateProsesDikerjakan);
 
 /**
  * @swagger

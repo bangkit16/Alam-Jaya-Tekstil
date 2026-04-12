@@ -1,5 +1,5 @@
 import { Router } from "express";
-import StokPotongController from "../controller/stokPotongController";
+import StokPotongController from "../controller/stokPotongController.js";
 
 const router = Router();
 /**

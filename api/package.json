@@ -7,11 +7,13 @@
     "build:tsc": "npx tsc --build",
     "build:esbuild": "npx esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js --format=esm",
     "build:esbuild:external": "npx esbuild src/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/index.mjs",
-    "build": "npx esbuild src/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/index.js",
-    "start": "node dist/index.mjs",
+    "build": "npx esbuild src/index.ts --bundle --platform=node --format=esm --packages=external --external:./src/generated/prisma/* --outfile=dist/index.js",
+    "vercel-build": "npx prisma generate && npx esbuild src/index.ts --bundle --platform=node --format=esm --packages=external --external:./src/generated/prisma/* --outfile=dist/index.js",
+    "start": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx --watch src/index.ts",
-    "seed": "prisma db seed"
+    "seed": "prisma db seed",
+    "migrate": "npx prisma migrate reset && npx prisma migrate deploy && tsx prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -37,9 +39,8 @@
     "typescript": "^6.0.2"
   },
   "dependencies": {
-    "@prisma/client": "^7.6.0",
     "@prisma/adapter-pg": "^7.7.0",
-    "pg": "^8.20.0",
+    "@prisma/client": "^7.6.0",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
@@ -49,8 +50,11 @@
     "esbuild-register": "^3.6.0",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+    "pg": "^8.20.0",
+    "serverless-http": "^4.0.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "tsx": "^4.21.0"
+    "tsx": "^4.21.0",
+    "zod": "^4.3.6"
   }
 }

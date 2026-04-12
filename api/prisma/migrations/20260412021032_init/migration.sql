@@ -89,8 +89,12 @@ CREATE TABLE "StokPotong" (
     "kodeKain" TEXT NOT NULL,
     "kodeStokPotongan" TEXT,
     "tanggalMasuk" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "tanggalCek" TIMESTAMP(3),
     "tanggalSelesai" TIMESTAMP(3),
     "jumlahHasil" INTEGER,
+    "jumlahLolos" INTEGER,
+    "jumlahReject" INTEGER,
+    "notes" TEXT,
     "status" "StatusStokPotong" NOT NULL,
 
     CONSTRAINT "StokPotong_pkey" PRIMARY KEY ("id")

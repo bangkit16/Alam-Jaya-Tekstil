@@ -6,6 +6,7 @@
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
+  moduleFormat = "esm"
 }
 
 datasource db {
@@ -156,7 +157,7 @@ model ProsesStokPotong {
 model QCStokPotong {
   id                 String   @id @default(uuid())
   stokPotongId       String   @unique
-  boxId              String
+  boxId              String?
 
   jumlahLolos        Int?
   jumlahReject       Int?
@@ -170,7 +171,7 @@ model QCStokPotong {
   status             StatusQC
 
   stokPotong         StokPotong @relation(fields: [stokPotongId], references: [id])
-  box                Box        @relation(fields: [boxId], references: [id])
+  box                Box?       @relation(fields: [boxId], references: [id])
 }
 
 model Box {

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
-import StokGudangController from "../controller/stokGudangController";
+import StokGudangController from "../controller/stokGudangController.js";
 
 const router = Router();
 

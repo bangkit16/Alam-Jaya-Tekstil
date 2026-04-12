@@ -1,5 +1,5 @@
 import { Router } from "express";
-import StokPotong from "../controller/stokPotongController";
+import PenjahitController from "../controller/penjahitController.js";
 
 const router = Router();
 
@@ -21,24 +21,25 @@ const router = Router();
  *         content:
  *           application/json:
  *             example:
- *               - id_proses_stok_potong: "pnh-001"
+ *               - idProsesStokPotong: "pnh-001"
  *                 namaBarang: "Hoodie Green Navy"
  *                 ukuran: "L"
  *                 jumlah: 31
+ *                 isUrgent: true
  *                 kodeStokPotongan: "AD-0123-A1"
  *                 tanggalKirim: "2023-10-27"
  */
-router.get("/menunggu", () => {});
+router.get("/menunggu", PenjahitController.getDataMenunggu);
 
 /**
  * @swagger
- * /penjahit/menunggu/{id_proses_stok_potong}:
+ * /penjahit/menunggu/{idProsesStokPotong}:
  *   put:
  *     summary: Konfirmasi Ambil Pekerjaan (Tombol Proses)
  *     tags: [Penjahit]
  *     parameters:
  *       - in: path
- *         name: id_proses_stok_potong
+ *         name: idProsesStokPotong
  *         required: true
  *         schema:
  *           type: string
@@ -51,7 +52,10 @@ router.get("/menunggu", () => {});
  *               message: "Pekerjaan dimulai"
  *               status: "PROSES_JAHIT"
  */
-router.put("/menunggu/:id_proses_stok_potong", () => {});
+router.put(
+  "/menunggu/:idProsesStokPotong",
+  PenjahitController.updateMenungguProses,
+);
 
 /**
  * @swagger
@@ -64,14 +68,14 @@ router.put("/menunggu/:id_proses_stok_potong", () => {});
  *         content:
  *           application/json:
  *             example:
- *               - id_proses_stok_potong: "40ea5347-a01f-46e1-a843-194effa93c1f"
+ *               - idProsesStokPotong: "40ea5347-a01f-46e1-a843-194effa93c1f"
  *                 namaBarang: "Hoodie Green Navy"
  *                 ukuran: "L"
  *                 jumlahLolos: 31
  *                 kodeStokPotongan: "AD-0123-A1"
  *                 tanggalMulaiJahit: "2023-10-27T08:00:00Z"
  *                 status: "DIKERJAKAN"
- *               - id_proses_stok_potong: "3d52b6ff-d86a-45b2-a0e7-b1cd659027c6"
+ *               - idProsesStokPotong: "3d52b6ff-d86a-45b2-a0e7-b1cd659027c6"
  *                 namaBarang: "Hoodie Green Navy"
  *                 ukuran: "L"
  *                 jumlahLolos: 31
@@ -80,17 +84,17 @@ router.put("/menunggu/:id_proses_stok_potong", () => {});
  *                 status: "JEDA"
  */
 
-router.get("/proses", () => {});
+router.get("/proses", PenjahitController.getDataProses);
 
 /**
  * @swagger
- * /penjahit/proses/dikerjakan/{id_proses_stok_potong}:
+ * /penjahit/proses/dikerjakan/{idProsesStokPotong}:
  *   put:
  *     summary: Konfirmasi Proses jahit Dikerjakan(Tombol Proses)
  *     tags: [Penjahit]
  *     parameters:
  *       - in: path
- *         name: id_proses_stok_potong
+ *         name: idProsesStokPotong
  *         required: true
  *         schema:
  *           type: string
@@ -105,17 +109,20 @@ router.get("/proses", () => {});
  *               status: "PROSES_JAHIT"
  */
 
-router.put("/proses/dikerjakan/:id_proses_stok_potong", () => {});
+router.put(
+  "/proses/dikerjakan/:idProsesStokPotong",
+  PenjahitController.updateProsesDikerjakan,
+);
 
 /**
  * @swagger
- * /penjahit/proses/jeda/{id_proses_stok_potong}:
+ * /penjahit/proses/jeda/{idProsesStokPotong}:
  *   put:
  *     summary: Konfirmasi Proses jahit Di Jeda (Tombol Jeda)
  *     tags: [Penjahit]
  *     parameters:
  *       - in: path
- *         name: id_proses_stok_potong
+ *         name: idProsesStokPotong
  *         required: true
  *         schema:
  *           type: string
@@ -130,18 +137,20 @@ router.put("/proses/dikerjakan/:id_proses_stok_potong", () => {});
  *               status: "JEDA_JAHIT"
  */
 
-router.put("/proses/jeda/:id_proses_stok_potong", () => {});
-
+router.put(
+  "/proses/jeda/:idProsesStokPotong",
+  PenjahitController.updateProsesJeda,
+);
 
 /**
  * @swagger
- * /penjahit/proses/{id_proses_stok_potong}:
+ * /penjahit/proses/{idProsesStokPotong}:
  *   put:
  *     summary: Input Hasil Jahit & Selesai (Tombol Selesai)
  *     tags: [Penjahit]
  *     parameters:
  *       - in: path
- *         name: id_proses_stok_potong
+ *         name: idProsesStokPotong
  *         required: true
  *         schema:
  *           type: string
@@ -169,7 +178,10 @@ router.put("/proses/jeda/:id_proses_stok_potong", () => {});
  *               status: "MENUNGGU_QC"
  */
 
-router.put("/proses/:id_proses_stok_potong", () => {});
+router.put(
+  "/proses/:idProsesStokPotong",
+  PenjahitController.updateProsesSelesai,
+);
 
 /**
  * @swagger
@@ -182,20 +194,15 @@ router.put("/proses/:id_proses_stok_potong", () => {});
  *         content:
  *           application/json:
  *             example:
- *               - id_proses_stok_potong: "pnh-001"
+ *               - idProsesStokPotong: "pnh-001"
  *                 namaBarang: "Hoodie Green Navy"
+ *                 kodeStokPotongan: "AD-0123-A1"
  *                 ukuran: "L"
  *                 jumlahSelesai: 25
+ *                 isUrgent: true
  *                 tanggalSelesai: "2023-10-27T15:00:00Z"
  *                 catatan: "Sisa kain kurang"
  */
-router.get("/selesai", () => {});
-
-
-
-
-
-
-
+router.get("/selesai", PenjahitController.getDataSelesai);
 
 export default router;

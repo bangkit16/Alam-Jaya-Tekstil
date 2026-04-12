@@ -1,5 +1,5 @@
-import { StatusPermintaan } from "../generated/prisma/enums";
-import { prisma } from "./prisma";
+import { StatusPermintaan } from "../generated/prisma/enums.js";
+import { prisma } from "./prisma.js";
 
 export default class TrackLog {
   public static async logPermintaan(

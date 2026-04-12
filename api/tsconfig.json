@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
     "target": "ES2023",
-    "module": "esnext",
+    "module": "nodenext",
     "lib": [ "ESNext"],
-    "ignoreDeprecations": "6.0",
-    "moduleResolution": "bundler",
+    // "ignoreDeprecations": "6.0",
+    "moduleResolution": "nodenext",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -14,7 +14,7 @@
     "rootDir": "./src",
     
   },
-  "include": ["src"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }
 // {

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getSession, login, logout } from "../controller/authController";
+import { getSession, login, logout, refresh } from "../controller/authController.js";
 
 const router = Router();
 
@@ -13,28 +13,41 @@ const router = Router();
 /**
  * @swagger
  * /auth/login:
- *   get:
- *     summary: Login  (Tab Menunggu)
+ *   post:
+ *     summary: Login
  *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *           example:
+ *             username: "admin"
+ *             password: "123"
  *     responses:
  *       200:
- *         description: Daftar permintaan dari gudang yang menunggu untuk dipotong
+ *         description: Berhasil memproses menunggu
  *         content:
  *           application/json:
  *             example:
- *               - id_permintaan: 1
- *                 productName: "Hoodie Green Navy"
- *                 size: "L"
- *                 quantity: 20
- *                 status: "Menunggu"
- *               - id_permintaan: 2
- *                 productName: "Hoodie Green Navy"
- *                 size: "L"
- *                 quantity: 20
- *                 status: "Menunggu"
+ *               accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMyIsIm5hbWUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY4ODQyODAwMCwiZXhwIjoxNjg4NDMyNjAwfQ.abc123"
+ *               user: 
+ *                 id: "123"
+ *                 name: "Admin"
+ *                 role: "ADMIN"
+ *                 username: "admin"
+ *                 noHandphone: "08123456789"
+ *               
  */
 router.post("/login", login);
 router.post("/logout", logout);
 router.get("/session", getSession);
+router.post("/refresh", refresh);
 
 export default router;

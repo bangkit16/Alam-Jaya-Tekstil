@@ -5,7 +5,10 @@ const jwtSecret = process.env.JWT_SECRET!;
 
 // Extend tipe Request Express agar bisa menampung data user
 interface AuthRequest extends Request {
-  user?: any;
+  user?: {
+    id: string;
+    name: string;
+  };
 }
 
 export const authMiddleware = (allowedRoles?: string[]) => {

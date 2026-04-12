@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
-import { prisma } from '../lib/prisma';
-import TrackLog from '../lib/trackLog';
-import { StatusPermintaan, StatusStokPotong } from '../generated/prisma/enums';
+import { prisma } from '../lib/prisma.js';
+import TrackLog from '../lib/trackLog.js';
+import { StatusPermintaan, StatusStokPotong } from '../generated/prisma/enums.js';
 // import { UkuranProduk } from "../generated/prisma/enums";
 
 export default class PotongController {
