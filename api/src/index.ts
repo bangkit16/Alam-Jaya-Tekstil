@@ -26,6 +26,19 @@ import kurirRoutes from "./routes/kurirRoutes.js";
 import penjahitRoutes from "./routes/penjahitRoutes.js";
 import qcRoutes from "./routes/qcRoutes.js";
 import stokGudangRoutes from "./routes/stokGudangRoutes.js";
+import { authMiddleware } from "./middleware/authMiddleware.js";
+
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        id: string;
+        name: string;
+      };
+    }
+  }
+}
 
 // ==========================
 const app = express();
@@ -65,6 +78,21 @@ const swaggerOptions = {
     servers: [
       {
         url: serverUrl,
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+    // 2. ADD THIS: Apply it globally to all endpoints
+    security: [
+      {
+        bearerAuth: [],
       },
     ],
   },
@@ -167,7 +195,6 @@ app.get("/", (req: Request, res: Response) => {
  *               status: "MENUNGGU_GUDANG"
  */
 
-
 app.post("/create/permintaan", async (req: Request, res: Response) => {
   try {
     const {
@@ -235,7 +262,7 @@ app.use("/auth", authRoutes);
 app.use("/potong", potongRoutes);
 app.use("/stokpotong", stokPotongRoutes);
 app.use("/kurir", kurirRoutes);
-app.use("/penjahit", penjahitRoutes);
+app.use("/penjahit", authMiddleware(["JAHIT"]), penjahitRoutes);
 app.use("/qc", qcRoutes);
 app.use("/stokgudang", stokGudangRoutes);
 
