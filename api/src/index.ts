@@ -89,10 +89,10 @@ app.use(
   swaggerUi.serve,
   swaggerUi.setup(swaggerSpec, {
     customCssUrl:
-      "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.8.0/swagger-ui.css",
+      "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.1.1/swagger-ui.css",
     customJs: [
-      "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.8.0/swagger-ui-bundle.js",
-      "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.8.0/swagger-ui-standalone-preset.js",
+      "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.1.1/swagger-ui-bundle.js",
+      "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.1.1/swagger-ui-standalone-preset.js",
     ],
   }),
 );
