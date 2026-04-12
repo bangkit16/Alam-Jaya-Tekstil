@@ -1,75 +1,21 @@
 "use client";
 
+import Menunggu from "./jobs-screen/Menunggu";
+import Proses from "./jobs-screen/Proses";
+import MasukBox from "./jobs-screen/MasukBox";
+import Selesai from "./jobs-screen/Selesai";
+
 import { useState } from "react";
 
-type statusType = "qc" | "rework" | "gudang";
+type statusType = "menunggu" | "proses" | "masuk_box" | "selesai";
 
-// ================= DUMMY DATA =================
-const DUMMY_ORDERS = [
-  {
-    id: 1,
-    nama: "Hoodie Green Navy - L",
-    qty: 25,
-    kodeBarang: "HD-GN-L",
-    penjahit: "Adit",
-    tanggalJahit: "2026-04-10",
-    tanggalSelesai: null,
-    status: "qc",
-  },
-  {
-    id: 2,
-    nama: "Kaos Hitam - M",
-    qty: 40,
-    kodeBarang: "TS-BLK-M",
-    penjahit: "Budi",
-    tanggalJahit: "2026-04-09",
-    tanggalSelesai: null,
-    status: "qc",
-  },
-  {
-    id: 3,
-    nama: "Jaket Abu - XL",
-    qty: 15,
-    kodeBarang: "JK-GRY-XL",
-    penjahit: "Rudi",
-    tanggalJahit: "2026-04-08",
-    tanggalSelesai: "2026-04-11",
-    status: "gudang",
-  },
-  {
-    id: 4,
-    nama: "Sweater Navy - L",
-    qty: 20,
-    kodeBarang: "SW-NV-L",
-    penjahit: "Deni",
-    tanggalJahit: "2026-04-07",
-    tanggalSelesai: null,
-    status: "rework",
-  },
-];
-
-export default function Jobs({
-  setScreen,
-  orders = [],
-  handleGagal = () => {},
-  handleLolos = () => {},
-}: any) {
-  const [filterStatus, setFilterStatus] = useState<statusType>("qc");
+export default function Jobs({ setScreen, orders = [] }: any) {
+  const [filterStatus, setFilterStatus] = useState<statusType>("menunggu");
   const [search, setSearch] = useState("");
-
-  // ================= DATA SOURCE =================
-  const dataSource = orders.length ? orders : DUMMY_ORDERS;
-
-  // ================= FILTER =================
-  const filteredData = dataSource.filter(
-    (o: any) =>
-      o.status === filterStatus &&
-      o.nama?.toLowerCase().includes(search.toLowerCase()),
-  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400 flex justify-center items-center p-4">
-      <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-2xl p-4 flex flex-col">
+      <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-2xl p-4 flex flex-col relative">
         {/* HEADER */}
         <div className="bg-gradient-to-r from-orange-400 to-amber-500 text-white rounded-2xl py-2 text-center text-sm font-medium mb-4 shadow">
           QC Jobs
@@ -86,11 +32,12 @@ export default function Jobs({
         </div>
 
         {/* FILTER */}
-        <div className="grid grid-cols-3 gap-2 mb-4 bg-gray-100 p-1 rounded-xl text-xs">
+        <div className="grid grid-cols-4 gap-2 mb-4 bg-gray-100 p-1 rounded-xl text-xs">
           {[
-            { label: "QC", value: "qc" },
-            { label: "Rework", value: "rework" },
-            { label: "Selesai", value: "gudang" },
+            { label: "Menunggu", value: "menunggu" },
+            { label: "Proses", value: "proses" },
+            { label: "Masuk Box", value: "masuk_box" },
+            { label: "Selesai", value: "selesai" },
           ].map((item) => (
             <button
               key={item.value}
@@ -106,30 +53,19 @@ export default function Jobs({
           ))}
         </div>
 
-        {/* CONTENT */}
-        <div className="flex-1 overflow-auto space-y-2">
-          {filteredData.length === 0 ? (
-            <p className="text-center text-gray-400 text-sm">Tidak ada data</p>
-          ) : (
-            filteredData.map((o: any) => (
-              <div
-                key={o.id}
-                className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm"
-              >
-                {/* TITLE */}
-                <div className="flex justify-between">
-                  <p className="text-sm font-medium">{o.nama}</p>
-                  <p className="text-lg font-bold">{o.qty}</p>
-                </div>
-
-                {/* DETAIL */}
-                <div className="text-[10px] text-gray-500 mt-1 space-y-0.5">
-                  <p>Kode Stok Potongan : {o.kodeBarang || "-"}</p>
-                  <p>Nama Penjahit : {o.penjahit || "-"}</p>
-                  <p>Tgl Selesai: {o.tanggalSelesai || "-"}</p>
-                </div>
-              </div>
-            ))
+        {/* ================= CONTENT ================= */}
+        <div className="flex-1 overflow-auto">
+          {filterStatus === "menunggu" && (
+            <Menunggu orders={orders} search={search} />
+          )}
+          {filterStatus === "proses" && (
+            <Proses orders={orders} search={search} />
+          )}
+          {filterStatus === "masuk_box" && (
+            <MasukBox orders={orders} search={search} />
+          )}
+          {filterStatus === "selesai" && (
+            <Selesai orders={orders} search={search} />
           )}
         </div>
 
