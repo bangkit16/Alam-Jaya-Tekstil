@@ -12,7 +12,8 @@
     "start": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx --watch src/index.ts",
-    "seed": "prisma db seed"
+    "seed": "prisma db seed",
+    "migrate": "npx prisma migrate reset &&npx prisma migrate deploy && tsx prisma/seed.ts"
   },
   "keywords": [],
   "author": "",

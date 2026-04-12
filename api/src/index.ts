@@ -121,23 +121,53 @@ app.get("/", (req: Request, res: Response) => {
  * @swagger
  * /create/permintaan:
  *   post:
- *     summary: BACKDOOR - Buat Permintaan Gudang
- *     tags: [Debugging]
+ *     tags:
+ *       - Debugging
+ *     summary: BACKDOOR Buat Permintaan Gudang
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               namaBarang:
+ *                 type: string
+ *               kategori:
+ *                 type: string
+ *               jenisPermintaan:
+ *                 type: string
+ *               ukuran:
+ *                 type: string
+ *               isUrgent:
+ *                 type: boolean
+ *               jumlahMinta:
+ *                 type: integer
  *           example:
- *             namaBarang: Hoodie Green Navy
- *             kategori: hoodie
- *             jenisPermintaan: RESI
- *             ukuran: L
+ *             namaBarang: "Hoodie Green Navy"
+ *             kategori: "hoodie"
+ *             jenisPermintaan: "RESI"
+ *             ukuran: "L"
  *             isUrgent: false
  *             jumlahMinta: 20
  *     responses:
  *       200:
  *         description: Berhasil membuat permintaan
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 status:
+ *                   type: string
+ *             example:
+ *               message: "Permintaan berhasil dikirimkan ke gudang"
+ *               status: "MENUNGGU_GUDANG"
  */
+
+
 app.post("/create/permintaan", async (req: Request, res: Response) => {
   try {
     const {
