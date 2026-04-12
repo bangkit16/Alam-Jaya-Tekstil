@@ -8,7 +8,7 @@
     "build:esbuild": "npx esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js --format=esm",
     "build:esbuild:external": "npx esbuild src/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/index.mjs",
     "build": "npx esbuild src/index.ts --bundle --platform=node --format=esm --packages=external --external:./src/generated/prisma/* --outfile=dist/index.js",
-    "vercel-build": "npx prisma migrate reset --force && npx prisma migrate deploy && tsx prisma/seed.ts && npx prisma generate && npx esbuild src/index.ts --bundle --platform=node --format=esm --packages=external --external:./src/generated/prisma/* --outfile=dist/index.js",
+    "vercel-build": "prisma db seed && npx prisma generate && npx esbuild src/index.ts --bundle --platform=node --format=esm --packages=external --external:./src/generated/prisma/* --outfile=dist/index.js",
     "start": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx --watch src/index.ts",
