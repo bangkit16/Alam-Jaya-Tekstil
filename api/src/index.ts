@@ -28,7 +28,6 @@ import qcRoutes from "./routes/qcRoutes.js";
 import stokGudangRoutes from "./routes/stokGudangRoutes.js";
 import { authMiddleware } from "./middleware/authMiddleware.js";
 
-
 declare global {
   namespace Express {
     interface Request {
@@ -53,7 +52,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: ["https://web-alam.vercel.app/", "http://localhost:3000"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
   }),

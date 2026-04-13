@@ -94,9 +94,7 @@ router.put("/menunggu/:idQC", QCController.updateProsesDikerjakan);
  *
  */
 
-router.get("/proses", (req: Request, res: Response) => {
-  return res.status(200).json("mikum");
-});
+router.get("/proses", QCController.getDataProses);
 
 /**
  * @swagger
@@ -146,7 +144,7 @@ router.get("/proses", (req: Request, res: Response) => {
  *               status : "MASUK_BOX"
  */
 
-router.put("/proses/:idQc", () => {});
+router.put("/proses/:idQC", QCController.updateProsesSelesai);
 
 /**
  * @swagger
@@ -176,11 +174,11 @@ router.put("/proses/:idQc", () => {});
  *
  */
 
-router.get("/masukbox", () => {});
+router.get("/masukbox", QCController.getDataMasukBox);
 
 /**
  * @swagger
- * /qc/masuxbox:
+ * /qc/masukbox:
  *   post:
  *     summary: DIVISI QC (Tab Menunggu - Modal Pindah ke Proses)
  *     tags: [QC]
@@ -201,6 +199,7 @@ router.get("/masukbox", () => {});
  *                   format: uuid
  *             example:
  *               idPenanggungJawabBox: "dfcsad2e-mku1-4343-a275-5b2de4ad8615"
+ *               namaBox: "BOX-HOODIE-001"
  *               idQc: 
  *                 - "dfcsad2e-mku1-4343-a275-5b2de4ad8615"
  *                 - "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2g3h4i5j"
@@ -214,7 +213,7 @@ router.get("/masukbox", () => {});
  *               status: "MASUK_BOX"
  */
 
-router.post("/masukbox/", () => {});
+router.post("/masukbox/", QCController.postMasukBox);
 
 /**
  * @swagger
@@ -285,7 +284,7 @@ router.get("/selesai", (req: Request, res: Response) => {
  *               - id: "uuid-qc-1"
  *                 nama: "Rian QC"
  */
-router.get("/list-pengecek", () => {});
+router.get("/list-pengecek", QCController.getListPengecek);
 
 /**
  * @swagger
@@ -302,7 +301,7 @@ router.get("/list-pengecek", () => {});
  *               - id: "uuid-pj-box-1"
  *                 nama: "Joko PJ Box"
  */
-router.get("/list-penanggung-jawab-box", () => {});
+router.get("/list-penanggung-jawab-box", QCController.getListPenanggungJawabBox);
 
 
 

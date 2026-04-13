@@ -25,17 +25,21 @@ const router = Router();
  *               - idProsesStokPotong: "bcvc3sad22e-fe64-4343-a275-5b2de4ad8615"
  *                 namaBarang: "Hoodie Green Navy"
  *                 ukuran: "L"
- *                 namaPenjahit: "Sari"
+ *                 dikirimDari: "STOK POTONG"
+ *                 dikirimKe: "Penjahit - Budi"
  *                 isUrgent: false
  *                 kodeStokPotongan: "AD-0123-A1"
  *                 jumlahLolos: 20
+ *                 status: "MENUNGGU_PENGIRIMAN"
  *               - idProsesStokPotong: "bcvc3sad22e-fe64-4343-a275-5b2de4ad8615"
  *                 namaBarang: "Hoodie Green Navy"
  *                 ukuran: "L"
- *                 namaPenjahit: "Roti"
+ *                 dikirimDari: "Penjahit - Budi"
+ *                 dikirimKe: "QC"
  *                 isUrgent: false
  *                 kodeStokPotongan: "AD-5678-A4"
  *                 jumlahLolos: 40
+ *                 status: "MENUNGGU_PENGIRIMAN_KE_QC"
  */
 
 router.get("/menunggu", KurirController.getDataMenunggu);

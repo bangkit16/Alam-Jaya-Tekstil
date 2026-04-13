@@ -5,7 +5,7 @@ import axios, {
   AxiosResponse,
 } from "axios";
 
-const BASE_URL = "http://localhost:3001"; // Ganti dengan URL BE Anda
+const BASE_URL = "http://localhost:3001" ; // Ganti dengan URL BE Anda
 
 // 1. Definisikan tipe untuk response refresh token (sesuaikan dengan BE)
 interface RefreshResponse {
@@ -25,7 +25,7 @@ export const api: AxiosInstance = axios.create({
 // Interceptor Request: Menyisipkan Access Token
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("accessToken");
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -62,7 +62,7 @@ api.interceptors.response.use(
         const { accessToken } = res.data;
 
         // Simpan token baru ke storage
-        localStorage.setItem("access_token", accessToken);
+        localStorage.setItem("accessToken", accessToken);
 
         // Update header Authorization pada request yang gagal tadi
         if (originalRequest.headers) {
@@ -73,7 +73,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         // Jika refresh gagal (misal: refresh token di cookie sudah expired)
-        localStorage.removeItem("access_token");
+        localStorage.removeItem("accessToken");
 
         // Redirect ke login hanya jika di lingkungan browser
         if (typeof window !== "undefined") {

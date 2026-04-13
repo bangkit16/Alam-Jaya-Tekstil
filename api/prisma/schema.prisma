@@ -30,9 +30,12 @@ model User {
   penjahitProses     ProsesStokPotong[] @relation("Penjahit")
   kurirProses        ProsesStokPotong[] @relation("Kurir")
 
+
+
   pemotongan   StokPotongPemotong[]
   pengecekan   StokPotongPengecek[]
-    createdAt DateTime @default(now())
+  pengecekanQC QCPengecek[]
+  createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 }
 
@@ -131,6 +134,15 @@ model StokPotongPengecek {
   user          User       @relation(fields: [userId], references: [id])
 }
 
+model QCPengecek {
+  id            String @id @default(uuid())
+  qcId  String
+  userId        String
+
+  qc            QCStokPotong @relation(fields: [qcId], references: [id])
+  user          User       @relation(fields: [userId], references: [id])
+}
+
 model ProsesStokPotong {
   id                  String   @id @default(uuid())
   stokPotongId        String   @unique
@@ -142,6 +154,8 @@ model ProsesStokPotong {
   tanggalSampai       DateTime?
   tanggalMulaiJahit   DateTime?
   tanggalSelesaiJahit DateTime?
+  tanggalBerangkatKeQC    DateTime?
+  tanggalSampaiKeQC       DateTime?
 
   jumlahSelesai       Int?
   notes               String?
@@ -159,16 +173,20 @@ model QCStokPotong {
   stokPotongId       String   @unique
   boxId              String?
 
+
   jumlahLolos        Int?
   jumlahReject       Int?
   jumlahKotor        Int?
   jumlahTurunSize    Int?
   jumlahPermak       Int?
 
-  tanggalQC          DateTime?
+  tanggalMulaiQC          DateTime?
+  tanggalSelesaiQC          DateTime?
   notes              String?
 
   status             StatusQC
+
+pengecek           QCPengecek[]
 
   stokPotong         StokPotong @relation(fields: [stokPotongId], references: [id])
   box                Box?       @relation(fields: [boxId], references: [id])
@@ -176,7 +194,7 @@ model QCStokPotong {
 
 model Box {
   id                      String   @id @default(uuid())
-  permintaanId            String
+  permintaanId            String?
 
   kodeBox                 String
   namaBox                 String
@@ -189,7 +207,7 @@ model Box {
 
   status                  StatusBox
 
-  permintaan              Permintaan @relation(fields: [permintaanId], references: [id])
+  permintaan              Permintaan? @relation(fields: [permintaanId], references: [id])
   qc                      QCStokPotong[]
 
   penanggungJawab         User? @relation("PenanggungJawabBox", fields: [penanggungJawabId], references: [id])
@@ -244,6 +262,9 @@ enum StatusProses {
   DIKERJAKAN
   JEDA
   SELESAI_JAHIT
+  MENUNGGU_PENGIRIMAN_KE_QC
+  PROSES_PENGIRIMAN_KE_QC
+  SELESAI_PENGIRIMAN_KE_QC
 }
 
 enum StatusQC {
@@ -265,105 +286,3 @@ enum UkuranProduk {
   L
   M
 }
-
-// enum Role {
-//   POTONG
-//   STOKPOTONG
-//   KURIR
-//   JAHIT
-//   QC
-//   RESI
-//   PRINT
-//   GUDANG
-//   STOKGUDANG
-//   SUPERADMIN
-// }
-
-// enum StatusPermintaan {
-//   MENUNGGU_PROSES
-//   PROSES
-//   SELESAI
-// }
-
-
-// enum StatusStok {
-//   MASUK
-//   PROSESPENGECEKAN
-//   KIRIM
-//   PROSESKIRIM
-//   SELESAIKIRIM
-// }
-
-// model User {
-//   id       String   @id @default(uuid())
-//   name     String
-//   username String   @unique
-//   email    String   @unique
-//   password String
-//   role     Role     @default(POTONG)
-//   session  Session? 
-//   permintaanProduk PermintaanProduk[]
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @default(now())
-// }
-
-// model Session {
-//   id           String   @id @default(uuid())
-//   refreshToken String
-//   userId       String   @unique 
-//   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade) 
-//   createdAt    DateTime @default(now())
-// }
-
-// model KategoriProduk {
-//   id   String   @id @default(uuid())
-//   name String
-//   slug String   @unique
-//   kode String   @unique
-//   stokPotong StokPotong[]
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-// }
-
-// model PermintaanProduk {
-//   id         String   @id @default(uuid())
-//   user       User     @relation(fields: [userId], references: [id])
-//   stokPotong StokPotong?
-//   userId     String   
-//   namaProduk String 
-//   kodeKain   String?
-//   ukuran     UkuranProduk
-//   pengecek   String?
-//   pemotong   String?
-//   jumlah     Int
-//   hasilPotongan  Int  @default(0)
-//   isUrgent   Boolean
-//   status     StatusPermintaan
-//   createdAt  DateTime @default(now())
-//   updatedAt  DateTime @updatedAt
-// }
-
-// model StokPotong {
-//   id  String   @id @default(uuid())
-//   permintaanId String @unique
-//   permintaan PermintaanProduk @relation(fields: [permintaanId], references: [id])
-//   namaProduk String
-//   jumlah_diterima Int?
-//   jumlah_lolos Int?
-//   jumlah_reject Int?
-//   pengecek   String?
-//   penjahit   String?
-//   kodeKain   String?
-//   kodePotong String?
-//   kategori   KategoriProduk @relation(fields: [kategoriId], references: [id])
-//   kategoriId String
-//   ukuran     UkuranProduk
-//   status     StatusStok?    @default(MASUK)
-//   admin      String?
-//   tanggalKirim DateTime?
-//   tanggalSampai DateTime?
-//   jumlah     Int
-//   notes       String?
-//   createdAt  DateTime @default(now())
-//   updatedAt  DateTime @updatedAt
-// }
