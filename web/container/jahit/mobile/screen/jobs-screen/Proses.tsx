@@ -2,15 +2,22 @@
 
 import { useState } from "react";
 
-export default function Proses() {
+type Props = {
+  jobs: any[];
+  setJobs: React.Dispatch<React.SetStateAction<any[]>>;
+  form: any;
+  setForm: React.Dispatch<React.SetStateAction<any>>;
+};
+
+export default function Proses({ jobs, setJobs, form, setForm }: Props) {
   const [selected, setSelected] = useState<any>(null);
 
-  const [form, setForm] = useState({
+  const [localForm, setLocalForm] = useState({
     selesai: "",
     catatan: "",
   });
 
-  // 🔥 DUMMY DATA
+  // 🔥 DUMMY DATA (TETAP PUNYA KAMU)
   const data = [
     {
       id: "1",
@@ -21,7 +28,7 @@ export default function Proses() {
 
   const handleClose = () => {
     setSelected(null);
-    setForm({ selesai: "", catatan: "" });
+    setLocalForm({ selesai: "", catatan: "" });
   };
 
   return (
@@ -75,15 +82,25 @@ export default function Proses() {
             <div className="space-y-2 mb-4">
               <input
                 placeholder="Jumlah selesai jahit {selesai 25}"
-                value={form.selesai}
-                onChange={(e) => setForm({ ...form, selesai: e.target.value })}
+                value={localForm.selesai}
+                onChange={(e) =>
+                  setLocalForm({
+                    ...localForm,
+                    selesai: e.target.value,
+                  })
+                }
                 className="w-full bg-gray-100 px-3 py-2 text-xs outline-none"
               />
 
               <input
                 placeholder="Catatan (optional)"
-                value={form.catatan}
-                onChange={(e) => setForm({ ...form, catatan: e.target.value })}
+                value={localForm.catatan}
+                onChange={(e) =>
+                  setLocalForm({
+                    ...localForm,
+                    catatan: e.target.value,
+                  })
+                }
                 className="w-full bg-gray-100 px-3 py-2 text-xs outline-none"
               />
             </div>

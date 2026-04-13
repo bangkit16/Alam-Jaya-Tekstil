@@ -2,10 +2,17 @@
 
 import { useState } from "react";
 
-export default function Menunggu() {
+type Props = {
+  jobs: any[];
+  setJobs: React.Dispatch<React.SetStateAction<any[]>>;
+  form: any;
+  setForm: React.Dispatch<React.SetStateAction<any>>;
+};
+
+export default function Menunggu({ jobs, setJobs, form, setForm }: Props) {
   const [selected, setSelected] = useState<any>(null);
 
-  // 🔥 DUMMY DATA
+  // 🔥 DUMMY DATA (TETAP PUNYA KAMU)
   const data = [
     {
       id: "1",

@@ -70,7 +70,7 @@ export default function PenjahitMobile(props: any) {
   if (!mounted) return null;
 
   // 🔥 SCREEN MAPPING
-  const screens: Record<ScreenType, () => JSX.Element> = {
+  const screens: Record<ScreenType, () => React.ReactNode> = {
     home: () => <Home setScreen={setScreen} handleLogout={handleLogout} />,
     jobs: () => (
       <Jobs

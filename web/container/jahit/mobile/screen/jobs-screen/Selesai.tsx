@@ -2,10 +2,14 @@
 
 import { useState } from "react";
 
-export default function Selesai() {
+type Props = {
+  jobs: any[];
+};
+
+export default function Selesai({ jobs }: Props) {
   const [selected, setSelected] = useState<any>(null);
 
-  // 🔥 DUMMY DATA
+  // 🔥 DUMMY DATA (TETAP PUNYA KAMU)
   const data = [
     {
       id: "1",
