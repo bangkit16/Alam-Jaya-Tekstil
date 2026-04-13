@@ -196,7 +196,7 @@ model Box {
   id                      String   @id @default(uuid())
   permintaanId            String?
 
-  kodeBox                 String
+  kodeBox                 String    @unique
   namaBox                 String
 
   penanggungJawabId       String?

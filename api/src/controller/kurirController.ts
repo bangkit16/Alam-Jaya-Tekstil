@@ -1,10 +1,9 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
 import TrackLog from "../lib/trackLog.js";
-import {
-  StatusPermintaan,
-  StatusProses,
-} from "../generated/prisma/enums.js";
+import { StatusPermintaan, StatusProses } from "../generated/prisma/enums.js";
+import z from "zod";
+import { Validator } from "../lib/validator.js";
 
 export default class KurirController {
   public static async getDataMenunggu(req: Request, res: Response) {
@@ -55,26 +54,15 @@ export default class KurirController {
   }
 
   public static async updateProsesMenunggu(req: Request, res: Response) {
+    const schema = z.object({
+      params: z.object({ idProsesStokPotong: z.string().uuid() }),
+      body: z.object({ idKurir: z.string() }),
+    });
     try {
-      const { idProsesStokPotong } = req.params;
-      const { idKurir } = req.body;
-
-      if (!idProsesStokPotong || Array.isArray(idProsesStokPotong)) {
-        return res.status(400).json({ message: "ID permintaan tidak valid" });
-      }
-
-      const errors: string[] = [];
-
-      if (!idKurir || typeof idKurir !== "string") {
-        errors.push("Kode kain tidak boleh kosong.");
-      }
-
-      if (errors.length > 0) {
-        return res.status(400).json({
-          message: "Validasi gagal",
-          errors,
-        });
-      }
+      const validated = Validator(schema)(req, res);
+      if (!validated) return;
+      const { idProsesStokPotong } = validated.params;
+      const { idKurir } = validated.body;
 
       const kurir = await prisma.user.findFirst({
         where: {
@@ -103,6 +91,15 @@ export default class KurirController {
             connect: { id: idKurir },
           },
           status: StatusProses.PROSES_PENGIRIMAN,
+          stokPotong: {
+            update: {
+              permintaan: {
+                update: {
+                  status: StatusPermintaan.PROSES_KURIR,
+                },
+              },
+            },
+          },
         },
         select: {
           kurir: {
@@ -233,6 +230,15 @@ export default class KurirController {
         data: {
           status: StatusProses.SELESAI_PENGIRIMAN,
           tanggalSampai: new Date(),
+          stokPotong: {
+            update: {
+              permintaan: {
+                update: {
+                  status: StatusPermintaan.MENUNGGU_JAHIT,
+                },
+              },
+            },
+          },
         },
         select: {
           penjahit: {

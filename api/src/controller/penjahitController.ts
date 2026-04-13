@@ -86,6 +86,15 @@ export default class PenjahitController {
         data: {
           status: StatusProses.DIKERJAKAN,
           tanggalMulaiJahit: new Date(),
+          stokPotong: {
+            update: {
+              permintaan: {
+                update: {
+                  status: StatusPermintaan.PROSES_JAHIT,
+                }
+              }
+            },
+          }
         },
         select: {
           penjahit: {
@@ -110,10 +119,10 @@ export default class PenjahitController {
         `Stok potongan telah diambil dan mulai dijahit oleh penjahit ${updateMulai.penjahit?.nama}, No Handphone : (${updateMulai.penjahit?.noHandphone}). `,
         StatusPermintaan.PROSES_JAHIT,
       );
-      TrackLog.logStatus(
-        String(updateMulai.stokPotong.permintaan.id),
-        StatusPermintaan.PROSES_JAHIT,
-      );
+      // TrackLog.logStatus(
+      //   String(updateMulai.stokPotong.permintaan.id),
+      //   StatusPermintaan.PROSES_JAHIT,
+      // );
       return res.status(200).json({
         message: "Pekerjaan dimulai",
         status: "PROSES_JAHIT",
@@ -330,6 +339,15 @@ export default class PenjahitController {
           tanggalSelesaiJahit: new Date(),
           jumlahSelesai: validated.body.jumlahSelesaiJahit,
           notes: validated.body.catatan,
+          stokPotong: {
+            update: {
+              permintaan: {
+                update: {
+                  status: StatusPermintaan.MENUNGGU_QC,
+                }
+              }
+            }
+          }
         },
         select: {
           jumlahSelesai: true,

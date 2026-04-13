@@ -20,7 +20,7 @@ export default class TrackLog {
   public static logStatus(idPermintaan: string, status: StatusPermintaan) {
     const permintaan = prisma.permintaan.update({
       where: { id: idPermintaan },
-      data: { status },
+      data: { status : StatusPermintaan[status] },
     });
     console.log(
       `Permintaan ${idPermintaan} status updated to: ${StatusPermintaan[status]}`,

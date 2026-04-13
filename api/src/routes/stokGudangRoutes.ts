@@ -61,9 +61,7 @@ const router = Router();
  *
  */
 
-router.get("/boxmasuk", (req: Request, res: Response) => {
-  return res.status(200).json("mikum");
-});
+router.get("/boxmasuk", StokGudangController.getBoxMasuk);
 
 /**
  * @swagger
@@ -98,7 +96,7 @@ router.get("/boxmasuk", (req: Request, res: Response) => {
  *               status : "ACC_GUDANG"
  */
 
-router.put("/boxmasuk/:idBox", () => {});
+router.put("/boxmasuk/:idBox", StokGudangController.updateAccBoxMasuk);
 
 /**
  * @swagger
@@ -151,9 +149,7 @@ router.put("/boxmasuk/:idBox", () => {});
  *
  */
 
-router.get("/databox", (req: Request, res: Response) => {
-  return res.status(200).json("mikum");
-});
+router.get("/databox", StokGudangController.getDataBox);
 
 /**
  * @swagger
@@ -408,7 +404,7 @@ router.get("/tracking/:idPermintaan", StokGudangController.getTrackingPermintaan
  *               - id: "uuid-penerima-1"
  *                 nama: "Dedi Penerima"
  */
-router.get("/list-penerima-box", () => {});
+router.get("/list-penerima-box", StokGudangController.getListPenerimaBox);
 
 /**
  * @swagger
@@ -425,7 +421,7 @@ router.get("/list-penerima-box", () => {});
  *               - id: "uuid-pj-gudang-1"
  *                 nama: "Heri PJ Gudang"
  */
-router.get("/list-penanggung-jawab-box", () => {});
+router.get("/list-penanggung-jawab-box", StokGudangController.getListPenanggungJawabBox);
 
 
 export default router;

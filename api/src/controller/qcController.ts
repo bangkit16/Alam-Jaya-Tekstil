@@ -98,6 +98,15 @@ export default class QCController {
         data: {
           status: StatusQC.PROSES,
           tanggalMulaiQC: new Date(),
+          stokPotong: {
+            update: {
+              permintaan: {
+                update: {
+                  status: StatusPermintaan.PROSES_QC,
+                },
+              },
+            },
+          },
         },
         select: {
           stokPotong: {
@@ -379,7 +388,6 @@ export default class QCController {
       });
 
       const kodeBox = QCController.generateUniqueBarcode("BOX");
-    
 
       // Validasi jika ada ID yang tidak terdaftar di database
       if (!users) {
@@ -410,6 +418,7 @@ export default class QCController {
               noHandphone: true,
             },
           },
+          kodeBox: true,
         },
       });
 
@@ -442,7 +451,9 @@ export default class QCController {
           qc.stokPotong.permintaan.id,
           "Hasil jahitan lolos QC dan masuk box " +
             box.namaBox +
-            " yang dijaga oleh " +
+            " Kode Box: " +
+            box.kodeBox +
+            " dengan penanggung jawab " +
             box.penanggungJawab?.nama +
             " (" +
             box.penanggungJawab?.noHandphone +
@@ -462,6 +473,67 @@ export default class QCController {
         });
       }
       console.error("Error updating proses stok potong:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  public static async getDataSelesai(req: Request, res: Response) {
+    
+    try {
+      const data = await prisma.box.findMany({
+        where: { status: { in: [StatusBox.MENUNGGU] } },
+        select: {
+          id: true,
+          namaBox: true,
+          kodeBox: true,
+          tanggalMasuk: true,
+          penanggungJawab: {
+            select: {
+              nama: true,
+              noHandphone: true,
+            },
+          },
+          qc: {
+            select: {
+              tanggalSelesaiQC: true,
+              id: true,
+              jumlahLolos: true,
+              stokPotong: {
+                select: {
+                  kodeStokPotongan: true,
+                  permintaan: {
+                    select: {
+                      id: true,
+                      namaBarang: true,
+                      ukuran: true,
+                      isUrgent: true,
+                    },
+                  },
+                },
+              },
+            },
+          }
+        },
+      });
+      const mappedData = data.map((item) => ({
+        idBox: item.id,
+        namaBox: item.namaBox, // Atau item.qc[0]?.stokPotong.permintaan.namaBarang jika ingin nama barang
+        namaPenanggungJawab: item.penanggungJawab?.nama,
+        kodeBox: item.kodeBox,
+        tanggalMasukStok: item.tanggalMasuk,
+        stokPotongan: item.qc.map((q) => ({
+          idQC: q.id,
+          namaBarang: q.stokPotong.permintaan.namaBarang,
+          ukuran: q.stokPotong.permintaan.ukuran,
+          jumlah: q.jumlahLolos,
+          tanggalSelesaiQC: q.tanggalSelesaiQC,
+          kodeStokPotongan: q.stokPotong.kodeStokPotongan,
+          isUrgent: q.stokPotong.permintaan.isUrgent,
+        })),
+      }));
+      return res.status(200).json(mappedData);
+    } catch (error) {
+      console.error("Error fetching data selesai:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   }
