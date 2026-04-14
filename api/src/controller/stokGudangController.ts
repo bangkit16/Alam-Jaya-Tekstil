@@ -317,7 +317,7 @@ export default class StokGudangController {
           .status(400)
           .json({ message: "ID permintaan must be a single value" });
       }
-      const permintaan = await prisma.permintaan.findMany({
+      const permintaan = await prisma.permintaan.findUnique({
         where: { id: String(idPermintaan) },
         select: {
           id: true,
@@ -353,19 +353,23 @@ export default class StokGudangController {
           timeStyle: "short",
         }).format(new Date(log.createdAt));
 
-        return `[${formattedDate}] ${log.keterangan} - Status: ${log.status}`;
+        return {
+          tanggal: formattedDate,
+          keterangan: log.keterangan,
+          status: log.status,
+        };
       });
-      const data = permintaan.map((item: any) => ({
-        idPermintaan: item.id,
-        namaBarang: item.namaBarang,
-        kategori: item.kategori.namaKategori,
-        jenisPermintaan: item.jenisPermintaan,
-        ukuran: item.ukuran,
-        isUrgent: item.isUrgent,
-        jumlahMinta: item.jumlahMinta,
-        tanggalMasukPermintaan: item.tanggalMasuk,
-        logPermintaan: dataLog,
-      }));
+      const data = {
+        idPermintaan: permintaan?.id,
+        namaBarang: permintaan?.namaBarang,
+        kategori: permintaan?.kategori?.namaKategori,
+        jenisPermintaan: permintaan?.jenisPermintaan,
+        ukuran: permintaan?.ukuran,
+        isUrgent: permintaan?.isUrgent,
+        jumlahMinta: permintaan?.jumlahMinta,
+        tanggalMasukPermintaan: permintaan?.tanggalMasuk,
+        logPermintaan: dataLog || [], // Hasilnya adalah array of objects
+      };
 
       return res.status(200).json(data);
     } catch (error) {
