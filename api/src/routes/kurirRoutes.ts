@@ -97,7 +97,9 @@ router.put(
  *               - idProsesStokPotong: "bcvc3sad22e-fe64-4343-a275-5b2de4ad8615"
  *                 namaBarang: "Hoodie Green Navy"
  *                 ukuran: "L"
- *                 namaPenjahit: "Sari"
+ *                 dikirimDari: "STOK POTONG"
+ *                 dikirimKe: "Penjahit - Budi"
+ *                 namaKurir: "Agus Kurir"
  *                 jumlahLolos: 20
  *                 kodeStokPotongan: "AD-0123-A1"
  *                 tanggalBerangkat: "2023-10-27T10:00:00Z"

@@ -28,8 +28,8 @@ model User {
   penerimaBox        Box[] @relation("PenerimaBox")
 
   penjahitProses     ProsesStokPotong[] @relation("Penjahit")
-  kurirProses        ProsesStokPotong[] @relation("Kurir")
-
+  kurirProses     ProsesStokPotong[] @relation("KurirKePenjahit")
+  kurirQCProses   ProsesStokPotong[] @relation("KurirKeQC")
 
 
   pemotongan   StokPotongPemotong[]
@@ -67,7 +67,6 @@ model Permintaan {
   isUrgent            Boolean  @default(false)
   tanggalMasuk        DateTime @default(now())
   
-
   status              StatusPermintaan
 
   kategori            Kategori @relation(fields: [kategoriId], references: [id])
@@ -149,6 +148,7 @@ model ProsesStokPotong {
 
   penjahitId          String?
   kurirId             String?
+  kurirQCId           String? // Kurir ke QC
 
   tanggalBerangkat    DateTime?
   tanggalSampai       DateTime?
@@ -165,7 +165,8 @@ model ProsesStokPotong {
   stokPotong          StokPotong @relation(fields: [stokPotongId], references: [id])
 
   penjahit            User? @relation("Penjahit", fields: [penjahitId], references: [id])
-  kurir               User? @relation("Kurir", fields: [kurirId], references: [id])
+  kurir               User? @relation("KurirKePenjahit", fields: [kurirId], references: [id])
+  kurirQC             User? @relation("KurirKeQC", fields: [kurirQCId], references: [id])
 }
 
 model QCStokPotong {
@@ -229,6 +230,7 @@ enum Role {
 enum JenisPermintaan {
   RESI
   BORDIR
+  GUDANG
 }
 
 enum StatusPermintaan {

@@ -1,7 +1,11 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
 import TrackLog from "../lib/trackLog.js";
-import { StatusPermintaan, StatusProses } from "../generated/prisma/enums.js";
+import {
+  StatusPermintaan,
+  StatusProses,
+  StatusQC,
+} from "../generated/prisma/enums.js";
 import z from "zod";
 import { Validator } from "../lib/validator.js";
 
@@ -10,7 +14,12 @@ export default class KurirController {
     try {
       const dataMenunggu = await prisma.prosesStokPotong.findMany({
         where: {
-          status: StatusProses.MENUNGGU_PENGIRIMAN,
+          status: {
+            in: [
+              StatusProses.MENUNGGU_PENGIRIMAN,
+              StatusProses.MENUNGGU_PENGIRIMAN_KE_QC,
+            ],
+          },
         },
         select: {
           id: true,
@@ -19,6 +28,7 @@ export default class KurirController {
               nama: true,
             },
           },
+          status: true,
           stokPotong: {
             select: {
               kodeStokPotongan: true,
@@ -41,7 +51,14 @@ export default class KurirController {
         idProsesStokPotong: item.id,
         namaBarang: item.stokPotong.permintaan.namaBarang,
         ukuran: item.stokPotong.permintaan.ukuran,
-        namaPenjahit: item.penjahit?.nama,
+        dikirimDari:
+          item.status == StatusProses.MENUNGGU_PENGIRIMAN
+            ? "Stok Potong"
+            : item.penjahit?.nama,
+        dikirimKe:
+          item.status == StatusProses.MENUNGGU_PENGIRIMAN_KE_QC
+            ? "QC"
+            : item.penjahit?.nama,
         isUrgent: item.stokPotong.permintaan.isUrgent,
         kodeStokPotongan: item.stokPotong.kodeStokPotongan,
         jumlahLolos: item.stokPotong.jumlahLolos,
@@ -80,60 +97,148 @@ export default class KurirController {
         });
       }
 
-      const prosesStokPotong = await prisma.prosesStokPotong.update({
+      const jenisProses = await prisma.prosesStokPotong.findUnique({
         where: {
           id: idProsesStokPotong,
-          status: StatusProses.MENUNGGU_PENGIRIMAN,
-        },
-        data: {
-          tanggalBerangkat: new Date(),
-          kurir: {
-            connect: { id: idKurir },
+          status: {
+            in: [
+              StatusProses.MENUNGGU_PENGIRIMAN,
+              StatusProses.MENUNGGU_PENGIRIMAN_KE_QC,
+            ],
           },
-          status: StatusProses.PROSES_PENGIRIMAN,
-          stokPotong: {
-            update: {
-              permintaan: {
-                update: {
-                  status: StatusPermintaan.PROSES_KURIR,
+        },
+        select: { status: true },
+      });
+
+      if (!jenisProses) {
+        return res.status(404).json({
+          message: "Validasi gagal",
+          errors: ["Proses stok potong tidak ditemukan."],
+        });
+      }
+
+      if (
+        jenisProses.status !== StatusProses.MENUNGGU_PENGIRIMAN &&
+        jenisProses.status !== StatusProses.MENUNGGU_PENGIRIMAN_KE_QC
+      ) {
+        return res.status(400).json({
+          message: "Validasi gagal",
+          errors: [
+            "Proses stok potong bukan merupakan proses pengiriman ke QC.",
+          ],
+        });
+      }
+
+      if (jenisProses.status === StatusProses.MENUNGGU_PENGIRIMAN) {
+        const prosesStokPotong = await prisma.prosesStokPotong.update({
+          where: {
+            id: idProsesStokPotong,
+            status: StatusProses.MENUNGGU_PENGIRIMAN,
+          },
+          data: {
+            tanggalBerangkat: new Date(),
+            kurir: {
+              connect: { id: idKurir },
+            },
+            status: StatusProses.PROSES_PENGIRIMAN,
+            stokPotong: {
+              update: {
+                permintaan: {
+                  update: {
+                    status: StatusPermintaan.PROSES_KURIR,
+                  },
                 },
               },
             },
           },
-        },
-        select: {
-          kurir: {
-            select: {
-              nama: true,
-              noHandphone: true,
+          select: {
+            kurir: {
+              select: {
+                nama: true,
+                noHandphone: true,
+              },
+            },
+            stokPotong: {
+              select: {
+                permintaan: {
+                  select: {
+                    id: true,
+                  },
+                },
+              },
+            },
+            penjahit: {
+              select: {
+                nama: true,
+              },
             },
           },
-          stokPotong: {
-            select: {
-              permintaan: {
-                select: {
-                  id: true,
+        });
+
+        TrackLog.logPermintaan(
+          String(prosesStokPotong.stokPotong.permintaan.id),
+          `Stok potongan sedang dikirimkan ke penjahit ${prosesStokPotong.penjahit?.nama} oleh kurir ${prosesStokPotong.kurir?.nama}, No HP: ${prosesStokPotong.kurir?.noHandphone} .`,
+          StatusPermintaan.PROSES_KURIR,
+        );
+
+        return res.json({
+          message: "Stok potongan sedang dikirimkan",
+          status: StatusPermintaan.PROSES_KURIR,
+        });
+      } else if (
+        jenisProses.status === StatusProses.MENUNGGU_PENGIRIMAN_KE_QC
+      ) {
+        const prosesStokPotong = await prisma.prosesStokPotong.update({
+          where: {
+            id: idProsesStokPotong,
+            status: StatusProses.MENUNGGU_PENGIRIMAN_KE_QC,
+          },
+          data: {
+            tanggalBerangkatKeQC: new Date(),
+            kurirQC: {
+              connect: { id: idKurir },
+            },
+            status: StatusProses.PROSES_PENGIRIMAN_KE_QC,
+            stokPotong: {
+              update: {
+                permintaan: {
+                  update: {
+                    status: StatusPermintaan.PROSES_KURIR,
+                  },
                 },
               },
             },
           },
-        },
-      });
+          select: {
+            kurirQC: {
+              select: {
+                nama: true,
+                noHandphone: true,
+              },
+            },
+            stokPotong: {
+              select: {
+                permintaan: {
+                  select: {
+                    id: true,
+                  },
+                },
+              },
+            },
+          },
+        });
 
-      TrackLog.logPermintaan(
-        String(prosesStokPotong.stokPotong.permintaan.id),
-        `Stok potongan sedang dikirimkan oleh kurir ${prosesStokPotong.kurir?.nama}, No HP: ${prosesStokPotong.kurir?.noHandphone} .`,
-        StatusPermintaan.PROSES_KURIR,
-      );
-      TrackLog.logStatus(
-        String(prosesStokPotong.stokPotong.permintaan.id),
-        StatusPermintaan.PROSES_KURIR,
-      );
+        TrackLog.logPermintaan(
+          String(prosesStokPotong.stokPotong.permintaan.id),
+          `Hasil Jahitan sedang dikirimkan ke QC oleh kurir ${prosesStokPotong.kurirQC?.nama}, No HP: ${prosesStokPotong.kurirQC?.noHandphone} .`,
+          StatusPermintaan.PROSES_KURIR,
+        );
 
-      return res.json({
-        message: "Stok potongan sedang dikirimkan",
-        status: StatusPermintaan.PROSES_KURIR,
-      });
+        return res.json({
+          message: "Hasil Jahitan sedang dikirimkan",
+          status: StatusPermintaan.PROSES_KURIR,
+        });
+      }
     } catch (error: any) {
       if (error.code === "P2025") {
         return res.status(404).json({
@@ -149,25 +254,30 @@ export default class KurirController {
 
   public static async getDataProses(req: Request, res: Response) {
     try {
-      [
-        {
-          id_proses_stok_potong: "bcvc3sad22e-fe64-4343-a275-5b2de4ad8615",
-          namaBarang: "Hoodie Green Navy",
-          ukuran: "L",
-          namaPenjahit: "Sari",
-          jumlahLolos: 20,
-          kodeStokPotongan: "AD-0123-A1",
-          tanggalBerangkat: "2023-10-27T10:00:00Z",
-        },
-      ];
       const dataProses = await prisma.prosesStokPotong.findMany({
         where: {
-          status: StatusProses.PROSES_PENGIRIMAN,
+          status: {
+            in: [
+              StatusProses.PROSES_PENGIRIMAN,
+              StatusProses.PROSES_PENGIRIMAN_KE_QC,
+            ],
+          },
         },
         select: {
           id: true,
           tanggalBerangkat: true,
+          status: true,
           penjahit: {
+            select: {
+              nama: true,
+            },
+          },
+          kurir: {
+            select: {
+              nama: true,
+            },
+          },
+          kurirQC: {
             select: {
               nama: true,
             },
@@ -192,7 +302,18 @@ export default class KurirController {
         idProsesStokPotong: item.id,
         namaBarang: item.stokPotong.permintaan.namaBarang,
         ukuran: item.stokPotong.permintaan.ukuran,
-        namaPenjahit: item.penjahit?.nama,
+        dikirimDari:
+          item.status == StatusProses.PROSES_PENGIRIMAN
+            ? "Stok Potong"
+            : item.penjahit?.nama,
+        dikirimKe:
+          item.status == StatusProses.PROSES_PENGIRIMAN_KE_QC
+            ? "QC"
+            : item.penjahit?.nama,
+        namaKurir:
+          item.status == StatusProses.PROSES_PENGIRIMAN
+            ? item.kurir?.nama
+            : item.kurirQC?.nama,
         isUrgent: item.stokPotong.permintaan.isUrgent,
         kodeStokPotongan: item.stokPotong.kodeStokPotongan,
         jumlahLolos: item.stokPotong.jumlahLolos,
@@ -206,8 +327,14 @@ export default class KurirController {
   }
 
   public static async updateProsesSelesai(req: Request, res: Response) {
+    const schema = z.object({
+      params: z.object({ idProsesStokPotong: z.string().uuid() }),
+    });
     try {
-      const { idProsesStokPotong } = req.params;
+      const validated = Validator(schema)(req, res);
+      if (!validated) return;
+
+      const { idProsesStokPotong } = validated.params;
 
       if (!idProsesStokPotong) {
         return res
@@ -215,65 +342,152 @@ export default class KurirController {
           .json({ error: "ID proses stok potong tidak ditemukan" });
       }
 
-      if (Array.isArray(idProsesStokPotong)) {
-        // Handle the case where idProsesStokPotong is an array
-        return res
-          .status(400)
-          .json({ error: "ID proses stok potong must be a single value" });
-      }
-
-      const prosesStokPotong = await prisma.prosesStokPotong.update({
+      const jenisProses = await prisma.prosesStokPotong.findUnique({
         where: {
           id: idProsesStokPotong,
-          status: StatusProses.PROSES_PENGIRIMAN,
+          status: {
+            in: [
+              StatusProses.PROSES_PENGIRIMAN,
+              StatusProses.PROSES_PENGIRIMAN_KE_QC,
+            ],
+          },
         },
-        data: {
-          status: StatusProses.SELESAI_PENGIRIMAN,
-          tanggalSampai: new Date(),
-          stokPotong: {
-            update: {
-              permintaan: {
-                update: {
-                  status: StatusPermintaan.MENUNGGU_JAHIT,
+        select: { status: true },
+      });
+
+      if (!jenisProses) {
+        return res.status(404).json({
+          message: "Validasi gagal",
+          errors: ["Proses stok potong tidak ditemukan."],
+        });
+      }
+
+      if (
+        jenisProses.status !== StatusProses.PROSES_PENGIRIMAN &&
+        jenisProses.status !== StatusProses.PROSES_PENGIRIMAN_KE_QC
+      ) {
+        return res.status(400).json({
+          message: "Validasi gagal",
+          errors: [
+            "Proses stok potong bukan merupakan proses pengiriman ke QC.",
+          ],
+        });
+      }
+
+      if (jenisProses.status === StatusProses.PROSES_PENGIRIMAN) {
+        const prosesStokPotong = await prisma.prosesStokPotong.update({
+          where: {
+            id: idProsesStokPotong,
+            status: StatusProses.PROSES_PENGIRIMAN,
+          },
+          data: {
+            tanggalSampai: new Date(),
+            status: StatusProses.SELESAI_PENGIRIMAN,
+            stokPotong: {
+              update: {
+                permintaan: {
+                  update: {
+                    status: StatusPermintaan.PROSES_KURIR,
+                  },
                 },
               },
             },
           },
-        },
-        select: {
-          penjahit: {
-            select: {
-              nama: true,
-              noHandphone: true,
+          select: {
+            kurir: {
+              select: {
+                nama: true,
+                noHandphone: true,
+              },
+            },
+            stokPotong: {
+              select: {
+                permintaan: {
+                  select: {
+                    id: true,
+                  },
+                },
+              },
+            },
+            penjahit: {
+              select: {
+                nama: true,
+              },
             },
           },
-          stokPotong: {
-            select: {
-              permintaan: {
-                select: {
-                  id: true,
+        });
+
+        TrackLog.logPermintaan(
+          String(prosesStokPotong.stokPotong.permintaan.id),
+          `Stok potongan sudah sampai di penjahit ${prosesStokPotong.penjahit?.nama} oleh kurir ${prosesStokPotong.kurir?.nama}, No HP: ${prosesStokPotong.kurir?.noHandphone} .`,
+          StatusPermintaan.PROSES_KURIR,
+        );
+
+        return res.json({
+          message: "Stok potongan sedang dikirimkan",
+          status: StatusPermintaan.PROSES_KURIR,
+        });
+      } else if (jenisProses.status === StatusProses.PROSES_PENGIRIMAN_KE_QC) {
+        const prosesStokPotong = await prisma.prosesStokPotong.update({
+          where: {
+            id: idProsesStokPotong,
+            status: StatusProses.PROSES_PENGIRIMAN_KE_QC,
+          },
+          data: {
+            tanggalSampaiKeQC: new Date(),
+            status: StatusProses.SELESAI_PENGIRIMAN_KE_QC,
+            stokPotong: {
+              update: {
+                permintaan: {
+                  update: {
+                    status: StatusPermintaan.MENUNGGU_QC,
+                  },
                 },
               },
             },
           },
-        },
-      });
+          select: {
+            kurirQC: {
+              select: {
+                nama: true,
+                noHandphone: true,
+              },
+            },
+            stokPotong: {
+              select: {
+                id: true,
+                permintaan: {
+                  select: {
+                    id: true,
+                  },
+                },
+              },
+            },
+          },
+        });
 
-      TrackLog.logPermintaan(
-        String(prosesStokPotong.stokPotong.permintaan.id),
-        `Stok potongan berhasil di kirim ke penjahit ${prosesStokPotong.penjahit?.nama}, No Handphone : (${prosesStokPotong.penjahit?.noHandphone}) .`,
-        StatusPermintaan.MENUNGGU_JAHIT,
-      );
+        await prisma.qCStokPotong.create({
+          data: {
+            stokPotong: {
+              connect: {
+                id: prosesStokPotong.stokPotong.id,
+              },
+            },
+            status: StatusQC.MENUNGGU,
+          },
+        });
 
-      TrackLog.logStatus(
-        String(prosesStokPotong.stokPotong.permintaan.id),
-        StatusPermintaan.MENUNGGU_JAHIT,
-      );
+        TrackLog.logPermintaan(
+          String(prosesStokPotong.stokPotong.permintaan.id),
+          `Hasil Jahitan sudah sampai di QC oleh kurir ${prosesStokPotong.kurirQC?.nama}, No HP: ${prosesStokPotong.kurirQC?.noHandphone} .`,
+          StatusPermintaan.MENUNGGU_QC,
+        );
 
-      return res.json({
-        message: "Stok potongan berhasil di kirim",
-        status: StatusPermintaan.MENUNGGU_JAHIT,
-      });
+        return res.json({
+          message: "Hasil Jahitan sedang dikirimkan",
+          status: StatusPermintaan.MENUNGGU_QC,
+        });
+      }
     } catch (error: any) {
       if (error.code === "P2025") {
         return res.status(404).json({
@@ -290,13 +504,27 @@ export default class KurirController {
     try {
       const dataSelesai = await prisma.prosesStokPotong.findMany({
         where: {
-          status: StatusProses.SELESAI_PENGIRIMAN,
+          status: {
+            in: [
+              StatusProses.SELESAI_PENGIRIMAN,
+              StatusProses.SELESAI_PENGIRIMAN_KE_QC,
+            ],
+          },
         },
         select: {
           id: true,
           tanggalSampai: true,
           tanggalBerangkat: true,
+          tanggalSampaiKeQC: true,
+          tanggalBerangkatKeQC: true,
+          status: true,
+          jumlahSelesai: true,
           kurir: {
+            select: {
+              nama: true,
+            },
+          },
+          kurirQC: {
             select: {
               nama: true,
             },
@@ -322,18 +550,43 @@ export default class KurirController {
           },
         },
       });
-      const data = dataSelesai.map((item) => ({
-        idProsesStokPotong: item.id,
-        namaBarang: item.stokPotong.permintaan.namaBarang,
-        ukuran: item.stokPotong.permintaan.ukuran,
-        namaPenjahit: item.penjahit?.nama,
-        namakurir: item.kurir?.nama,
-        isUrgent: item.stokPotong.permintaan.isUrgent,
-        kodeStokPotongan: item.stokPotong.kodeStokPotongan,
-        jumlahLolos: item.stokPotong.jumlahLolos,
-        tanggalBerangkat: item.tanggalBerangkat,
-        tanggalSampai: item.tanggalSampai,
-      }));
+
+      const data = dataSelesai.flatMap((item) => {
+        const baris: any[] = [];
+
+        // 1. Cek Histori Pengiriman ke Penjahit
+        if (item.tanggalSampai) {
+          baris.push({
+            idProsesStokPotong: `${item.id}`, // ID unik untuk FE
+            namaBarang: item.stokPotong.permintaan.namaBarang,
+            dikirimDari: "Stok Potong",
+            dikirimKe: `Penjahit (${item.penjahit?.nama})`,
+            namaKurir: item.kurir?.nama,
+            jumlah: item.stokPotong.jumlahLolos,
+            tanggalBerangkat: item.tanggalBerangkat,
+            tanggalSampai: item.tanggalSampai,
+            status: StatusProses.SELESAI_PENGIRIMAN,
+          });
+        }
+
+        // 2. Cek Histori Pengiriman ke QC
+        if (item.tanggalSampaiKeQC) {
+          baris.push({
+            idProsesStokPotong: `${item.id}`,
+            namaBarang: item.stokPotong.permintaan.namaBarang,
+            dikirimDari: `Penjahit (${item.penjahit?.nama})`,
+            dikirimKe: "QC",
+            namaKurir: item.kurirQC?.nama,
+            jumlah: item.jumlahSelesai,
+            tanggalBerangkat: item.tanggalBerangkatKeQC,
+            tanggalSampai: item.tanggalSampaiKeQC,
+            status: StatusProses.SELESAI_PENGIRIMAN_KE_QC,
+          });
+        }
+
+        return baris;
+      });
+
       return res.json(data);
     } catch (error) {
       console.error("Error fetching data selesai:", error);

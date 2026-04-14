@@ -2,9 +2,11 @@ import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
 import TrackLog from "../lib/trackLog.js";
 import {
+  JenisPermintaan,
   StatusBox,
   StatusPermintaan,
   StatusQC,
+  UkuranProduk,
 } from "../generated/prisma/enums.js";
 import z from "zod";
 import { Validator } from "../lib/validator.js";
@@ -166,7 +168,7 @@ export default class StokGudangController {
   public static async getDataBox(req: Request, res: Response) {
     try {
       const data = await prisma.box.findMany({
-        where: { status: { in : [StatusBox.ACC , StatusBox.KIRIM]} },
+        where: { status: { in: [StatusBox.ACC, StatusBox.KIRIM] } },
         select: {
           id: true,
           namaBox: true,
@@ -371,6 +373,103 @@ export default class StokGudangController {
       return res.status(500).json({ message: "Internal server error" });
     }
   }
+
+  public static async getDataPermintaanPotong(req: Request, res: Response) {
+    try {
+      const permintaan = await prisma.permintaan.findMany({
+        where: { status: {notIn : [StatusPermintaan.MENUNGGU_GUDANG]} },
+        select: {
+          id: true,
+          namaBarang: true,
+          kategori: true,
+          jenisPermintaan: true,
+          ukuran: true,
+          isUrgent: true,
+          jumlahMinta: true,
+          tanggalMasuk: true,
+          status: true,
+        },
+      });
+      const data = permintaan.map((item: any) => ({
+        idPermintaan: item.id,
+        namaBarang: item.namaBarang,
+        kategori: item.kategori.namaKategori,
+        jenisPermintaan: item.jenisPermintaan,
+        ukuran: item.ukuran,
+        isUrgent: item.isUrgent,
+        jumlahMinta: item.jumlahMinta,
+        tanggalMasukPermintaan: item.tanggalMasuk,
+        status : item.status
+      }));
+      return res.status(200).json(data);
+    } catch (error) {
+      console.error("Error fetching permintaan data:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  }
+
+  public static async createPermintaanPotong(req: Request, res: Response) {
+    const schema = z.object({
+      body: z.object({
+        namaBarang: z.string().min(1, "Nama barang harus diisi"),
+        kategori: z.string().min(1, "Kategori harus dipilih"),
+        ukuran: z.string().min(1, "Ukuran harus diisi"),
+        isUrgent: z.boolean("Urgent harus berisi true/false").default(false),
+        jumlahMinta: z.number().positive("Jumlah harus lebih dari 0"),
+      }),
+    });
+    try {
+      const validated = Validator(schema)(req, res);
+      if (!validated) return;
+
+      const { namaBarang, kategori, ukuran, isUrgent, jumlahMinta } =
+        validated.body;
+
+      const kategoriData = await prisma.kategori.findUnique({
+        where: {
+          slug: kategori,
+        },
+      });
+
+      if (!kategoriData) {
+        return res.status(400).json({
+          message: "Kategori tidak ditemukan",
+        });
+      }
+
+      const newPermintaan = await prisma.permintaan.create({
+        data: {
+          namaBarang,
+          kategoriId: kategoriData.id,
+          jenisPermintaan: JenisPermintaan.GUDANG,
+          ukuran: UkuranProduk[ukuran as keyof typeof UkuranProduk],
+          isUrgent,
+          jumlahMinta,
+          status: StatusPermintaan.MENUNGGU_POTONG,
+        },
+      });
+
+      await TrackLog.logPermintaan(
+        newPermintaan.id,
+        "Permintaan potong berhasil dibuat",
+        StatusPermintaan.MENUNGGU_POTONG,
+      );
+
+      return res.json({
+        message: "Permintaan potong berhasil dikirim",
+        status: StatusPermintaan.MENUNGGU_POTONG,
+        // data: newPermintaan,
+      });
+    } catch (error) {
+      console.error("Error create permintaan:", error);
+
+      return res.status(500).json({
+        message: "Internal server error",
+      });
+    }
+  }
+
+  // public static get
 
   public static async getListPenerimaBox(req: Request, res: Response) {
     try {

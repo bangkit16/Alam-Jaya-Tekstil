@@ -119,10 +119,6 @@ export default class PenjahitController {
         `Stok potongan telah diambil dan mulai dijahit oleh penjahit ${updateMulai.penjahit?.nama}, No Handphone : (${updateMulai.penjahit?.noHandphone}). `,
         StatusPermintaan.PROSES_JAHIT,
       );
-      // TrackLog.logStatus(
-      //   String(updateMulai.stokPotong.permintaan.id),
-      //   StatusPermintaan.PROSES_JAHIT,
-      // );
       return res.status(200).json({
         message: "Pekerjaan dimulai",
         status: "PROSES_JAHIT",
@@ -335,7 +331,7 @@ export default class PenjahitController {
           penjahitId: userId,
         },
         data: {
-          status: StatusProses.SELESAI_JAHIT,
+          status: StatusProses.MENUNGGU_PENGIRIMAN_KE_QC,
           tanggalSelesaiJahit: new Date(),
           jumlahSelesai: validated.body.jumlahSelesaiJahit,
           notes: validated.body.catatan,
@@ -343,7 +339,7 @@ export default class PenjahitController {
             update: {
               permintaan: {
                 update: {
-                  status: StatusPermintaan.MENUNGGU_QC,
+                  status: StatusPermintaan.MENUNGGU_KURIR,
                 }
               }
             }
@@ -369,26 +365,21 @@ export default class PenjahitController {
           },
         },
       });
-      await prisma.qCStokPotong.create({
-        data: {
-          stokPotongId: updateSelesai.stokPotong.id,
-          status: StatusQC.MENUNGGU,
-        },
-      });
+      
       TrackLog.logPermintaan(
         String(updateSelesai.stokPotong.permintaan.id),
         `Proses jahitan selesai oleh penjahit ${updateSelesai.penjahit?.nama}, No Handphone : (${updateSelesai.penjahit?.noHandphone}). Menunggu proses QC. `,
-        StatusPermintaan.MENUNGGU_QC,
+        StatusPermintaan.MENUNGGU_KURIR,
       );
       TrackLog.logPermintaan(
         String(updateSelesai.stokPotong.permintaan.id),
-        `Hasil jahitan menunggu proses QC.`,
-        StatusPermintaan.MENUNGGU_QC,
+        `Hasil jahitan menunggu dikirim oleh kurir.`,
+        StatusPermintaan.MENUNGGU_KURIR,
       );
 
       return res.status(200).json({
         message: "Data jahit berhasil diselesaikan",
-        status: "MENUNGGU_QC",
+        status: "MENUNGGU_KURIR",
       });
     } catch (error: any) {
       if (error.code === "P2025") {
@@ -407,7 +398,7 @@ export default class PenjahitController {
       const userId = req.user?.id;
       const dataMenunggu = await prisma.prosesStokPotong.findMany({
         where: {
-          status: StatusProses.SELESAI_JAHIT,
+          status: StatusProses.MENUNGGU_PENGIRIMAN_KE_QC,
           penjahitId: userId,
         },
         select: {

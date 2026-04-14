@@ -278,7 +278,7 @@ router.put("/permintaan/:idPermintaan", StokGudangController.updateStatusPermint
  *               items:
  *                 type: object
  *                 properties:
- *                   id_permintaan:
+ *                   idPermintaan:
  *                     type: string
  *                     format: uuid
  *                     example: "38dfdad1-bae0-46ab-906c-beb1f7bf4636"
@@ -294,10 +294,13 @@ router.put("/permintaan/:idPermintaan", StokGudangController.updateStatusPermint
  *                   ukuran:
  *                     type: string
  *                     example: "L"
+ *                   status:
+ *                     type: string
+ *                     example: "MENUNGGU_POTONG"
  *                   isUrgent:
  *                     type: boolean
  *                     example: false
- *                   jumlah_minta:
+ *                   jumlahMinta:
  *                     type: integer
  *                     example: 20
  *                   tanggalMasukPermintaan:
@@ -306,7 +309,7 @@ router.put("/permintaan/:idPermintaan", StokGudangController.updateStatusPermint
  *                     example: "2023-01-01T00:00:00.000Z"
  */
 
-router.get("/permintaanpotong", () => {});
+router.get("/permintaanpotong", StokGudangController.getDataPermintaanPotong);
 
 /**
  * @swagger
@@ -326,21 +329,18 @@ router.get("/permintaanpotong", () => {});
  *                 type: string
  *               kategori:
  *                 type: string
- *               jenisPermintaan:
- *                 type: string
  *               ukuran:
  *                 type: string
  *               isUrgent:
  *                 type: boolean
- *               jumlah_minta:
+ *               jumlahMinta:
  *                 type: integer
  *           example:
  *             namaBarang: "Hoodie Green Navy"
  *             kategori: "hoodie"
- *             jenisPermintaan: "RESI"
  *             ukuran: "L"
  *             isUrgent: false
- *             jumlah_minta: 20
+ *             jumlahMinta: 20
  *     responses:
  *       201:
  *         description: Permintaan potong berhasil dibuat
@@ -351,9 +351,7 @@ router.get("/permintaanpotong", () => {});
  *               status: "MENUNGGU_POTONG"
  */
 
-router.post("/permintaanpotong", (req, res) => {
-  // Logic Anda di sini
-});
+router.post("/permintaanpotong", StokGudangController.createPermintaanPotong);
 
 /**
  * @swagger

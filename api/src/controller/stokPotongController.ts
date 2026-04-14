@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
 import {
   StatusPermintaan,
+  StatusProses,
   StatusStokPotong,
 } from "../generated/prisma/enums.js";
 import TrackLog from "../lib/trackLog.js";
@@ -363,6 +364,7 @@ export default class StokPotongController {
     try {
       const validated = Validator(schema)(req, res);
       if (!validated) return;
+
       const { idStokPotong } = validated.params;
       const { idPenjahit } = validated.body;
 
@@ -396,7 +398,7 @@ export default class StokPotongController {
           proses: {
             create: {
               penjahitId: penjahit.id,
-              status: "MENUNGGU_PENGIRIMAN", // Status awal proses berdasarkan Enum StatusProses
+              status: StatusProses.MENUNGGU_PENGIRIMAN, // Status awal proses berdasarkan Enum StatusProses
             },
           },
         },
