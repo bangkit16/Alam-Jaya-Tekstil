@@ -20,7 +20,10 @@ export default function LoginPage() {
   }, []);
 
   const handleLogin = async () => {
-    console.log("TRY LOGIN:", username, password);
+    if (!username || !password) {
+      alert("Username dan password wajib diisi");
+      return;
+    }
 
     try {
       const response = await fetch("https://api-alam.vercel.app/auth/login", {
@@ -32,95 +35,39 @@ export default function LoginPage() {
         body: JSON.stringify({ username, password }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      const data = await response.json();
 
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("role", data.user.role.toLowerCase());
-
-        setSession({
-          session: {
-            id: data.user.id,
-            user: data.user,
-            createdAt: new Date().toISOString(),
-          },
-        });
-
-        const redirectMap = {
-          RESI: "/resi",
-          POTONG: "/potong",
-          STOK_POTONG: "/stok-potong",
-          STOK_GUDANG: "/stok-gudang",
-          JAHIT: "/jahit",
-          QC: "/qc",
-          KURIR: "/kurir",
-        };
-
-        router.push(redirectMap[data.user.role] || "/");
-        return;
+      if (!response.ok) {
+        throw new Error(data.message || "Login gagal");
       }
 
-      throw new Error("Server response not OK");
-    } catch (error) {
-      console.log("FALLBACK LOGIN");
+      // simpan token & role
+      localStorage.setItem("accessToken", data.accessToken);
+      localStorage.setItem("role", data.user.role.toLowerCase());
 
-      const dummyUsers = {
-        resi: "RESI",
-        potong: "POTONG",
-        stokpotong: "STOK_POTONG",
-        stokgudang: "STOK_GUDANG",
-        jahit: "JAHIT",
-        qc: "QC",
-        kurir: "KURIR",
+      setSession({
+        session: {
+          id: data.user.id,
+          user: data.user,
+          createdAt: new Date().toISOString(),
+        },
+      });
+
+      // redirect map (SUDAH pakai /penjahit)
+      const redirectMap = {
+        RESI: "/resi",
+        POTONG: "/potong",
+        STOK_POTONG: "/stok-potong",
+        STOK_GUDANG: "/stok-gudang",
+        JAHIT: "/penjahit",
+        QC: "/qc",
+        KURIR: "/kurir",
       };
 
-      if (password === "123" && dummyUsers[username]) {
-        const role = dummyUsers[username];
-
-        localStorage.setItem("accessToken", "dummy-token");
-        localStorage.setItem("role", role.toLowerCase());
-
-        setSession({
-          session: {
-            id: "dummy-id",
-            user: {
-              id: "dummy-id",
-              name: username,
-              role: role.toLowerCase(),
-              email: `${username}@dummy.com`,
-            },
-            createdAt: new Date().toISOString(),
-          },
-        });
-
-        setTimeout(() => {
-          switch (role) {
-            case "RESI":
-              router.push("/resi");
-              break;
-            case "POTONG":
-              router.push("/potong");
-              break;
-            case "STOK_POTONG":
-              router.push("/stok-potong");
-              break;
-            case "STOK_GUDANG":
-              router.push("/stok-gudang");
-              break;
-            case "JAHIT":
-              router.push("/penjahit");
-              break;
-            case "QC":
-              router.push("/qc");
-              break;
-            case "KURIR":
-              router.push("/kurir");
-              break;
-          }
-        }, 100);
-      } else {
-        alert("Login gagal");
-      }
+      router.push(redirectMap[data.user.role.toUpperCase()] || "/");
+    } catch (error) {
+      console.log("LOGIN ERROR:", error);
+      alert("Login gagal, cek username / password atau server");
     }
   };
 
