@@ -9,8 +9,6 @@ export type StockType = {
   jumlahLolos: number;
   kodeStokPotongan: string;
   tanggalMasukPotong: string;
-
-  // ✅ TAMBAH INI
   status: string;
 };
 
@@ -29,16 +27,16 @@ const fetcher = async (): Promise<StockType[]> => {
 
   return result.map((item: any) => ({
     idPermintaan: item.idPermintaan,
-    idStokPotong: item.idStokPotong || item.id_stok_potong || item.id,
 
-    namaBarang: item.namaBarang || item.nama_barang,
+    // ✅ FIX UTAMA
+    idStokPotong: item.idStokPotong,
+
+    namaBarang: item.namaBarang,
     ukuran: item.ukuran,
-
-    jumlahLolos: item.jumlahLolos || item.jumlah_lolos || 0,
+    jumlahLolos: item.jumlahLolos,
     kodeStokPotongan: item.kodeStokPotongan,
     tanggalMasukPotong: item.tanggalMasukPotong,
 
-    // ✅ TAMBAH INI (PENTING BANGET)
     status: item.status,
   }));
 };

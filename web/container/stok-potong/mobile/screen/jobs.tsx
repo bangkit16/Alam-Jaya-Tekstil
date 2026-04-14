@@ -3,11 +3,10 @@
 import { useState } from "react";
 import Menunggu from "./jobs-screen/Menunggu";
 import Proses from "./jobs-screen/Proses";
-import Selesai from "./jobs-screen/Selesai";
-// ⬇️ tambahan (pastikan file ini ada)
+
 import StokPotong from "./jobs-screen/Stock";
 
-type statusType = "menunggu" | "proses" | "stok" | "kirim";
+type statusType = "menunggu" | "proses" | "stok";
 
 export default function Jobs({ setScreen }: any) {
   const [filterStatus, setFilterStatus] = useState<statusType>("menunggu");
@@ -32,12 +31,11 @@ export default function Jobs({ setScreen }: any) {
         </div>
 
         {/* FILTER */}
-        <div className="grid grid-cols-4 gap-2 mb-4 bg-gray-100 p-1 rounded-xl text-xs">
+        <div className="grid grid-cols-3 gap-2 mb-4 bg-gray-100 p-1 rounded-xl text-xs">
           {[
             { key: "menunggu", label: "Menunggu" },
             { key: "proses", label: "Proses" },
             { key: "stok", label: "Stok" },
-            { key: "kirim", label: "Kirim" },
           ].map((item) => (
             <button
               key={item.key}
@@ -58,7 +56,6 @@ export default function Jobs({ setScreen }: any) {
           {filterStatus === "menunggu" && <Menunggu />}
           {filterStatus === "proses" && <Proses />}
           {filterStatus === "stok" && <StokPotong />}
-          {filterStatus === "kirim" && <Selesai />}
         </div>
 
         {/* BACK BUTTON */}

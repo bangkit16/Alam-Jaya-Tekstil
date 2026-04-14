@@ -29,7 +29,20 @@ export default function Stock() {
       return;
     }
 
-    const id = String(selectedStock.idStokPotong);
+    // 🔥 VALIDASI WAJIB
+    if (selectedStock.status !== "STOK") {
+      console.error("❌ DATA SUDAH DIPROSES / TIDAK VALID");
+      return;
+    }
+
+    const id = selectedStock?.idStokPotong;
+
+    if (!id) {
+      console.error("❌ ID TIDAK ADA");
+      return;
+    }
+
+    console.log("🚀 KIRIM:", id, namaPenjahit);
 
     mutate(
       {
@@ -40,7 +53,6 @@ export default function Stock() {
         onSuccess: () => {
           console.log("✅ BERHASIL KIRIM");
 
-          // 🔥 REFRESH DATA (WAJIB SAMA KEY)
           queryClient.invalidateQueries({
             queryKey: ["stok-potong-stock"],
           });
@@ -62,15 +74,17 @@ export default function Stock() {
           <p className="text-center py-4">Loading...</p>
         ) : data && data.length > 0 ? (
           data.map((item) => {
-            const isSent = item.status === "SELESAI";
+            const isLocked = item.status !== "STOK";
 
             return (
               <div
                 key={item.idStokPotong}
-                onClick={() => !isSent && setSelectedStock(item)}
+                onClick={() => {
+                  if (!isLocked) setSelectedStock(item);
+                }}
                 className={`border rounded-sm p-3
                   ${
-                    isSent
+                    isLocked
                       ? "bg-gray-200 cursor-not-allowed opacity-60"
                       : "border-gray-300 cursor-pointer hover:bg-gray-50"
                   }
@@ -78,24 +92,43 @@ export default function Stock() {
               >
                 {/* HEADER */}
                 <div className="flex justify-between items-center mb-2">
-                  <p className="text-sm font-medium text-gray-800">
-                    {item.namaBarang} - {item.ukuran}
-                  </p>
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">
+                      {item.namaBarang} - {item.ukuran}
+                    </p>
+
+                    <p className="text-[10px] text-gray-400">
+                      ID: {item.idStokPotong}
+                    </p>
+                  </div>
 
                   <p className="text-lg font-bold text-gray-900">
                     {item.jumlahLolos}
                   </p>
                 </div>
 
+                {/* STATUS */}
+                <p
+                  className={`text-[10px] font-semibold
+                    ${
+                      item.status === "STOK"
+                        ? "text-blue-600"
+                        : item.status === "MENUNGGU_KURIR"
+                          ? "text-yellow-600"
+                          : "text-green-600"
+                    }
+                  `}
+                >
+                  {item.status}
+                </p>
+
                 {/* LABEL */}
-                {isSent && (
-                  <p className="text-[10px] text-green-600 font-semibold">
-                    ✔ Sudah dikirim
-                  </p>
+                {isLocked && (
+                  <p className="text-[10px] text-red-500">Tidak bisa dikirim</p>
                 )}
 
                 {/* DETAIL */}
-                <ul className="text-xs text-gray-700 space-y-1">
+                <ul className="text-xs text-gray-700 space-y-1 mt-1">
                   <li>• Kode: {item.kodeStokPotongan}</li>
                   <li>
                     • Masuk:{" "}
@@ -125,7 +158,7 @@ export default function Stock() {
             onClick={(e) => e.stopPropagation()}
           >
             {(() => {
-              const isAlreadySent = selectedStock?.status === "SELESAI";
+              const isLocked = selectedStock?.status !== "STOK";
 
               return (
                 <>
@@ -139,6 +172,11 @@ export default function Stock() {
                       {selectedStock?.jumlahLolos}
                     </p>
                   </div>
+
+                  {/* STATUS */}
+                  <p className="text-xs text-gray-500 mb-2">
+                    Status: {selectedStock?.status}
+                  </p>
 
                   {/* INFO */}
                   <div className="text-xs text-gray-700 space-y-2 mb-4">
@@ -156,10 +194,10 @@ export default function Stock() {
                   <select
                     value={namaPenjahit}
                     onChange={(e) => setNamaPenjahit(e.target.value)}
-                    disabled={isAlreadySent}
+                    disabled={isLocked}
                     className={`w-full px-3 py-2 text-xs outline-none mb-4
                       ${
-                        isAlreadySent
+                        isLocked
                           ? "bg-gray-200 cursor-not-allowed"
                           : "bg-gray-100"
                       }
@@ -177,17 +215,17 @@ export default function Stock() {
                   <div className="flex justify-end">
                     <button
                       onClick={handleSubmit}
-                      disabled={!namaPenjahit || isPending || isAlreadySent}
+                      disabled={!namaPenjahit || isPending || isLocked}
                       className={`text-xs px-4 py-1.5 rounded-sm transition
                         ${
-                          !namaPenjahit || isAlreadySent
+                          !namaPenjahit || isLocked
                             ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                             : "bg-gray-200 hover:bg-gray-300 active:scale-95"
                         }
                       `}
                     >
-                      {isAlreadySent
-                        ? "Sudah dikirim"
+                      {isLocked
+                        ? "Tidak bisa kirim"
                         : isPending
                           ? "Mengirim..."
                           : "Kirim"}
