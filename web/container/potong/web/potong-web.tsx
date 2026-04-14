@@ -44,9 +44,9 @@ export default function PotongWeb({ handleLogout }: any) {
     mutateProses({
       id: item.id_permintaan,
       data: {
-        kode_potongan: item.kode_kain,
-        jumlah_lolos: item.jumlah,
-        pengecek: "web",
+        kodeKain: item.kode_kain, //
+        jumlahHasil: item.jumlah, //
+        idPemotong: ["web"], //
       },
     });
   };
