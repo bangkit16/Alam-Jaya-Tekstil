@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Package, ClipboardList, CheckCircle, Truck } from "lucide-react";
+import { Package, ClipboardList, Truck } from "lucide-react";
 
 import { useGetPermintaan } from "@/services/potong/useGetPermintaan";
 import { useGetProses } from "@/services/potong/useGetProses";
@@ -44,9 +44,9 @@ export default function PotongWeb({ handleLogout }: any) {
     mutateProses({
       id: item.id_permintaan,
       data: {
-        kodeKain: item.kode_kain, //
-        jumlahHasil: item.jumlah, //
-        idPemotong: ["web"], //
+        kodeKain: item.kode_kain || "-", // 🔥 fix aman
+        jumlahHasil: item.jumlah || 0,
+        idPemotong: ["web"],
       },
     });
   };
@@ -63,10 +63,36 @@ export default function PotongWeb({ handleLogout }: any) {
   };
 
   // ================= DATA =================
+  const mapPermintaanToWeb = (item: any) => {
+    console.log("ITEM:", item); // 🔥 debug penting
+
+    return {
+      id_permintaan: item.idPermintaan || item.id_permintaan,
+
+      // 🔥 FIX UTAMA DI SINI
+      nama_produk:
+        item.namaBarang || item.nama_barang || item.namaProduk || "Tanpa Nama",
+
+      jumlah: item.jumlahMinta || item.jumlah || 0,
+
+      ukuran: item.ukuran || "-",
+
+      is_urgent: item.isUrgent || item.is_urgent || false,
+
+      kode_kain: item.kode_kain || "",
+    };
+  };
+
+  console.log("DATA PERMINTAAN:", dataPermintaan);
+
   const getData = () => {
-    if (activeTab === "menunggu") return dataPermintaan || [];
+    if (activeTab === "menunggu")
+      return (dataPermintaan || []).map(mapPermintaanToWeb);
+
     if (activeTab === "proses") return dataProses || [];
+
     if (activeTab === "kirim") return dataStokKirim || [];
+
     return [];
   };
 
@@ -106,7 +132,6 @@ export default function PotongWeb({ handleLogout }: any) {
           </div>
         </div>
 
-        {/* 🔥 LOGOUT SIDEBAR */}
         <button
           onClick={handleLogout}
           className="mt-auto bg-red-50 text-red-500 text-xs py-2 rounded-xl font-medium hover:bg-red-100 transition"
@@ -128,7 +153,6 @@ export default function PotongWeb({ handleLogout }: any) {
               Divisi Potong
             </div>
 
-            {/* 🔥 LOGOUT HEADER */}
             <button
               onClick={handleLogout}
               className="hidden md:block bg-gray-100 text-gray-700 text-xs px-4 py-1.5 rounded-xl font-medium hover:bg-gray-200 transition"
@@ -173,9 +197,9 @@ export default function PotongWeb({ handleLogout }: any) {
             <p className="text-center text-gray-500">Loading...</p>
           ) : (
             <div className="space-y-3">
-              {getData().map((item: any, index: number) => (
+              {getData().map((item: any) => (
                 <div
-                  key={index}
+                  key={item.id_permintaan}
                   className="bg-white border border-gray-100 rounded-xl p-4 flex justify-between items-center shadow-sm hover:shadow transition"
                 >
                   <div>
@@ -194,7 +218,7 @@ export default function PotongWeb({ handleLogout }: any) {
                     {activeTab === "menunggu" && (
                       <button
                         onClick={() => handlePermintaan(item)}
-                        className="bg-gradient-to-r from-orange-400 to-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow hover:opacity-90"
+                        className="bg-gradient-to-r from-orange-400 to-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow hover:opacity-90 active:scale-95"
                       >
                         Proses
                       </button>
@@ -224,7 +248,7 @@ export default function PotongWeb({ handleLogout }: any) {
           )}
         </div>
 
-        {/* 🔥 MOBILE LOGOUT */}
+        {/* MOBILE LOGOUT */}
         <div className="mt-6 md:hidden">
           <button
             onClick={handleLogout}
