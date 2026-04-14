@@ -5,7 +5,7 @@ import axios, {
   AxiosResponse,
 } from "axios";
 
-const BASE_URL = "http://localhost:3001" ; // Ganti dengan URL BE Anda
+const BASE_URL = "https://api-alam.vercel.app"; // Ganti dengan URL BE Anda
 
 // 1. Definisikan tipe untuk response refresh token (sesuaikan dengan BE)
 interface RefreshResponse {

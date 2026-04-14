@@ -5,40 +5,49 @@ const use_mock = false;
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-const fetcher = async () => {
+// ✅ TYPE (biar aman & konsisten dengan backend)
+type Proses = {
+  idPermintaan: string;
+  namaBarang: string;
+  kodeKain: string;
+  jumlahMinta: number;
+  ukuran: string;
+  isUrgent: boolean;
+  pengecek: string;
+  pemotong: string;
+};
+
+const fetcher = async (): Promise<Proses[]> => {
   if (use_mock) {
     await delay(1000);
     return [
       {
-        id_permintaan: "a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p6",
-        nama_produk: "Kemeja Flanel Kotak (MOCK)",
-        kode_kain: "FLN-001",
-        jumlah: 45,
+        idPermintaan: "a1b2c3d4-e5f6",
+        namaBarang: "Kemeja Flanel Kotak (MOCK)",
+        kodeKain: "FLN-001",
+        jumlahMinta: 45,
         ukuran: "L",
-        user_id: "64fcf01e-94d5-4ee8-91f2-18fea8bfe78a",
-        is_urgent: true,
+        isUrgent: true,
         pengecek: "Budi Santoso",
         pemotong: "Andi Wijaya",
       },
       {
-        id_permintaan: "b2c3d4e5-f6g7-8h9i-0j1k-l2m3n4o5p6q7",
-        nama_produk: "Celana Chino Slim Fit (MOCK)",
-        kode_kain: "CHN-022",
-        jumlah: 30,
+        idPermintaan: "b2c3d4e5-f6g7",
+        namaBarang: "Celana Chino Slim Fit (MOCK)",
+        kodeKain: "CHN-022",
+        jumlahMinta: 30,
         ukuran: "M",
-        user_id: "64fcf01e-94d5-4ee8-91f2-18fea8bfe78a",
-        is_urgent: false,
+        isUrgent: false,
         pengecek: "Siti Aminah",
         pemotong: "Eko Prasetyo",
       },
       {
-        id_permintaan: "c3d4e5f6-g7h8-9i0j-k1l2-m3n4o5p6q7r8",
-        nama_produk: "Kaos Oversize Hitam (MOCK)",
-        kode_kain: "COT-099",
-        jumlah: 120,
+        idPermintaan: "c3d4e5f6-g7h8",
+        namaBarang: "Kaos Oversize Hitam (MOCK)",
+        kodeKain: "COT-099",
+        jumlahMinta: 120,
         ukuran: "XL",
-        user_id: "64fcf01e-94d5-4ee8-91f2-18fea8bfe78a",
-        is_urgent: false,
+        isUrgent: false,
         pengecek: "Rina Rose",
         pemotong: "Dani Ramadhan",
       },
@@ -50,8 +59,8 @@ const fetcher = async () => {
 };
 
 export const useGetProses = () => {
-  return useQuery({
-    queryKey: ["prosess"],
+  return useQuery<Proses[]>({
+    queryKey: ["proses"], // ✅ WAJIB SAMA DENGAN INVALIDATE
     queryFn: fetcher,
   });
 };

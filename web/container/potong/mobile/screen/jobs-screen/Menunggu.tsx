@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Skema Validasi
 const permintaanSchema = z.object({
@@ -18,12 +19,12 @@ const permintaanSchema = z.object({
 type PermintaanFormData = z.infer<typeof permintaanSchema>;
 
 type permintaanType = {
-  id_permintaan: string;
-  nama_produk: string;
-  jumlah: number;
+  idPermintaan: string;
+  namaBarang: string;
+  kategori: string;
+  jumlahMinta: number;
   ukuran: "M" | "L" | "XL" | "XXL";
-  user_id: string;
-  is_urgent: boolean;
+  isUrgent: boolean;
 };
 
 export default function Menunggu() {
@@ -53,12 +54,13 @@ export default function Menunggu() {
     if (!selectedPermintaan) return;
 
     const submitData = {
-      id: selectedPermintaan.id_permintaan,
+      id: selectedPermintaan.idPermintaan,
       data: data,
     };
 
     mutatePermintaan(submitData, {
       onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["permintaans"] }); // 🔥 TAMBAH INI
         handleCloseModal();
         toast.success("Permintaan berhasil di proses");
       },
@@ -70,6 +72,13 @@ export default function Menunggu() {
     reset(); // Reset form ke default
   };
 
+  // 🔥 helper capitalize (biar UI rapi)
+  const capitalize = (text: string) =>
+    text.charAt(0).toUpperCase() + text.slice(1);
+
+  //
+  const queryClient = useQueryClient();
+
   return (
     <>
       {/* ================= LIST ================= */}
@@ -79,27 +88,27 @@ export default function Menunggu() {
         ) : dataPermintaan && dataPermintaan.length > 0 ? (
           dataPermintaan.map((permintaan: permintaanType, index: number) => (
             <div
-              key={`${permintaan.id_permintaan}-${index}`}
+              key={`${permintaan.idPermintaan}-${index}`}
               onClick={() => setSelectedPermintaan(permintaan)}
               className="bg-white border border-gray-100 rounded-xl px-3 py-2 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition"
             >
               {/* LEFT */}
               <div className="flex flex-col leading-tight">
-                {permintaan.is_urgent && (
+                {permintaan.isUrgent && (
                   <span className="text-[10px] text-red-500 font-semibold">
                     URGENT
                   </span>
                 )}
 
                 <p className="text-xs font-medium text-gray-800">
-                  {permintaan.nama_produk} - {permintaan.ukuran}
+                  {permintaan.namaBarang} - {permintaan.ukuran}
                 </p>
               </div>
 
               {/* RIGHT */}
               <div className="text-right">
                 <p className="text-lg font-bold text-gray-900">
-                  {permintaan.jumlah}
+                  {permintaan.jumlahMinta}
                 </p>
               </div>
             </div>
@@ -123,7 +132,7 @@ export default function Menunggu() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* URGENT BADGE */}
-            {selectedPermintaan.is_urgent && (
+            {selectedPermintaan.isUrgent && (
               <div className="mb-2">
                 <span className="bg-red-100 text-red-500 text-[10px] font-semibold px-2 py-0.5 rounded-full">
                   URGENT
@@ -134,11 +143,11 @@ export default function Menunggu() {
             {/* HEADER */}
             <div className="flex justify-between items-start gap-2 mb-3">
               <p className="text-sm font-semibold text-gray-800 leading-snug">
-                {selectedPermintaan.nama_produk} - {selectedPermintaan.ukuran}
+                {selectedPermintaan.namaBarang} - {selectedPermintaan.ukuran}
               </p>
 
               <p className="text-xl font-bold text-gray-900">
-                {selectedPermintaan.jumlah}
+                {selectedPermintaan.jumlahMinta}
               </p>
             </div>
 
@@ -150,13 +159,13 @@ export default function Menunggu() {
               <p>
                 Jumlah diminta :
                 <span className="font-medium text-gray-800 ml-1">
-                  {selectedPermintaan.jumlah}
+                  {selectedPermintaan.jumlahMinta}
                 </span>
               </p>
               <p>
                 Kategori :
                 <span className="font-medium text-gray-800 ml-1">
-                  {selectedPermintaan.nama_produk}
+                  {capitalize(selectedPermintaan.kategori)}
                 </span>
               </p>
             </div>
@@ -173,7 +182,7 @@ export default function Menunggu() {
                 onClick={() => {
                   mutatePermintaan(
                     {
-                      id: selectedPermintaan.id_permintaan,
+                      id: selectedPermintaan.idPermintaan,
                       data: {
                         kode_kain: "-",
                         pemotong: "-",
@@ -182,6 +191,9 @@ export default function Menunggu() {
                     },
                     {
                       onSuccess: () => {
+                        queryClient.invalidateQueries({
+                          queryKey: ["permintaans"],
+                        }); // 🔥 TAMBAH INI
                         handleCloseModal();
                         toast.success("Dipindah ke proses");
                       },

@@ -5,16 +5,32 @@ import { Package, ClipboardList, CheckCircle } from "lucide-react";
 
 type TabType = "menunggu" | "proses" | "selesai";
 
-export default function PenjahitWeb({ orders, setOrders, handleLogout }: any) {
-  const [activeTab, setActiveTab] = useState<TabType>("menunggu");
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+type Order = {
+  id: number;
+  nama: string;
+  qty: number;
+  status: TabType;
+  kode?: string;
+};
 
-  const filtered = orders.filter((o: any) => o.status === activeTab);
+export default function PenjahitWeb({
+  orders,
+  setOrders,
+  handleLogout,
+}: {
+  orders: Order[];
+  setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
+  handleLogout: () => void;
+}) {
+  const [activeTab, setActiveTab] = useState<TabType>("menunggu");
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  const filtered = orders.filter((o) => o.status === activeTab);
 
   const updateStatus = (newStatus: TabType) => {
-    setOrders((prev: any[]) =>
+    setOrders((prev) =>
       prev.map((o) =>
-        o.id === selectedOrder.id ? { ...o, status: newStatus } : o,
+        o.id === selectedOrder?.id ? { ...o, status: newStatus } : o,
       ),
     );
     setSelectedOrder(null);
@@ -113,7 +129,7 @@ export default function PenjahitWeb({ orders, setOrders, handleLogout }: any) {
           <h3 className="font-semibold mb-4 capitalize">Data {activeTab}</h3>
 
           <div className="space-y-3">
-            {filtered.map((o: any) => (
+            {filtered.map((o) => (
               <div
                 key={o.id}
                 onClick={() => setSelectedOrder(o)}

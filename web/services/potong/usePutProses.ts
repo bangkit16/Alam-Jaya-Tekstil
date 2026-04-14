@@ -1,15 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "../../lib/axios"; // Axios instance kamu
+import { api } from "../../lib/axios";
 
 type prosesProsesType = {
-  kode_potongan: string;
-  jumlah_lolos: number;
-  pengecek: string;
+  kodeKain: string;
+  jumlahHasil: number;
+  idPemotong: string[];
 };
 
 type MutationParams = {
-  id: string; // ID yang diambil dari URL atau state luar
-  data: prosesProsesType; // Data dari form
+  id: string;
+  data: prosesProsesType;
 };
 
 const use_mock = false;
@@ -23,6 +23,7 @@ const fetcher = async ({ id, data }: MutationParams) => {
     return { success: true };
   }
 
+  // ✅ endpoint sesuai swagger
   const response = await api.put(`/potong/proses/${id}`, data);
   return response.data;
 };
@@ -32,13 +33,17 @@ export const usePutProses = () => {
 
   return useMutation({
     mutationFn: fetcher,
+
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["prosess"] });
-      queryClient.invalidateQueries({ queryKey: ["stoks"] });
-      console.log("Data proses berhasil disimpan");
+      // ✅ REFRESH DATA YANG TERKAIT
+      queryClient.invalidateQueries({ queryKey: ["proses"] });
+      queryClient.invalidateQueries({ queryKey: ["selesai"] });
+
+      console.log("Data berhasil dipindah ke selesai");
     },
+
     onError: (error) => {
-      console.log(error);
+      console.log("Error PUT proses:", error);
     },
   });
 };
