@@ -164,14 +164,24 @@ export default function MintaPotong({ search = "" }: any) {
                 {console.log("Data Tracking:", tracking)}
 
                 <div className="bg-gray-100 rounded-xl p-3 text-xs space-y-1">
+                  { tracking.isUrgent && <p className="text-red-500 text-sm font-bold">URGENT</p>}
                   <p>
                     <b>Produk:</b> {tracking.namaBarang} ({tracking.ukuran})
                   </p>
                   <p>
-                    <b>Qty:</b> {tracking.jumlahMinta}
+                    <b>Jumlah:</b> {tracking.jumlahMinta}
                   </p>
                   <p>
                     <b>Kategori:</b> {tracking.kategori}
+                  </p>
+                  <p>
+                    <b>Jenis Permintaan:</b> {tracking.jenisPermintaan}
+                  </p>
+                  <p>
+                    <b>Status Terakhir:</b>{" "}
+                    {tracking.logPermintaan[
+                      tracking.logPermintaan.length - 1
+                    ]?.status.replace(/_/g, " ")}
                   </p>
                 </div>
 
@@ -182,13 +192,13 @@ export default function MintaPotong({ search = "" }: any) {
                     [...tracking.logPermintaan].reverse().map((log, idx) => (
                       <div
                         key={idx}
-                        className="bg-white border rounded p-2 border-l-4 border-l-blue-400"
+                        className="bg-white border rounded p-2 border-l-4 border-l-amber-400"
                       >
                         <div className="flex justify-between items-start">
                           <p className="font-bold text-gray-400 text-[9px]">
                             {log.tanggal}
                           </p>
-                          <span className="text-[8px] bg-blue-50 text-blue-600 px-1 rounded">
+                          <span className="text-[8px] bg-amber-50 text-amber-600 px-1 rounded">
                             {log.status?.replace(/_/g, " ")}
                           </span>
                         </div>
@@ -211,7 +221,7 @@ export default function MintaPotong({ search = "" }: any) {
             <div className="flex justify-end mt-4">
               <button
                 onClick={() => setSelectedId(null)}
-                className="text-xs font-medium text-blue-600 hover:underline"
+                className="text-xs font-medium text-amber-600 hover:underline"
               >
                 Tutup
               </button>
