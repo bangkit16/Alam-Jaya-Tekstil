@@ -161,9 +161,6 @@ export async function getSession(req: Request, res: Response) {
 
 export async function logout(req: Request, res: Response) {
   const refreshToken = req.cookies.refreshToken; 
-
-  // console.log(refreshToken);
-  return res.json({ refreshToken });
   
   if (!refreshToken) {
     return res.status(401).json({ message: "Refresh token is missing" });
