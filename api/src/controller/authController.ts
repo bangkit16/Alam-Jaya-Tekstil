@@ -52,6 +52,7 @@ function generateToken(credentials: {
 
 export async function login(req: Request, res: Response) {
   const { username, password } = req.body;
+const isProd = process.env.NODE_ENV === "production";
 
   try {
     if (!username || !password)
@@ -99,7 +100,7 @@ export async function login(req: Request, res: Response) {
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // true jika production
-      sameSite: "lax",
+      sameSite: isProd ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -165,6 +166,7 @@ export async function logout(req: Request, res: Response) {
   if (!refreshToken) {
     return res.status(401).json({ message: "Refresh token is missing" });
   }
+
   const session = await prisma.session.findFirst({ where: { refreshToken } });
   if (!session) {
     return res.status(401).json({ message: "Session not found or invalid" });
