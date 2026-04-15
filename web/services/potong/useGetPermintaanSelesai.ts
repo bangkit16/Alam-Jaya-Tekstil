@@ -20,7 +20,7 @@ const fetcher = async () => {
     ukuran: item.ukuran,
     kodeKain: item.kodeKain,
     pemotong: item.pemotong,
-    jumlahDiminta: item.jumlahDiminta,
+    jumlahMinta: item.jumlahMinta,
     jumlahHasil: item.jumlahHasil,
   }));
 };

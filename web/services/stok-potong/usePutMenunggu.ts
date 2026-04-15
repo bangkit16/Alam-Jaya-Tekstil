@@ -15,6 +15,9 @@ export const usePutMenunggu = () => {
       queryClient.invalidateQueries({
         queryKey: ["stok-potong-menunggu"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["stok-potong-proses"],
+      });
     },
   });
 };

@@ -74,7 +74,7 @@ export default function Selesai() {
                 <p>
                   Jumlah Diminta :
                   <span className="text-gray-800 font-medium ml-1">
-                    {item.jumlahDiminta}
+                    {item.jumlahMinta}
                   </span>
                 </p>
 
@@ -153,7 +153,7 @@ export default function Selesai() {
               <p>
                 Jumlah Diminta :
                 <span className="font-medium text-gray-800 ml-1">
-                  {selectedItem.jumlahDiminta}
+                  {selectedItem.jumlahMinta}
                 </span>
               </p>
 

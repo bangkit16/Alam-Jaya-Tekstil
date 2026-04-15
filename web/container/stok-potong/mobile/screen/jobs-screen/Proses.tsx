@@ -1,87 +1,107 @@
 "use client";
 
 import { useState } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
 import { useGetProses } from "@/services/stok-potong/useGetProses";
 import { usePutProses } from "@/services/stok-potong/usePutProses";
 import { useGetPengecek } from "@/services/stok-potong/useGetPengecek";
 
+// jika pakai sonner / react-hot-toast
+import { toast } from "sonner";
+
+/* ===============================
+   ZOD SCHEMA
+================================= */
+const prosesSchema = z.object({
+  pengecek: z
+    .array(z.string())
+    .min(1, "Pilih minimal 1 pengecek")
+    .max(2, "Maksimal 2 pengecek"),
+  kode_potongan: z.string().min(1, "Kode potongan wajib diisi"),
+  jumlah_lolos: z
+        .any() // Menghindari konflik awal tipe data
+        .refine((val) => val !== "", "Jumlah Lolos wajib diisi")
+        .transform((val) => Number(val))
+        .refine((val) => !isNaN(val), "Harus berupa angka")
+        .refine((val) => val > 0, "Minimal jumlah adalah 1"),
+  jumlah_reject: z
+        .any() // Menghindari konflik awal tipe data
+        .refine((val) => val !== "", "Jumlah Reject wajib diisi")
+        .transform((val) => Number(val))
+        .refine((val) => !isNaN(val), "Harus berupa angka")
+        .refine((val) => val > 0, "Minimal jumlah adalah 1"),
+  catatan: z.string().optional(),
+});
+
+type ProsesFormValues = z.infer<typeof prosesSchema>;
+
 type prosesType = {
   idStokBarang: string;
-  idStokPotong: string; // 🔥 WAJIB ADA
+  idStokPotong: string;
   namaBarang: string;
   ukuran: "M" | "L" | "XL" | "XXL";
   jumlahHasil: number;
 };
 
+type pengecekType = {
+  id: string;
+  nama: string;
+};
+
 export default function Proses() {
-  const { data: pengecekList } = useGetPengecek();
   const { data, isLoading } = useGetProses();
+  const { data: pengecekList } = useGetPengecek();
   const { mutate, isPending } = usePutProses();
 
   const [selectedPermintaan, setSelectedPermintaan] =
     useState<prosesType | null>(null);
 
-  const [form, setForm] = useState({
-    pengecek: [] as string[],
-    kode_potongan: "",
-    jumlah_lolos: "",
-    jumlah_reject: "",
-    catatan: "",
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<ProsesFormValues>({
+    resolver: zodResolver(prosesSchema),
+    defaultValues: {
+      pengecek: [],
+      kode_potongan: "",
+      jumlah_lolos: 0,
+      jumlah_reject: 0,
+      catatan: "",
+    },
   });
 
-  const dataProses = data || [];
+  const selectedPengecek = watch("pengecek");
 
   const handleClose = () => {
     setSelectedPermintaan(null);
-    setForm({
-      pengecek: [] as string[],
-      kode_potongan: "",
-      jumlah_lolos: "",
-      jumlah_reject: "",
-      catatan: "",
-    });
+    reset();
   };
 
-  // 🔥 SUBMIT
-  const handleSubmit = () => {
+  const onSubmit: SubmitHandler<ProsesFormValues> = (values) => {
     if (!selectedPermintaan) return;
 
-    const id = selectedPermintaan.idStokPotong;
-
-    if (!id) {
-      console.error("❌ ID STOK POTONG TIDAK ADA!");
-      return;
-    }
-
-    // ✅ VALIDASI FIX
-    if (
-      form.pengecek.length === 0 ||
-      !form.kode_potongan ||
-      !form.jumlah_lolos
-    ) {
-      console.error("❌ FORM BELUM LENGKAP!");
-      return;
-    }
-
-    const payload = {
-      idPengecek: form.pengecek, // ✅ FIX (NO ARRAY DALAM ARRAY)
-      kodeStokPotongan: form.kode_potongan,
-      jumlahPotonganLolos: Number(form.jumlah_lolos),
-      jumlahPotonganReject: Number(form.jumlah_reject || 0),
-      catatan: form.catatan,
-    };
-
-    console.log("🚀 HIT API:", id, payload);
-
     mutate(
-      { id, payload },
+      {
+        id: selectedPermintaan.idStokPotong,
+        payload: {
+          idPengecek: values.pengecek,
+          kodeStokPotongan: values.kode_potongan,
+          jumlahPotonganLolos: values.jumlah_lolos,
+          jumlahPotonganReject: values.jumlah_reject,
+          catatan: values.catatan ?? "",
+        },
+      },
       {
         onSuccess: () => {
-          console.log("✅ BERHASIL");
+          toast.success("Berhasil disimpan");
           handleClose();
-        },
-        onError: (err) => {
-          console.error("❌ ERROR:", err);
         },
       },
     );
@@ -89,121 +109,207 @@ export default function Proses() {
 
   return (
     <>
-      {/* LIST */}
+      {/* ===============================
+          LIST DATA
+      ================================= */}
       <div className="flex flex-col flex-1 overflow-y-auto gap-3">
         {isLoading ? (
           <p className="text-center py-4">Loading...</p>
-        ) : dataProses.length > 0 ? (
-          dataProses.map((item: prosesType) => (
+        ) : (
+          data?.map((item: prosesType) => (
             <div
               key={item.idStokPotong}
               onClick={() => setSelectedPermintaan(item)}
               className="border border-gray-300 rounded-2xl p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50"
             >
-              <p className="text-sm font-semibold text-gray-800">
-                {item.namaBarang} - {item.ukuran}
-              </p>
+              <div>
+                <p className="text-sm font-semibold text-gray-800">
+                  {item.namaBarang} - {item.ukuran}
+                </p>
+              </div>
 
               <p className="text-2xl font-bold text-gray-800">
                 {item.jumlahHasil}
               </p>
             </div>
           ))
-        ) : (
-          <div className="text-center py-10 border-2 border-dashed border-gray-200 rounded-2xl">
-            <p className="text-gray-500 font-medium">Data Kosong</p>
-          </div>
         )}
       </div>
 
-      {/* MODAL */}
+      {/* ===============================
+          MODAL
+      ================================= */}
       {selectedPermintaan && (
         <div
-          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
+          className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4"
           onClick={handleClose}
         >
-          <div
-            className="bg-white p-4 w-full max-w-sm shadow-xl"
+          <form
+            onSubmit={handleSubmit(onSubmit)}
             onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-sm rounded-xl p-4 shadow-xl"
           >
-            {/* HEADER */}
-            <div className="flex justify-between mb-3">
-              <p className="text-sm font-medium">
-                {selectedPermintaan.namaBarang} - {selectedPermintaan.ukuran}
+            {/* Header */}
+            <div className="flex justify-between mb-4">
+              <p className="text-sm font-semibold">
+                {selectedPermintaan.namaBarang}
               </p>
+
               <p className="text-lg font-bold">
                 {selectedPermintaan.jumlahHasil}
               </p>
             </div>
 
-            {/* FORM */}
-            <div className="space-y-2">
-              <select
-                multiple
-                value={form.pengecek}
-                onChange={(e) => {
-                  const selected = Array.from(
-                    e.target.selectedOptions,
-                    (option) => option.value,
-                  );
+            <div className="space-y-3">
+              {/* ===============================
+                  PENGECEK MULTI SELECT
+              ================================= */}
+              <div className="space-y-2">
+                {/* Badge */}
+                <div className="flex flex-wrap gap-2">
+                  {selectedPengecek.map((id) => {
+                    const nama =
+                      pengecekList?.find((item: pengecekType) => item.id === id)
+                        ?.nama || id;
 
-                  setForm({ ...form, pengecek: selected });
-                }}
-                className="w-full bg-gray-100 px-3 py-2 text-xs"
-              >
-                {pengecekList?.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.nama}
-                  </option>
-                ))}
-              </select>
+                    return (
+                      <div
+                        key={id}
+                        className="flex items-center gap-2 bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs"
+                      >
+                        {nama}
 
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setValue(
+                              "pengecek",
+                              selectedPengecek.filter((item) => item !== id),
+                              { shouldValidate: true },
+                            )
+                          }
+                          className="text-red-500 font-bold"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Select */}
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (!val) return;
+
+                    if (selectedPengecek.includes(val)) {
+                      toast.error("Sudah dipilih");
+                      return;
+                    }
+
+                    if (selectedPengecek.length >= 2) {
+                      toast.error("Maksimal 2 pengecek");
+                      return;
+                    }
+
+                    setValue("pengecek", [...selectedPengecek, val], {
+                      shouldValidate: true,
+                    });
+                  }}
+                  className={`w-full bg-gray-100 rounded-xl px-3 py-2 text-sm outline-none ${
+                    errors.pengecek ? "border border-red-500" : ""
+                  }`}
+                >
+                  <option value="">Pilih Pengecek</option>
+
+                  {pengecekList?.map((item: pengecekType) => (
+                    <option key={item.id} value={item.id}>
+                      {item.nama}
+                    </option>
+                  ))}
+                </select>
+
+                {errors.pengecek && (
+                  <p className="text-[10px] text-red-500">
+                    {errors.pengecek.message}
+                  </p>
+                )}
+              </div>
+
+              {/* KODE POTONGAN */}
+              <div>
+                <input
+                  {...register("kode_potongan")}
+                  placeholder="Kode Potongan"
+                  className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${
+                    errors.kode_potongan ? "border border-red-500" : ""
+                  }`}
+                />
+
+                {errors.kode_potongan && (
+                  <p className="text-[10px] text-red-500 mt-1">
+                    {errors.kode_potongan.message}
+                  </p>
+                )}
+              </div>
+
+              {/* JUMLAH LOLOS */}
+              <div>
+                <input
+                  type="number"
+                  {...register("jumlah_lolos")}
+                  placeholder="Jumlah Lolos"
+                  className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${
+                    errors.jumlah_lolos ? "border border-red-500" : ""
+                  }`}
+                />
+
+                {errors.jumlah_lolos && (
+                  <p className="text-[10px] text-red-500 mt-1">
+                    {errors.jumlah_lolos.message}
+                  </p>
+                )}
+              </div>
+
+              {/* JUMLAH REJECT */}
+              <div>
+                <input
+                  type="number"
+                  {...register("jumlah_reject")}
+                  placeholder="Jumlah Reject"
+                  className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${
+                    errors.jumlah_reject ? "border border-red-500" : ""
+                  }`}
+                />
+
+                {errors.jumlah_reject && (
+                  <p className="text-[10px] text-red-500 mt-1">
+                    {errors.jumlah_reject.message}
+                  </p>
+                )}
+              </div>
+
+              {/* CATATAN */}
               <input
-                placeholder="Kode Potongan"
-                value={form.kode_potongan}
-                onChange={(e) =>
-                  setForm({ ...form, kode_potongan: e.target.value })
-                }
-                className="w-full bg-gray-100 px-3 py-2 text-xs"
-              />
-
-              <input
-                placeholder="Jumlah Lolos"
-                value={form.jumlah_lolos}
-                onChange={(e) =>
-                  setForm({ ...form, jumlah_lolos: e.target.value })
-                }
-                className="w-full bg-gray-100 px-3 py-2 text-xs"
-              />
-
-              <input
-                placeholder="Jumlah Reject"
-                value={form.jumlah_reject}
-                onChange={(e) =>
-                  setForm({ ...form, jumlah_reject: e.target.value })
-                }
-                className="w-full bg-gray-100 px-3 py-2 text-xs"
-              />
-
-              <input
-                placeholder="Catatan"
-                value={form.catatan}
-                onChange={(e) => setForm({ ...form, catatan: e.target.value })}
-                className="w-full bg-gray-100 px-3 py-2 text-xs"
+                {...register("catatan")}
+                placeholder="Catatan (Opsional)"
+                className="w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none"
               />
             </div>
 
             {/* BUTTON */}
-            <div className="flex justify-end mt-4">
+            <div className="flex justify-end mt-6">
               <button
-                onClick={handleSubmit}
+                type="submit"
                 disabled={isPending}
-                className="bg-gray-200 text-xs px-4 py-1.5 rounded-sm disabled:opacity-50"
+                className="bg-blue-600 text-white text-xs px-6 py-2 rounded font-medium disabled:opacity-50 active:scale-95 transition"
               >
                 {isPending ? "Menyimpan..." : "Selesai"}
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
     </>

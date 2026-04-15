@@ -22,6 +22,9 @@ export default function Stock() {
   };
 
   const handleSubmit = () => {
+    console.log(selectedStock , namaPenjahit)
+
+    // return;
     if (!selectedStock) return;
 
     if (!namaPenjahit) {
@@ -29,11 +32,7 @@ export default function Stock() {
       return;
     }
 
-    // 🔥 VALIDASI WAJIB
-    if (selectedStock.status !== "STOK") {
-      console.error("❌ DATA SUDAH DIPROSES / TIDAK VALID");
-      return;
-    }
+    
 
     const id = selectedStock?.idStokPotong;
 
@@ -74,7 +73,7 @@ export default function Stock() {
           <p className="text-center py-4">Loading...</p>
         ) : data && data.length > 0 ? (
           data.map((item) => {
-            const isLocked = item.status !== "STOK";
+            const isLocked = item.status !== "SELESAI";
 
             return (
               <div
@@ -97,9 +96,9 @@ export default function Stock() {
                       {item.namaBarang} - {item.ukuran}
                     </p>
 
-                    <p className="text-[10px] text-gray-400">
+                    {/* <p className="text-[10px] text-gray-400">
                       ID: {item.idStokPotong}
-                    </p>
+                    </p> */}
                   </div>
 
                   <p className="text-lg font-bold text-gray-900">
@@ -124,7 +123,9 @@ export default function Stock() {
 
                 {/* LABEL */}
                 {isLocked && (
-                  <p className="text-[10px] text-red-500">Tidak bisa dikirim</p>
+                  <p className="text-[10px] text-red-500">
+                    Potongan sudah dikirim
+                  </p>
                 )}
 
                 {/* DETAIL */}
@@ -158,7 +159,7 @@ export default function Stock() {
             onClick={(e) => e.stopPropagation()}
           >
             {(() => {
-              const isLocked = selectedStock?.status !== "STOK";
+              const isLocked = selectedStock?.status !== "SELESAI";
 
               return (
                 <>
@@ -191,25 +192,25 @@ export default function Stock() {
                   </div>
 
                   {/* INPUT */}
-                  <select
-                    value={namaPenjahit}
-                    onChange={(e) => setNamaPenjahit(e.target.value)}
-                    disabled={isLocked}
-                    className={`w-full px-3 py-2 text-xs outline-none mb-4
-                      ${
-                        isLocked
-                          ? "bg-gray-200 cursor-not-allowed"
-                          : "bg-gray-100"
-                      }
-                    `}
-                  >
-                    <option value="">Pilih Penjahit</option>
-                    {penjahitList?.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.nama}
+                  <div className="mb-3">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">
+                      Pilih Penjahit
+                    </label>
+                    <select
+                      value={namaPenjahit}
+                      onChange={(e) => setNamaPenjahit(e.target.value)}
+                      className="w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none mt-1 appearance-none"
+                    >
+                      <option value="" disabled>
+                        Pilih Nama Penerima
                       </option>
-                    ))}
-                  </select>
+                      {penjahitList?.map((item: any) => (
+                        <option key={item.id} value={item.id}>
+                          {item.nama}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
                   {/* BUTTON */}
                   <div className="flex justify-end">
@@ -224,7 +225,7 @@ export default function Stock() {
                         }
                       `}
                     >
-                      {isLocked
+                      {!namaPenjahit || isLocked
                         ? "Tidak bisa kirim"
                         : isPending
                           ? "Mengirim..."
