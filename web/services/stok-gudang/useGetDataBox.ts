@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/axios";
 
-const use_mock = false;
+const use_mock = true;
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 // Type Definitions
@@ -29,6 +29,33 @@ const fetchDatabox = async (): Promise<DataBox[]> => {
   if (use_mock) {
     await delay(1000);
     return [
+      {
+        idBox: "mock-uuid",
+        namaBox: "BOX-MOCK-001",
+        namaPenerimaBox: "Mock User",
+        kodeBox: "BOX-MOCK-123",
+        tanggalMasukGudang: new Date().toISOString(),
+        stokPotongan: [
+          {
+            idQC: "qc-mock",
+            namaBarang: "Hoodie Green Navy (Mock)",
+            ukuran: "L",
+            jumlah: 15,
+            tanggalSelesaiQC: new Date().toISOString(),
+            kodeStokPotongan: "MOCK-001",
+            isUrgent: true,
+          },
+          {
+            idQC: "qc-mock2",
+            namaBarang: "Kaos Merah Jambu (Mock)",
+            ukuran: "XL",
+            jumlah: 20,
+            tanggalSelesaiQC: new Date().toISOString(),
+            kodeStokPotongan: "MOCK-002",
+            isUrgent: false,
+          },
+        ],
+      },
       {
         idBox: "mock-uuid",
         namaBox: "BOX-MOCK-001",

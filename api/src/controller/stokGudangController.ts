@@ -505,4 +505,19 @@ export default class StokGudangController {
       return res.status(500).json({ message: "Internal server error" });
     }
   }
+  public static async getListKategori(req: Request, res: Response) {
+    try {
+      const kategori = await prisma.kategori.findMany({
+        select: {
+          id: true,
+          slug: true,
+          namaKategori: true,
+        },
+      });
+      return res.status(200).json(kategori);
+    } catch (error) {
+      console.error("Error fetching kategori data:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  }
 }

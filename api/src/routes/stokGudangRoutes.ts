@@ -421,5 +421,23 @@ router.get("/list-penerima-box", StokGudangController.getListPenerimaBox);
  */
 router.get("/list-penanggung-jawab-box", StokGudangController.getListPenanggungJawabBox);
 
+/**
+ * @swagger
+ * /stokgudang/list-kategori:
+ *   get:
+ *     summary: Mendapatkan daftar semua kategori
+ *     tags: [StokGudang]
+ *     responses:
+ *       200:
+ *         description: Berhasil mendapatkan list kategori
+ *         content:
+ *           application/json:
+ *             example:
+ *               - id: "uuid-kategori"
+ *                 slug: "hoodie"
+ *                 nama: "Hoodie"
+ */
+router.get("/list-kategori", StokGudangController.getListKategori);
+
 
 export default router;

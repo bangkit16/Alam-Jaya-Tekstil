@@ -9,21 +9,76 @@ import {
   LogPermintaan,
   useGetTracking,
 } from "@/services/stok-gudang/useGetTracking";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import z from "zod";
+import { usePostMintaPotong } from "@/services/stok-gudang/usePostMintaPotong";
+import { useGetKategori } from "@/services/stok-gudang/useGetKategori";
 
 export default function MintaPotong({ search = "" }: any) {
   const [open, setOpen] = useState(false); // modal form
   const [selectedId, setSelectedId] = useState<string | null>(null); // Simpan ID saja untuk trigger API
 
-  const [form, setForm] = useState({
-    nama: "",
-    jumlah: "",
-    ukuran: "",
-    kategori: "",
-    isUrgent: false,
+  const PermintaanSchema = z.object({
+    nama: z.string().min(3, "Nama produk minimal 3 karakter"),
+    jumlah: z
+      .any() // Menghindari konflik awal tipe data
+      .refine((val) => val !== "", "Jumlah wajib diisi")
+      .transform((val) => Number(val))
+      .refine((val) => !isNaN(val), "Harus berupa angka")
+      .refine((val) => val > 0, "Minimal jumlah adalah 1"),
+    ukuran: z.string().min(1, "Ukuran harus diisi"),
+    kategori: z.string().min(1, "Pilih salah satu kategori"),
+    isUrgent: z.boolean(),
   });
+
+  // Type untuk TypeScript
+  type PermintaanFormData = z.infer<typeof PermintaanSchema>;
+
+  // ================= FORM VALIDATION =================
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<PermintaanFormData>({
+    resolver: zodResolver(PermintaanSchema),
+    defaultValues: {
+      nama: "",
+      jumlah: "" as any,
+      ukuran: "",
+      kategori: "",
+      isUrgent: false,
+    },
+  });
+
+  const isUrgent = watch("isUrgent");
+
+  const onSubmit = (data: PermintaanFormData) => {
+    mutationPost.mutate(
+      {
+        namaBarang: data.nama,
+        kategori: data.kategori,
+        ukuran: data.ukuran,
+        isUrgent: data.isUrgent,
+        jumlahMinta: data.jumlah,
+      },
+      {
+        onSuccess: () => {
+          setOpen(false);
+          reset(); // Kosongkan form setelah sukses
+        },
+      },
+    );
+  };
 
   // ================= DATA LIST =================
   const { data: permintaanData, isLoading } = useGetPermintaanPotong();
+  
+  const mutationPost = usePostMintaPotong();
+  const { data: dataKategori } = useGetKategori();
 
   // ================= DATA TRACKING (Hanya jalan jika selectedId tidak null) =================
   const { data: tracking, isLoading: isTrackingLoading } = useGetTracking(
@@ -87,60 +142,108 @@ export default function MintaPotong({ search = "" }: any) {
       {/* ================= MODAL FORM ================= */}
       {open && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-[90%] max-w-sm rounded-2xl p-4 shadow-xl">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="bg-white w-[90%] max-w-sm rounded-2xl p-4 shadow-xl"
+          >
             <p className="text-sm font-semibold mb-3">Permintaan</p>
             <div className="space-y-2">
+              {/* Input Nama */}
               <input
+                {...register("nama", { required: "Nama produk wajib diisi" })}
                 placeholder="Nama produk"
-                value={form.nama}
-                onChange={(e) => setForm({ ...form, nama: e.target.value })}
-                className="w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none"
+                className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${errors.nama ? "border border-red-500" : ""}`}
               />
+              {errors.nama && (
+                <p className="text-[10px] text-red-500">
+                  {errors.nama.message}
+                </p>
+              )}
+
+              {/* Input Jumlah */}
               <input
+                {...register("jumlah", {
+                  required: "Jumlah wajib diisi",
+                  min: { value: 1, message: "Minimal 1" },
+                })}
+                type="number"
                 placeholder="Jumlah"
-                value={form.jumlah}
-                onChange={(e) => setForm({ ...form, jumlah: e.target.value })}
-                className="w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none"
+                className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${errors.jumlah ? "border border-red-500" : ""}`}
               />
-              <input
-                placeholder="Ukuran"
-                value={form.ukuran}
-                onChange={(e) => setForm({ ...form, ukuran: e.target.value })}
-                className="w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none"
-              />
-              <input
-                placeholder="Kategori"
-                value={form.kategori}
-                onChange={(e) => setForm({ ...form, kategori: e.target.value })}
-                className="w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none"
-              />
+              {errors.jumlah && (
+                <p className="text-[10px] text-red-500">
+                  {errors.jumlah.message}
+                </p>
+              )}
+
+              {/* Select Ukuran */}
+              <select
+                {...register("ukuran", { required: "Pilih ukuran" })}
+                className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${errors.ukuran ? "border border-red-500" : ""}`}
+              >
+                <option value="">Pilih Ukuran</option>
+                <option value="XL">XL</option>
+                <option value="XXL">XXL</option>
+                <option value="L">L</option>
+                <option value="M">M</option>
+              </select>
+              {errors.ukuran && (
+                <p className="text-[10px] text-red-500">
+                  {errors.ukuran.message}
+                </p>
+              )}
+
+              {/* Select Kategori */}
+              <select
+                {...register("kategori", { required: "Pilih kategori" })}
+                className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${errors.kategori ? "border border-red-500" : ""}`}
+              >
+                <option value="">Pilih Kategori</option>
+                {dataKategori.map((kat : { id: string; slug: string; namaKategori: string; }) => (
+                  <option key={kat.id} value={kat.slug}>
+                    {kat.namaKategori}
+                  </option>
+                ))}
+              </select>
+              {errors.kategori && (
+                <p className="text-[10px] text-red-500">
+                  {errors.kategori.message}
+                </p>
+              )}
+
+              {/* Button Urgent */}
               <button
-                onClick={() => setForm({ ...form, isUrgent: !form.isUrgent })}
-                className={`text-xs px-3 py-1 rounded ${
-                  form.isUrgent ? "bg-red-500 text-white" : "bg-gray-200"
+                type="button"
+                onClick={() => setValue("isUrgent", !isUrgent)}
+                className={`text-xs px-3 py-1 rounded transition-colors ${
+                  isUrgent
+                    ? "bg-red-500 text-white"
+                    : "bg-gray-200 text-gray-700"
                 }`}
               >
                 IsUrgent
               </button>
             </div>
-            <div className="flex justify-end mt-4">
+
+            <div className="flex justify-end mt-4 gap-2">
               <button
                 onClick={() => {
                   setOpen(false);
-                  setForm({
-                    nama: "",
-                    jumlah: "",
-                    ukuran: "",
-                    kategori: "",
-                    isUrgent: false,
-                  });
+                  reset();
                 }}
-                className="bg-gray-200 text-xs px-3 py-1 rounded shadow"
+                type="button"
+                className="text-xs px-3 py-1 text-gray-500"
               >
-                Kirim
+                Batal
+              </button>
+              <button
+                type="submit"
+                className="bg-blue-600 text-white text-xs px-4 py-1 rounded shadow hover:bg-blue-700"
+              >
+                {mutationPost.isPending ? "MENGIRIM..." : "KIRIM"}
               </button>
             </div>
-          </div>
+          </form>
           <div
             className="absolute inset-0 -z-10"
             onClick={() => setOpen(false)}
@@ -164,7 +267,9 @@ export default function MintaPotong({ search = "" }: any) {
                 {console.log("Data Tracking:", tracking)}
 
                 <div className="bg-gray-100 rounded-xl p-3 text-xs space-y-1">
-                  { tracking.isUrgent && <p className="text-red-500 text-sm font-bold">URGENT</p>}
+                  {tracking.isUrgent && (
+                    <p className="text-red-500 text-sm font-bold">URGENT</p>
+                  )}
                   <p>
                     <b>Produk:</b> {tracking.namaBarang} ({tracking.ukuran})
                   </p>

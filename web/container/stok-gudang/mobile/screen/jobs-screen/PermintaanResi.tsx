@@ -4,19 +4,32 @@ import { useState } from "react";
 import {
   useGetPermintaan,
   PermintaanBarang,
-} from "@/services/stok-gudang/useGetPermintaan"; // Sesuaikan path import
+} from "@/services/stok-gudang/useGetPermintaan";
+import { useGetDatabox, DataBox } from "@/services/stok-gudang/useGetDataBox";
+import { useGetPenanggungJawabBox } from "@/services/stok-gudang/useGetPenanggungJawabBox";
+// 1. Import hook mutation
+import { usePutMintaPotong } from "@/services/stok-gudang/usePutMintaPotong";
 
 export default function PermintaanResi({ search = "" }: { search?: string }) {
   const [selected, setSelected] = useState<PermintaanBarang | null>(null);
-  const [selectedBox, setSelectedBox] = useState<number[]>([]);
+  const [selectedBox, setSelectedBox] = useState<string[]>([]);
   const [penanggungJawab, setPenanggungJawab] = useState("");
 
-  // ================= DATA FROM HOOK =================
+  // ================= DATA FROM HOOKS =================
   const { data: permintaanData, isLoading, isError } = useGetPermintaan();
+  const { data: databoxData, isLoading: isLoadingBox } = useGetDatabox();
+  const {
+    data: dataPenanggungJawabBox,
+    isLoading: isLoadingPenanggungJawabBox,
+  } = useGetPenanggungJawabBox();
+
+  // 2. Inisialisasi mutation
+  const mutationMintaPotong = usePutMintaPotong();
 
   // Handle Loading & Error State
-  if (isLoading)
+  if (isLoading || isLoadingBox || isLoadingPenanggungJawabBox)
     return <div className="p-4 text-center text-xs">Memuat data...</div>;
+
   if (isError)
     return (
       <div className="p-4 text-center text-xs text-red-500">
@@ -24,30 +37,31 @@ export default function PermintaanResi({ search = "" }: { search?: string }) {
       </div>
     );
 
-  // Filter data berdasarkan search prop
   const filtered =
     permintaanData?.filter((d) =>
       d.namaBarang.toLowerCase().includes(search.toLowerCase()),
     ) || [];
 
-  // ================= DUMMY BOX (Tetap dummy sesuai instruksi alur) =================
-  const dummyBox = [
-    {
-      id: 1,
-      namaBox: "BOX - HOODIE GREEN BLACK",
-      items: [
-        { id: 1, nama: "Hoodie Green Navy - L", qty: 20 },
-        { id: 2, nama: "Hoodie Black - M", qty: 15 },
-      ],
-    },
-    { id: 2, namaBox: "BOX - HOODIE GREEN BLACK", items: [] },
-    { id: 3, namaBox: "BOX - HOODIE GREEN BLACK", items: [] },
-  ];
-
-  const toggleBox = (id: number) => {
+  const toggleBox = (id: string) => {
     setSelectedBox((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
+  };
+
+  // 3. Fungsi Handler untuk Minta Potong
+  const handleMintaPotong = () => {
+    if (!selected) return;
+
+    const yakin = confirm(
+      `Apakah anda yakin ingin meminta potongan untuk ${selected.namaBarang}?`,
+    );
+    if (yakin) {
+      mutationMintaPotong.mutate(selected.idPermintaan, {
+        onSuccess: () => {
+          setSelected(null); // Tutup modal jika berhasil
+        },
+      });
+    }
   };
 
   return (
@@ -60,93 +74,115 @@ export default function PermintaanResi({ search = "" }: { search?: string }) {
             onClick={() => setSelected(item)}
             className="bg-white border rounded-xl p-3 shadow-sm cursor-pointer hover:border-blue-400 transition-colors"
           >
-            {/* URGENT */}
             {item.isUrgent && (
               <p className="text-[10px] text-red-500 font-bold mb-1">URGENT</p>
             )}
-
-            {/* TITLE */}
             <div className="flex justify-between">
               <p className="text-sm font-medium">
                 {item.namaBarang} - {item.ukuran}
               </p>
               <p className="text-lg font-bold">{item.jumlahMinta}</p>
             </div>
-
-            {/* INFO */}
             <div className="text-xs text-gray-500 mt-1">
               <p>Kategori : {item.kategori}</p>
               <p>Permintaan dari : {item.jenisPermintaan}</p>
             </div>
           </div>
         ))}
-
-        {filtered.length === 0 && (
-          <div className="text-center text-gray-400 text-xs py-10">
-            Data tidak ditemukan
-          </div>
-        )}
       </div>
 
       {/* ================= MODAL ================= */}
       {selected && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white w-[90%] max-w-sm rounded-2xl p-4 shadow-xl max-h-[90vh] overflow-auto">
-            {/* TITLE */}
             <p className="text-sm font-semibold mb-2">
-              Permintaan - {selected.namaBarang} {selected.jumlahMinta}
+              Permintaan - {selected.namaBarang}
             </p>
 
-            {/* INPUT */}
-            <input
-              placeholder="Nama Penanggung jawab box"
-              value={penanggungJawab}
-              onChange={(e) => setPenanggungJawab(e.target.value)}
-              className="w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none mb-3"
-            />
+            {/* INPUT PENERIMA */}
+            <div className="mb-3">
+              <label className="text-[10px] font-bold text-gray-400 uppercase">
+                Input Penerima
+              </label>
+              <select
+                value={penanggungJawab}
+                onChange={(e) => setPenanggungJawab(e.target.value)}
+                className="w-full bg-gray-100 px-3 py-2 rounded text-xs mt-1 outline-none appearance-none"
+              >
+                <option value="" disabled>
+                  Pilih Nama Penerima
+                </option>
+                {dataPenanggungJawabBox?.map((item: any) => (
+                  <option key={item.id} value={item.id}>
+                    {item.nama}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            {/* INFO */}
-            <div className="text-xs text-gray-600 mb-3">
-              <p>{selected.isUrgent ? "Status: URGENT" : ""}</p>
+            {/* INFO DETAIL */}
+            <div className="text-xs text-gray-600 mb-3 space-y-0.5">
+              {selected.isUrgent && (
+                <p className="text-red-500 font-bold">URGENT</p>
+              )}
               <p>Kategori: {selected.kategori}</p>
-              <p>Permintaan dari: {selected.jenisPermintaan}</p>
+              <p>Ukuran: {selected.ukuran}</p>
+              <p>Jumlah: {selected.jumlahMinta}</p>
             </div>
 
             {/* LIST BOX */}
             <div className="space-y-2">
-              {dummyBox.map((box) => (
-                <div key={box.id} className="bg-gray-100 rounded-xl p-2">
+              {databoxData?.map((box: DataBox) => (
+                <div key={box.idBox} className="bg-gray-100 rounded-xl p-2">
                   <div className="flex gap-2">
                     <input
                       type="checkbox"
-                      checked={selectedBox.includes(box.id)}
-                      onChange={() => toggleBox(box.id)}
+                      checked={selectedBox.includes(box.idBox)}
+                      onChange={() => toggleBox(box.idBox)}
                     />
 
                     <div className="flex-1">
-                      <p className="text-xs font-medium">{box.namaBox}</p>
+                      <div className="flex justify-between items-center">
+                        <p className="text-xs font-medium">{box.namaBox}</p>
 
-                      {box.items.length > 0 && (
+                        <p className="text-[9px] text-gray-400">
+                          {box.kodeBox}
+                        </p>
+                      </div>
+
+                      {/* STOK POTONGAN DI DALAM BOX */}
+
+                      {box.stokPotongan.length > 0 && (
                         <div className="mt-2 bg-white border rounded p-2">
-                          {box.items.map((boxItem: any) => (
-                            <div key={boxItem.id} className="mb-2">
+                          {box.stokPotongan.map((stok) => (
+                            <div key={stok.idQC} className="mb-2 last:mb-0">
                               <div className="flex justify-between">
-                                <p className="text-xs">{boxItem.nama}</p>
-                                <p className="text-sm font-bold">
-                                  {boxItem.qty}
+                                <p className="text-[10px] font-medium">
+                                  {stok.namaBarang} ({stok.ukuran})
+                                </p>
+
+                                <p className="text-xs font-bold">
+                                  {stok.jumlah}
                                 </p>
                               </div>
 
-                              <div className="text-[10px] text-gray-500">
-                                <p>• kode Stok Potongan</p>
-                                <p>• Tgl Masuk Stok</p>
+                              <div className="text-[9px] text-gray-500">
+                                <p>• Kode: {stok.kodeStokPotongan}</p>
+
+                                <p>
+                                  • Selesai QC:{" "}
+                                  {new Date(
+                                    stok.tanggalSelesaiQC,
+                                  ).toLocaleDateString("id-ID")}
+                                </p>
                               </div>
                             </div>
                           ))}
 
-                          {/* BARCODE */}
-                          <div className="mt-2 h-12 bg-gray-100 border-2 border-dashed rounded flex items-center justify-center text-[10px] text-gray-400">
-                            BARCODE
+                          {/* BARCODE PLACEHOLDER */}
+
+                          <div className="mt-2 h-8 bg-gray-50 border border-dashed rounded flex items-center justify-center text-[9px] text-gray-400">
+                            {box.kodeBox}
                           </div>
                         </div>
                       )}
@@ -154,34 +190,44 @@ export default function PermintaanResi({ search = "" }: { search?: string }) {
                   </div>
                 </div>
               ))}
+
+              {databoxData?.length === 0 && (
+                <p className="text-center text-[10px] text-gray-400 py-4">
+                  Box tidak tersedia
+                </p>
+              )}
             </div>
 
-            {/* BUTTON */}
+            {/* ACTION BUTTONS */}
             <div className="flex justify-between mt-4">
-              <button className="bg-gray-300 text-xs px-3 py-1 rounded">
-                MINTA POTONG {selected.isUrgent && "(URGENT)"}
+              {/* TOMBOL MINTA POTONG (INTEGRASI API) */}
+              <button
+                disabled={mutationMintaPotong.isPending}
+                onClick={handleMintaPotong}
+                className="bg-gray-300 text-gray-600 text-xs px-3 py-1 rounded disabled:opacity-50"
+              >
+                {mutationMintaPotong.isPending
+                  ? "MEMPROSES..."
+                  : "MINTA POTONG"}
               </button>
 
               <button
                 onClick={() => {
-                  console.log({
-                    selected,
-                    selectedBox,
-                    penanggungJawab,
-                  });
-
+                  console.log("KIRIM BOX", { selectedBox, penanggungJawab });
                   setSelected(null);
-                  setSelectedBox([]);
-                  setPenanggungJawab("");
                 }}
-                className="bg-blue-600 text-white text-xs px-3 py-1 rounded font-semibold"
+                disabled={selectedBox.length === 0 || !penanggungJawab}
+                className={`${
+                  selectedBox.length === 0 || !penanggungJawab
+                    ? "bg-blue-300"
+                    : "bg-blue-600"
+                } text-white text-xs px-3 py-1 rounded font-semibold`}
               >
                 KIRIM
               </button>
             </div>
           </div>
 
-          {/* CLICK OUTSIDE */}
           <div
             className="absolute inset-0 -z-10"
             onClick={() => setSelected(null)}

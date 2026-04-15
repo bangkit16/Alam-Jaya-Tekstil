@@ -12,7 +12,7 @@ type tabType =
   | "data_box"
   | "permintaan_resi"
   | "minta_potong"
-  | "tracking";
+  // | "tracking";
 
 export default function Jobs({ setScreen }: any) {
   const [activeTab, setActiveTab] = useState<tabType>("box_masuk");
@@ -56,7 +56,7 @@ export default function Jobs({ setScreen }: any) {
               { label: "Data Box", value: "data_box" },
               { label: "Permintaan Resi", value: "permintaan_resi" },
               { label: "Minta Potong", value: "minta_potong" },
-              { label: "Tracking", value: "tracking" },
+              // { label: "Tracking", value: "tracking" },
             ].map((item) => (
               <button
                 key={item.value}
@@ -74,7 +74,7 @@ export default function Jobs({ setScreen }: any) {
         </div>
 
         {/* PANAH SCROLL */}
-        <div className="flex justify-between mb-3 px-2">
+        {/* <div className="flex justify-between mb-3 px-2">
           <button
             onClick={scrollLeft}
             className="bg-white shadow px-3 py-1 rounded-lg text-xs active:scale-95"
@@ -88,7 +88,7 @@ export default function Jobs({ setScreen }: any) {
           >
             ▶
           </button>
-        </div>
+        </div> */}
 
         {/* CONTENT */}
         <div className="flex-1 overflow-auto">
@@ -98,7 +98,7 @@ export default function Jobs({ setScreen }: any) {
             <PermintaanResi search={search} />
           )}
           {activeTab === "minta_potong" && <MintaPotong search={search} />}
-          {activeTab === "tracking" && <Tracking search={search} />}
+          {/* {activeTab === "tracking" && <Tracking search={search} />} */}
         </div>
 
         {/* BACK */}
