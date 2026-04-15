@@ -5,33 +5,28 @@ import BoxMasuk from "./jobs-screen/BoxMasuk";
 import DataBox from "./jobs-screen/DataBox";
 import PermintaanResi from "./jobs-screen/PermintaanResi";
 import MintaPotong from "./jobs-screen/MintaPotong";
-import Tracking from "./jobs-screen/Tracking";
 
-type tabType =
-  | "box_masuk"
-  | "data_box"
-  | "permintaan_resi"
-  | "minta_potong"
-  // | "tracking";
+type tabType = "box_masuk" | "data_box" | "permintaan_resi" | "minta_potong";
+// | "tracking";
 
 export default function Jobs({ setScreen }: any) {
   const [activeTab, setActiveTab] = useState<tabType>("box_masuk");
   const [search, setSearch] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const scrollLeft = () => {
-    scrollRef.current?.scrollBy({ left: -120, behavior: "smooth" });
-  };
+  // const scrollLeft = () => {
+  //   scrollRef.current?.scrollBy({ left: -120, behavior: "smooth" });
+  // };
 
-  const scrollRight = () => {
-    scrollRef.current?.scrollBy({ left: 120, behavior: "smooth" });
-  };
+  // const scrollRight = () => {
+  //   scrollRef.current?.scrollBy({ left: 120, behavior: "smooth" });
+  // };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400 flex justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-gray-200 via-gray-300 to-gray-400 flex justify-center p-4">
       <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-2xl p-4 flex flex-col relative">
         {/* HEADER */}
-        <div className="bg-gradient-to-r from-orange-400 to-amber-500 text-white rounded-2xl py-2 text-center text-sm font-medium mb-4 shadow">
+        <div className="bg-linear-to-r from-orange-400 to-amber-500 text-white rounded-2xl py-2 text-center text-sm font-medium mb-4 shadow">
           Jobs Gudang
         </div>
 

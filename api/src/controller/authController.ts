@@ -121,8 +121,7 @@ export async function login(req: Request, res: Response) {
 
 export async function getSession(req: Request, res: Response) {
   try {
-    const cookies = parseCookies(req.headers.cookie);
-    const refreshToken = cookies.refreshToken;
+    const refreshToken = req.cookies.refreshToken; 
 
     if (!refreshToken) {
       return res.status(401).json({ message: "Refresh token is missing" });
@@ -161,9 +160,8 @@ export async function getSession(req: Request, res: Response) {
 }
 
 export async function logout(req: Request, res: Response) {
-  const cookies = parseCookies(req.headers.cookie);
-
-  const refreshToken = cookies.refreshToken;
+  const refreshToken = req.cookies.refreshToken; 
+  
   if (!refreshToken) {
     return res.status(401).json({ message: "Refresh token is missing" });
   }
@@ -178,8 +176,7 @@ export async function logout(req: Request, res: Response) {
 
 export async function refresh(req: Request, res: Response) {
   try {
-    const cookies = parseCookies(req.headers.cookie);
-    const refreshToken = cookies.refreshToken;
+    const refreshToken = req.cookies.refreshToken; 
 
     if (!refreshToken)
       return res.status(401).json({ message: "No refresh token" });
