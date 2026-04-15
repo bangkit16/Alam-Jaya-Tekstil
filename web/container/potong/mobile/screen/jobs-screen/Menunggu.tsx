@@ -200,7 +200,7 @@ export default function Menunggu() {
                     },
                   );
                 }}
-                className="flex-1 bg-gradient-to-r from-orange-400 to-amber-500 text-white text-xs py-2.5 rounded-xl font-semibold shadow hover:opacity-90 active:scale-95 transition"
+                className="flex-1 bg-linear-to-r from-orange-400 to-amber-500 text-white text-xs py-2.5 rounded-xl font-semibold shadow hover:opacity-90 active:scale-95 transition"
               >
                 PROSES
               </button>

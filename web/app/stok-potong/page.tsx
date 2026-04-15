@@ -6,6 +6,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import useIsMobile from "@/hooks/useIsMobile";
 import StokPotongMobile from "@/container/stok-potong/mobile/stok-potong-mobile";
 import StokPotongWeb from "@/container/stok-potong/web/stok-potong-web";
+import { api } from "@/lib/axios";
 
 export default function Page() {
   const { session, clearSession } = useAuthStore();
@@ -14,12 +15,9 @@ export default function Page() {
 
   const handleLogout = async () => {
     try {
-      const logout = await fetch("http://localhost:3001/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+      const logout = await api.post("/auth/logout");
 
-      if (!logout.ok) {
+      if (!logout) {
         throw new Error("Failed to logout");
       }
     } catch (error) {

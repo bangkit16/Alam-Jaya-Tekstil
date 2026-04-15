@@ -5,6 +5,7 @@ interface User {
   id: string;
   name: string;
   email: string;
+  noHandphone: string;
   username: string;
   role: "POTONG" | string; // Bisa dibuat literal jika rolenya sudah pasti
 }

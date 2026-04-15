@@ -1,14 +1,16 @@
 "use client";
 
+import { useAuthStore } from "@/store/useAuthStore";
 import { Package, Briefcase, Bell } from "lucide-react";
 
 export default function Home({ setScreen, handleLogout }: any) {
+  const { session } = useAuthStore();
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400 flex justify-center items-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-gray-200 via-gray-300 to-gray-400 flex justify-center items-center p-4">
       {/* PHONE FRAME */}
       <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-2xl p-4 flex flex-col">
         {/* HEADER */}
-        <div className="bg-gradient-to-r from-orange-400 to-amber-500 text-white rounded-2xl p-4 mb-4 shadow-md">
+        <div className="bg-linear-to-r from-orange-400 to-amber-500 text-white rounded-2xl p-4 mb-4 shadow-md">
           <p className="text-sm opacity-90">Welcome Back 👋</p>
         </div>
 
@@ -21,16 +23,23 @@ export default function Home({ setScreen, handleLogout }: any) {
           <div className="text-xs leading-relaxed">
             <p className="text-gray-500">
               Nama :
-              <span className="text-gray-900 font-medium ml-1">KURIR USER</span>
+              <span className="text-gray-900 font-medium ml-1">
+                {session?.session.user.name}
+              </span>
             </p>
 
             <p className="text-gray-500">
               Divisi :
-              <span className="text-gray-900 font-medium ml-1">KURIR</span>
+              <span className="text-gray-900 font-medium ml-1">
+                {session?.session.user.role}
+              </span>
             </p>
 
             <p className="text-gray-500">
-              ID :<span className="text-gray-900 font-medium ml-1">009999</span>
+              No Handphone :
+              <span className="text-gray-900 font-medium ml-1">
+                {session?.session.user.noHandphone}
+              </span>
             </p>
           </div>
         </div>

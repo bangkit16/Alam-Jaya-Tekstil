@@ -5,15 +5,19 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import KurirMobile from "@/container/kurir/mobile/KurirMobile";
 import KurirWeb from "@/container/kurir/web/KurirWeb";
+import useIsMobile from "@/hooks/useIsMobile";
+import { api } from "@/lib/axios";
 
 export default function Page() {
-  const [isMobile, setIsMobile] = useState(false);
+  // const [isMobile, setIsMobile] = useState(false);
+
+  const isMobile = useIsMobile();
 
   const { clearSession } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
-    setIsMobile(window.innerWidth < 768);
+    // setIsMobile(window.innerWidth < 768);
 
     const token = localStorage.getItem("accessToken");
     if (!token) router.push("/login");
@@ -21,10 +25,7 @@ export default function Page() {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:3001/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+      const logout = await api.post("/auth/logout");
     } catch (error) {
       console.log("Logout API gagal");
     }

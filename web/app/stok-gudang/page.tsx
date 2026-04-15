@@ -6,6 +6,7 @@ import useIsMobile from "@/hooks/useIsMobile";
 
 import StokGudangWeb from "@/container/stok-gudang/web/stok-gudang-web";
 import StokGudangMobile from "@/container/stok-gudang/mobile/stok-gudang-mobile";
+import { api } from "@/lib/axios";
 
 export default function Page() {
   const { session, clearSession } = useAuthStore();
@@ -14,10 +15,7 @@ export default function Page() {
 
   const handleLogout = async () => {
     try {
-      await fetch("https://api-alam.vercel.app/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+      const logout = await api.post("/auth/logout");
     } catch (error) {
       console.log("logout fallback");
     } finally {

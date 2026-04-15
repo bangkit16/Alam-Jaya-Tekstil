@@ -25,11 +25,8 @@ export default function Page() {
 
   const handleLogout = async () => {
     try {
-      const logout = await fetch("http://localhost:3001/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-      if (!logout.ok) {
+      const logout = await api.post("/auth/logout");
+      if (!logout) {
         throw new Error("Failed to logout");
       }
     } catch (error) {

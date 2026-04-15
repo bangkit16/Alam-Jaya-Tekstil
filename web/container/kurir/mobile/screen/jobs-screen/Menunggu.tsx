@@ -1,41 +1,97 @@
 "use client";
 
+import {
+  KurirMenunggu,
+  useGetKurirMenunggu,
+} from "@/services/kurir/useGetKurirMenunggu";
+import { useGetListKurir } from "@/services/kurir/useGetListKurir";
+import { usePutAmbilJob } from "@/services/kurir/usePutAmbilJob";
 import { useState } from "react";
 
-export default function Menunggu({ jobs, setJobs, form, setForm }: any) {
-  const [selectedJob, setSelectedJob] = useState<any>(null);
+export default function Menunggu() {
+  // Service Data
+  const { data: jobs, isLoading: loadingJobs } = useGetKurirMenunggu();
+  const { data: listKurir, isLoading: loadingKurir } = useGetListKurir();
 
-  const data = jobs.filter((j: any) => j.status === "menunggu");
+  const mutation = usePutAmbilJob();
+
+  const [selectedJob, setSelectedJob] = useState<KurirMenunggu | null>(null);
+  const [selectedKurirId, setSelectedKurirId] = useState("");
 
   const handleClose = () => {
     setSelectedJob(null);
-    setForm({ ...form, kurir: "" });
+    setSelectedKurirId("");
   };
+
+  const handleConfirmAmbil = () => {
+    if (!selectedJob || !selectedKurirId) return;
+
+    mutation.mutate(
+      {
+        idProsesStokPotong: selectedJob.idProsesStokPotong,
+        idKurir: selectedKurirId,
+      },
+      {
+        onSuccess: () => handleClose(),
+      },
+    );
+  };
+
+  if (loadingJobs)
+    return <div className="p-5 text-xs text-gray-500">Memuat antrean...</div>;
 
   return (
     <>
       {/* ================= LIST ================= */}
       <div className="flex flex-col gap-3">
-        {data.map((job: any) => (
+        {jobs?.map((job) => (
           <div
-            key={job.id}
+            key={job.idProsesStokPotong}
             onClick={() => setSelectedJob(job)}
-            className="border border-gray-300 rounded-sm p-3 cursor-pointer hover:bg-gray-50"
+            className={`border rounded-sm p-3 cursor-pointer hover:bg-gray-50 transition-colors ${
+              job.isUrgent ? "border-red-300 bg-red-50/30" : "border-gray-300"
+            }`}
           >
             {/* HEADER */}
-            <div className="flex justify-between items-center mb-2">
-              <p className="text-sm font-medium text-gray-800">{job.nama}</p>
-
-              <p className="text-lg font-bold text-gray-900">{job.qty}</p>
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <p className="text-sm font-medium text-gray-800">
+                  {job.namaBarang} - {job.ukuran}
+                </p>
+                {job.isUrgent && (
+                  <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full uppercase font-bold">
+                    Urgent
+                  </span>
+                )}
+              </div>
+              <p className="text-lg font-bold text-gray-900">
+                {job.jumlahLolos}
+              </p>
             </div>
 
             {/* DETAIL */}
             <ul className="text-xs text-gray-700 space-y-1">
-              <li>• Kode stok potongan</li>
-              <li>• Nama penjahit tujuan</li>
+              <li>
+                • <span className="font-semibold">{job.kodeStokPotongan}</span>{" "}
+                (Kode Potong)
+              </li>
+              <li>
+                • Dikirim Dari:{" "}
+                <span className="font-semibold">{job.dikirimDari}</span>
+              </li>
+              <li>
+                • Dikirim Ke:{" "}
+                <span className="font-semibold">{job.dikirimKe}</span>
+              </li>
             </ul>
           </div>
         ))}
+
+        {jobs?.length === 0 && (
+          <div className="text-center py-10 text-gray-500 text-sm italic">
+            Tidak ada antrean pengiriman.
+          </div>
+        )}
       </div>
 
       {/* ================= MODAL ================= */}
@@ -51,48 +107,46 @@ export default function Menunggu({ jobs, setJobs, form, setForm }: any) {
             {/* HEADER */}
             <div className="flex justify-between items-center mb-3">
               <p className="text-sm font-medium text-gray-800">
-                {selectedJob.nama}
+                {selectedJob.namaBarang}
               </p>
 
               <p className="text-lg font-bold text-gray-900">
-                {selectedJob.qty}
+                {selectedJob.jumlahLolos}
               </p>
             </div>
 
             {/* DETAIL */}
             <ul className="text-xs text-gray-700 space-y-1 mb-4">
-              <li>• Kode stok potongan</li>
-              <li>• Nama penjahit tujuan</li>
+              <li>Kode Stok Potongan: {selectedJob.kodeStokPotongan}</li>
+              <li>Dikirim Dari: {selectedJob.dikirimDari}</li>
+              <li>Dikirim Ke: {selectedJob.dikirimKe}</li>
             </ul>
 
-            {/* INPUT */}
-            <input
-              placeholder="Nama Kurir"
-              value={form.kurir}
-              onChange={(e) => setForm({ ...form, kurir: e.target.value })}
-              className="w-full bg-gray-100 px-3 py-2 text-xs outline-none mb-4"
-            />
+            {/* SELECT DROPDOWN (GANTI INPUT) */}
+            <select
+              value={selectedKurirId}
+              onChange={(e) => setSelectedKurirId(e.target.value)}
+              className="w-full bg-gray-100 px-3 py-2 text-xs outline-none mb-4 appearance-none cursor-pointer border border-transparent focus:border-gray-300"
+              disabled={loadingKurir}
+            >
+              <option value="">
+                {loadingKurir ? "Memuat Kurir..." : "Pilih Nama Kurir"}
+              </option>
+              {listKurir?.map((kurir) => (
+                <option key={kurir.id} value={kurir.id}>
+                  {kurir.nama}
+                </option>
+              ))}
+            </select>
 
             {/* BUTTON */}
             <div className="flex gap-2">
               <button
-                onClick={() => {
-                  setJobs((prev: any) =>
-                    prev.map((j: any) =>
-                      j.id === selectedJob.id
-                        ? {
-                            ...j,
-                            status: "proses",
-                            kurir: form.kurir,
-                          }
-                        : j,
-                    ),
-                  );
-                  handleClose();
-                }}
-                className="flex-1 bg-gray-800 text-white text-xs py-2 rounded-sm active:scale-95"
+                disabled={!selectedKurirId || mutation.isPending}
+                onClick={handleConfirmAmbil}
+                className="flex-1 bg-gray-800 text-white text-xs py-2 rounded-sm active:scale-95 disabled:bg-gray-400 transition-all"
               >
-                AMBIL JOB
+                {mutation.isPending ? "MEMPROSES..." : "AMBIL JOB"}
               </button>
 
               <button

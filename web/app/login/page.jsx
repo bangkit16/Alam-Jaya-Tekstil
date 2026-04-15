@@ -84,7 +84,7 @@ export default function LoginPage() {
   ].sort((a, b) => a.localeCompare(b));
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400">
+    <div className="min-h-screen flex bg-linear-to-br from-gray-200 via-gray-300 to-gray-400">
       {/* LEFT */}
       <div className="hidden md:flex flex-col justify-center w-1/2 px-16">
         <div className="max-w-md">
@@ -197,7 +197,7 @@ export default function LoginPage() {
           {/* BUTTON */}
           <button
             onClick={handleLogin}
-            className="w-full bg-gradient-to-r from-orange-400 to-amber-500 text-white py-3 rounded-xl text-sm font-semibold shadow-lg hover:scale-[1.02] active:scale-[0.98] transition"
+            className="w-full bg-linear-to-r from-orange-400 to-amber-500 text-white py-3 rounded-xl text-sm font-semibold shadow-lg hover:scale-[1.02] active:scale-[0.98] transition"
           >
             Sign In →
           </button>

@@ -6,6 +6,7 @@ import useIsMobile from "@/hooks/useIsMobile";
 
 import QCMobile from "@/container/qc/mobile/qcMobile";
 import QCWeb from "@/container/qc/web/qcWeb";
+import { api } from "@/lib/axios";
 
 export default function Page() {
   const router = useRouter();
@@ -15,10 +16,7 @@ export default function Page() {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:3001/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+      const logout = await api.post("/auth/logout");
     } catch (error) {
       console.log("fallback logout");
     } finally {
