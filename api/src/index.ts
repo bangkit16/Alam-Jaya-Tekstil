@@ -50,7 +50,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-const allowedOrigins = ["https://web-alam.vercel.app", "http://localhost:3000"];
+const allowedOrigins = [
+  "https://web-alam.vercel.app",
+  "http://localhost:3000",
+  "https://api-alam.vercel.app",
+];
 
 app.use(
   cors({

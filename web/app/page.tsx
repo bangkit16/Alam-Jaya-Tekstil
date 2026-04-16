@@ -39,7 +39,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 px-4">
-      <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl text-center w-full max-w-sm p-6 sm:p-10 border border-white/40">
+      <div className="relative bg-white backdrop-blur-xl rounded-3xl shadow-2xl text-center w-full max-w-sm p-6 sm:p-10 border border-white/40">
         {/* GLOW EFFECT */}
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-orange-300/20 blur-3xl rounded-full" />
         {/* <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-amber-400/20 blur-3xl rounded-full" /> */}
