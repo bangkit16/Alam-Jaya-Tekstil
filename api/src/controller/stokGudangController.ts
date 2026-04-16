@@ -228,7 +228,7 @@ export default class StokGudangController {
   public static async getDataPermintaan(req: Request, res: Response) {
     try {
       const permintaan = await prisma.permintaan.findMany({
-        where: { status: "MENUNGGU_GUDANG" },
+        where: { status: { notIn: [StatusPermintaan.KIRIM_RESI] } },
         select: {
           id: true,
           namaBarang: true,

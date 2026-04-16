@@ -248,6 +248,7 @@ enum StatusPermintaan {
   PROSES_QC
   MASUK_BOX
   ACC_GUDANG
+  KIRIM_RESI
 }
 
 enum StatusStokPotong {
