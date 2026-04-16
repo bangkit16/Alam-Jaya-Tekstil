@@ -5,15 +5,30 @@ import { Package, ClipboardList, Truck } from "lucide-react";
 
 import { useGetPermintaan } from "@/services/potong/useGetPermintaan";
 import { useGetProses } from "@/services/potong/useGetProses";
-import { useGetStokKirim } from "@/services/potong/useGetStokKirim";
+
 import { usePutPermintaan } from "@/services/potong/usePutPermintaan";
 import { usePutProses } from "@/services/potong/usePutProses";
 import { usePutStokPotong } from "@/services/potong/usePutStokPotong";
 
-type TabType = "menunggu" | "proses" | "kirim";
+import { useGetPemotong } from "@/services/potong/useGetPemotong";
+import { useGetPermintaanSelesai } from "@/services/potong/useGetPermintaanSelesai";
+import { toast } from "sonner";
+
+type TabType = "menunggu" | "proses" | "selesai";
 
 export default function PotongWeb({ handleLogout }: any) {
   const [activeTab, setActiveTab] = useState<TabType>("menunggu");
+
+  const [selectedProses, setSelectedProses] = useState<any>(null);
+
+  const [form, setForm] = useState({
+    kode_potongan: "",
+    jumlah_lolos: "",
+  });
+
+  const [pemotongList, setPemotongList] = useState<string[]>([]);
+
+  const { data: pemotongData } = useGetPemotong();
 
   // ================= API =================
   const { data: dataPermintaan, isLoading: isLoadingPermintaan } =
@@ -21,8 +36,8 @@ export default function PotongWeb({ handleLogout }: any) {
 
   const { data: dataProses, isLoading: isLoadingProses } = useGetProses();
 
-  const { data: dataStokKirim, isLoading: isLoadingStokKirim } =
-    useGetStokKirim();
+  const { data: dataSelesai, isLoading: isLoadingSelesai } =
+    useGetPermintaanSelesai();
 
   const { mutate: mutatePermintaan } = usePutPermintaan();
   const { mutate: mutateProses } = usePutProses();
@@ -31,7 +46,7 @@ export default function PotongWeb({ handleLogout }: any) {
   // ================= ACTION =================
   const handlePermintaan = (item: any) => {
     mutatePermintaan({
-      id: item.id_permintaan,
+      id: item.idPermintaan,
       data: {
         kode_kain: "WEB",
         pemotong: "web",
@@ -40,70 +55,67 @@ export default function PotongWeb({ handleLogout }: any) {
     });
   };
 
-  const handleProses = (item: any) => {
-    mutateProses({
-      id: item.id_permintaan,
-      data: {
-        kodeKain: item.kode_kain || "-", // 🔥 fix aman
-        jumlahHasil: item.jumlah || 0,
-        idPemotong: ["web"],
-      },
+  const openModalProses = (item: any) => {
+    setSelectedProses(item);
+    setForm({
+      kode_potongan: item.kodeKain || "",
+      jumlah_lolos: "",
     });
+    setPemotongList([]);
   };
 
-  const handleKirim = (item: any) => {
-    mutateStokKirim({
-      id: item.id_stok_potong,
-      data: {
-        penjahit: "web",
-        admin: "web",
-        tanggal_kirim: new Date().toISOString(),
+  const handleSubmitProses = (e: any) => {
+    e.preventDefault();
+
+    if (!selectedProses) return;
+
+    const kodeKain = form.kode_potongan.trim();
+    const jumlahLolos = form.jumlah_lolos.trim();
+
+    if (!kodeKain) return toast.error("Kode kain wajib diisi");
+    if (!jumlahLolos) return toast.error("Jumlah hasil wajib diisi");
+    if (pemotongList.length === 0)
+      return toast.error("Minimal pilih 1 pemotong");
+    if (pemotongList.length > 2) return toast.error("Maksimal 2 pemotong");
+
+    const jumlahHasil = parseInt(jumlahLolos);
+
+    if (isNaN(jumlahHasil) || jumlahHasil <= 0)
+      return toast.error("Jumlah tidak valid");
+
+    if (jumlahHasil > selectedProses.jumlahMinta)
+      return toast.error("Tidak boleh melebihi jumlah diminta");
+
+    mutateProses(
+      {
+        id: selectedProses.idPermintaan,
+        data: {
+          kodeKain,
+          jumlahHasil,
+          idPemotong: pemotongList,
+        },
       },
-    });
+      {
+        onSuccess: () => {
+          toast.success("Berhasil dipindah ke selesai");
+          setSelectedProses(null);
+        },
+      },
+    );
   };
 
   // ================= DATA =================
-  const mapPermintaanToWeb = (item: any) => {
-    console.log("ITEM:", item); // 🔥 debug penting
-
-    return {
-      id_permintaan: item.idPermintaan || item.id_permintaan,
-
-      // 🔥 FIX UTAMA DI SINI
-      nama_produk:
-        item.namaBarang || item.nama_barang || item.namaProduk || "Tanpa Nama",
-
-      jumlah: item.jumlahMinta || item.jumlah || 0,
-
-      ukuran: item.ukuran || "-",
-
-      is_urgent: item.isUrgent || item.is_urgent || false,
-
-      kode_kain: item.kode_kain || "",
-    };
-  };
-
-  console.log("DATA PERMINTAAN:", dataPermintaan);
-
   const getData = () => {
-    if (activeTab === "menunggu")
-      return (dataPermintaan || []).map(mapPermintaanToWeb);
-
+    if (activeTab === "menunggu") return dataPermintaan || [];
     if (activeTab === "proses") return dataProses || [];
-
-    if (activeTab === "kirim") return dataStokKirim || [];
-
+    if (activeTab === "selesai") return dataSelesai || [];
     return [];
   };
 
   const isLoading =
     (activeTab === "menunggu" && isLoadingPermintaan) ||
     (activeTab === "proses" && isLoadingProses) ||
-    (activeTab === "kirim" && isLoadingStokKirim);
-
-  const countMenunggu = dataPermintaan?.length || 0;
-  const countProses = dataProses?.length || 0;
-  const countKirim = dataStokKirim?.length || 0;
+    (activeTab === "selesai" && isLoadingSelesai);
 
   // ================= UI =================
   return (
@@ -112,11 +124,11 @@ export default function PotongWeb({ handleLogout }: any) {
       <div className="w-64 bg-white border-r border-gray-200 p-5 hidden md:flex flex-col">
         <div>
           <h1 className="text-lg font-semibold mb-6 text-gray-800">
-            Potong Panel
+            Divisi Potong
           </h1>
 
           <div className="space-y-2">
-            {["menunggu", "proses", "kirim"].map((menu) => (
+            {["menunggu", "proses", "selesai"].map((menu) => (
               <button
                 key={menu}
                 onClick={() => setActiveTab(menu as TabType)}
@@ -142,54 +154,6 @@ export default function PotongWeb({ handleLogout }: any) {
 
       {/* MAIN */}
       <div className="flex-1 p-6">
-        {/* HEADER */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-800">
-            Dashboard Produksi
-          </h2>
-
-          <div className="flex items-center gap-3">
-            <div className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-lg">
-              Divisi Potong
-            </div>
-
-            <button
-              onClick={handleLogout}
-              className="hidden md:block bg-gray-100 text-gray-700 text-xs px-4 py-1.5 rounded-xl font-medium hover:bg-gray-200 transition"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-
-        {/* CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-3">
-            <Package className="text-orange-500" />
-            <div>
-              <p className="text-xs text-gray-500">Menunggu</p>
-              <h3 className="text-lg font-bold">{countMenunggu}</h3>
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-3">
-            <ClipboardList className="text-amber-500" />
-            <div>
-              <p className="text-xs text-gray-500">Proses</p>
-              <h3 className="text-lg font-bold">{countProses}</h3>
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-3">
-            <Truck className="text-green-500" />
-            <div>
-              <p className="text-xs text-gray-500">Kirim</p>
-              <h3 className="text-lg font-bold">{countKirim}</h3>
-            </div>
-          </div>
-        </div>
-
-        {/* LIST */}
         <div className="bg-gray-50 rounded-2xl p-4">
           <h3 className="font-semibold mb-4 capitalize">Data {activeTab}</h3>
 
@@ -199,64 +163,253 @@ export default function PotongWeb({ handleLogout }: any) {
             <div className="space-y-3">
               {getData().map((item: any) => (
                 <div
-                  key={item.id_permintaan}
-                  className="bg-white border border-gray-100 rounded-xl p-4 flex justify-between items-center shadow-sm hover:shadow transition"
+                  key={item.idPermintaan}
+                  className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition"
                 >
-                  <div>
-                    {item.is_urgent && (
-                      <span className="bg-red-100 text-red-500 text-[10px] px-2 py-0.5 rounded-full font-semibold">
-                        URGENT
-                      </span>
-                    )}
+                  {/* ================= SELESAI ================= */}
+                  {activeTab === "selesai" ? (
+                    <div>
+                      <div className="flex justify-between mb-2">
+                        <p className="text-sm font-semibold text-gray-800">
+                          {item.namaBarang} - {item.ukuran}
+                        </p>
+                        <p className="text-lg font-bold text-gray-900">
+                          {item.jumlahDiminta}
+                        </p>
+                      </div>
 
-                    <p className="text-sm font-medium text-gray-800 mt-1">
-                      {item.nama_produk} - {item.ukuran}
-                    </p>
-                  </div>
+                      <div className="h-px bg-gray-200 mb-3" />
 
-                  <div>
-                    {activeTab === "menunggu" && (
-                      <button
-                        onClick={() => handlePermintaan(item)}
-                        className="bg-gradient-to-r from-orange-400 to-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow hover:opacity-90 active:scale-95"
-                      >
-                        Proses
-                      </button>
-                    )}
+                      <div className="text-xs text-gray-600 space-y-1">
+                        <p>
+                          Nama Produk :
+                          <span className="ml-1 font-medium text-gray-800">
+                            {item.namaBarang}
+                          </span>
+                        </p>
 
-                    {activeTab === "proses" && (
-                      <button
-                        onClick={() => handleProses(item)}
-                        className="bg-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-amber-600"
-                      >
-                        Selesai
-                      </button>
-                    )}
+                        <p>
+                          Ukuran :
+                          <span className="ml-1 font-medium text-gray-800">
+                            {item.ukuran}
+                          </span>
+                        </p>
 
-                    {activeTab === "kirim" && (
-                      <button
-                        onClick={() => handleKirim(item)}
-                        className="bg-green-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-green-600"
-                      >
-                        Kirim
-                      </button>
-                    )}
-                  </div>
+                        <p>
+                          Kode Kain :
+                          <span className="ml-1 font-medium text-gray-800">
+                            {item.kodeKain || "-"}
+                          </span>
+                        </p>
+
+                        <p>
+                          Nama Pemotong :
+                          <span className="ml-1 font-medium text-gray-800">
+                            {Array.isArray(item.pemotong)
+                              ? item.pemotong.join(", ")
+                              : item.pemotong || "-"}
+                          </span>
+                        </p>
+
+                        <p>
+                          Jumlah Diminta :
+                          <span className="ml-1 font-medium text-gray-800">
+                            {item.jumlahMinta}
+                          </span>
+                        </p>
+
+                        <p>
+                          Jumlah Hasil :
+                          <span className="ml-1 font-medium text-gray-800">
+                            {item.jumlahHasil}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  ) : activeTab === "proses" ? (
+                    /* ================= PROSES (FIX SESUAI GAMBAR) ================= */
+                    <div onClick={() => openModalProses(item)}>
+                      {item.isUrgent && (
+                        <p className="text-red-500 text-xs font-bold mb-1 uppercase">
+                          URGENT
+                        </p>
+                      )}
+
+                      <div className="flex justify-between items-center">
+                        <p className="text-sm font-semibold text-gray-800">
+                          {item.namaBarang} - {item.ukuran}
+                        </p>
+
+                        <p className="text-xl font-bold text-gray-900">
+                          {item.jumlahMinta}
+                        </p>
+                      </div>
+
+                      <div className="h-px bg-gray-200 my-2" />
+
+                      <div className="text-xs text-gray-500 space-y-1">
+                        <p>
+                          NAMA PRODUK :
+                          <span className="ml-1 font-bold text-gray-700">
+                            {item.namaBarang}
+                          </span>
+                        </p>
+
+                        <p>
+                          UKURAN :
+                          <span className="ml-1 font-bold text-gray-700">
+                            {item.ukuran}
+                          </span>
+                        </p>
+
+                        <p>
+                          JUMLAH DIMINTA :
+                          <span className="ml-1 font-bold text-gray-700">
+                            {item.jumlahMinta}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    /* ================= MENUNGGU ================= */
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-800">
+                          {item.namaBarang} - {item.ukuran}
+                        </p>
+                      </div>
+
+                      <div className="text-right">
+                        <p className="text-xl font-bold text-gray-900">
+                          {item.jumlahMinta}
+                        </p>
+
+                        <button
+                          onClick={() => handlePermintaan(item)}
+                          className="mt-2 bg-gradient-to-r from-orange-400 to-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold"
+                        >
+                          Proses
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* MOBILE LOGOUT */}
-        <div className="mt-6 md:hidden">
-          <button
-            onClick={handleLogout}
-            className="w-full bg-gray-100 text-gray-700 text-xs py-2 rounded-xl font-medium hover:bg-gray-200 transition"
+        {/* MODAL PROSES */}
+        {selectedProses && (
+          <div
+            className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+            onClick={() => setSelectedProses(null)} //
           >
-            Logout
-          </button>
-        </div>
+            <form
+              onSubmit={handleSubmitProses}
+              onClick={(e) => e.stopPropagation()} //
+              className="bg-white p-6 rounded-2xl w-full max-w-sm shadow-xl space-y-4"
+            >
+              {/* HEADER */}
+              <div>
+                <p className="text-sm font-semibold">
+                  {selectedProses.namaBarang} - {selectedProses.ukuran}
+                </p>
+                <p className="text-xl font-bold">
+                  {selectedProses.jumlahMinta}
+                </p>
+              </div>
+
+              <div className="h-px bg-gray-200" />
+
+              {/* INPUT */}
+              <input
+                placeholder="Kode Kain"
+                value={form.kode_potongan}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    kode_potongan: e.target.value,
+                  })
+                }
+                className="w-full bg-gray-100 px-3 py-2 rounded-xl text-sm"
+              />
+
+              {/* SELECT PEMOTONG */}
+              <select
+                onChange={(e) => {
+                  const id = e.target.value;
+
+                  if (!id) return;
+                  if (pemotongList.includes(id)) {
+                    toast.error("Sudah dipilih");
+                    return;
+                  }
+                  if (pemotongList.length >= 2) {
+                    toast.error("Maksimal 2 pemotong");
+                    return;
+                  }
+
+                  setPemotongList([...pemotongList, id]);
+                }}
+                className="w-full bg-gray-100 px-3 py-2 rounded-xl text-sm"
+              >
+                <option value="">Pilih Pemotong</option>
+                {pemotongData?.map((p: any) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nama}
+                  </option>
+                ))}
+              </select>
+
+              {/* TAG PEMOTONG */}
+              <div className="flex flex-wrap gap-2">
+                {pemotongList.map((id) => {
+                  const nama =
+                    pemotongData?.find((p: any) => p.id === id)?.nama || id;
+
+                  return (
+                    <div
+                      key={id}
+                      className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs flex items-center gap-2"
+                    >
+                      {nama}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPemotongList((prev) =>
+                            prev.filter((p) => p !== id),
+                          )
+                        }
+                        className="text-red-500"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* INPUT HASIL */}
+              <input
+                placeholder="Jumlah hasil"
+                value={form.jumlah_lolos}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    jumlah_lolos: e.target.value,
+                  })
+                }
+                className="w-full bg-gray-100 px-3 py-2 rounded-xl text-sm"
+              />
+
+              {/* BUTTON */}
+              <button className="w-full bg-gradient-to-r from-orange-400 to-amber-500 text-white py-2.5 rounded-xl text-sm font-semibold">
+                SELESAI
+              </button>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );
