@@ -69,23 +69,9 @@ export default function JobsJahit({ setScreen }: any) {
 
         {/* CONTENT */}
         <div className="flex-1 overflow-auto">
-          {filterStatus === "menunggu" && (
-            <Menunggu
-              jobs={jobs}
-              setJobs={setJobs}
-              form={form}
-              setForm={setForm}
-            />
-          )}
-          {filterStatus === "proses" && (
-            <Proses
-              jobs={jobs}
-              setJobs={setJobs}
-              form={form}
-              setForm={setForm}
-            />
-          )}
-          {filterStatus === "selesai" && <Selesai jobs={jobs} />}
+          {filterStatus === "menunggu" && <Menunggu />}
+          {filterStatus === "proses" && <Proses />}
+          {filterStatus === "selesai" && <Selesai />}
         </div>
 
         {/* BACK */}
