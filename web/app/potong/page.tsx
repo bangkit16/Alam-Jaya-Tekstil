@@ -45,14 +45,7 @@ export default function Page() {
   // const filteredOrders = orders.filter((item) => item.status === activeTab);
 
   const sharedProps = {
-    // orders,
-    // activeTab,
-    // setActiveTab,
-    // // filteredOrders,
-    // // selectedOrder,
-    // setSelectedOrder,
-    // // modalType,
-    // setModalType,
+
     handleLogout,
     session,
   };

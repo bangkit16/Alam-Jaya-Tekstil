@@ -90,31 +90,53 @@ export default function Menunggu() {
             <div
               key={`${permintaan.idPermintaan}-${index}`}
               onClick={() => setSelectedPermintaan(permintaan)}
-              className="bg-white border border-gray-100 rounded-xl px-3 py-2 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition"
+              className="border border-gray-300 rounded-2xl p-3 flex justify-between items-center cursor-pointer hover:bg-gray-50"
             >
               {/* LEFT */}
-              <div className="flex flex-col leading-tight">
+              <div className="flex-row w-full justify-between align-middle items-center">
                 {permintaan.isUrgent && (
-                  <span className="text-[10px] text-red-500 font-semibold">
-                    URGENT
-                  </span>
+                  <p className="text-red-500 text-sm uppercase font-semibold">
+                    Urgent
+                  </p>
                 )}
 
-                <p className="text-xs font-medium text-gray-800">
+                <p className="text-sm font-semibold text-gray-800 my-1">
                   {permintaan.namaBarang} - {permintaan.ukuran}
                 </p>
+
+                <div className="space-y-0.5">
+                  <p className="text-xs font-medium text-gray-400 uppercase">
+                    NAMA PRODUK :
+                    <span className="font-bold text-gray-600">
+                      {permintaan.namaBarang}
+                    </span>
+                  </p>
+
+                  <p className="text-xs font-medium text-gray-400 uppercase">
+                    UKURAN :
+                    <span className="font-bold text-gray-600">
+                      {permintaan.ukuran}
+                    </span>
+                  </p>
+
+                  <p className="text-xs font-medium text-gray-400 uppercase">
+                    JUMLAH DIMINTA :
+                    <span className="font-bold text-gray-600">
+                      {permintaan.jumlahMinta}
+                    </span>
+                  </p>
+                </div>
               </div>
 
               {/* RIGHT */}
-              <div className="text-right">
-                <p className="text-lg font-bold text-gray-900">
+              <div className="ml-4">
+                <p className="text-2xl font-bold text-gray-800">
                   {permintaan.jumlahMinta}
                 </p>
               </div>
             </div>
           ))
         ) : (
-          /* Tampilan saat data kosong */
           <div className="text-center py-10 border-2 border-dashed border-gray-200 rounded-2xl">
             <p className="text-gray-500 font-medium">Data Kosong</p>
           </div>

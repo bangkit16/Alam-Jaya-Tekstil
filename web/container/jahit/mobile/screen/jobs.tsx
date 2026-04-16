@@ -12,30 +12,6 @@ export default function JobsJahit({ setScreen }: any) {
   const [filterStatus, setFilterStatus] = useState<StatusType>("menunggu");
   const [search, setSearch] = useState("");
 
-  const [jobs, setJobs] = useState([
-    {
-      id: 1,
-      nama: "Hoodie Green Navy - L",
-      qty: 35,
-      status: "menunggu",
-      kode: "",
-      penjahit: "",
-      tanggalJahit: "",
-      lolos: "",
-      reject: "",
-      tanggalSelesai: "",
-    },
-  ]);
-
-  const [form, setForm] = useState({
-    kode: "",
-    penjahit: "",
-    tanggalJahit: "",
-    lolos: "",
-    reject: "",
-    tanggalSelesai: "",
-  });
-
   return (
     <div className="min-h-screen bg-gray-200 flex justify-center items-center p-4">
       <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-xl p-4 flex flex-col">
@@ -69,23 +45,9 @@ export default function JobsJahit({ setScreen }: any) {
 
         {/* CONTENT */}
         <div className="flex-1 overflow-auto">
-          {filterStatus === "menunggu" && (
-            <Menunggu
-              jobs={jobs}
-              setJobs={setJobs}
-              form={form}
-              setForm={setForm}
-            />
-          )}
-          {filterStatus === "proses" && (
-            <Proses
-              jobs={jobs}
-              setJobs={setJobs}
-              form={form}
-              setForm={setForm}
-            />
-          )}
-          {filterStatus === "selesai" && <Selesai jobs={jobs} />}
+          {filterStatus === "menunggu" && <Menunggu />}
+          {filterStatus === "proses" && <Proses />}
+          {filterStatus === "selesai" && <Selesai />}
         </div>
 
         {/* BACK */}

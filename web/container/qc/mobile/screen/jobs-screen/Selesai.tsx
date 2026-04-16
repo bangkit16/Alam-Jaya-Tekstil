@@ -1,41 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import { useGetQCSelesai, QCSelesaiBox } from "@/services/qc/useGetQCSelesai";
+import BarcodeGenerator from "@/components/BarcodeGenerator";
 
-export default function Selesai({ orders = [], search = "" }: any) {
-  const [selected, setSelected] = useState<any>(null);
+export default function Selesai({ search = "" }: { search: string }) {
+  const [selected, setSelected] = useState<QCSelesaiBox | null>(null);
 
-  // ================= DUMMY (GROUP PER BOX) =================
-  const dummy = [
-    {
-      id: "BOX-001",
-      namaBox: "BOX - HOODIE GREEN BLACK",
-      penanggungJawab: "Adit",
-      tanggal: "2026-04-12",
-      items: [
-        {
-          id: 1,
-          nama: "Hoodie Green Navy - L",
-          qty: 20,
-        },
-        {
-          id: 2,
-          nama: "Hoodie Black - M",
-          qty: 15,
-        },
-      ],
-      status: "selesai",
-    },
-  ];
+  // ================= DATA FROM SERVICE =================
+  const { data: boxes = [], isLoading } = useGetQCSelesai();
 
-  // ================= DATA =================
-  const source = orders.length ? orders : dummy;
-
-  const data = source.filter(
-    (o: any) =>
-      o.status === "selesai" &&
-      o.namaBox?.toLowerCase().includes(search.toLowerCase()),
+  // ================= DATA FILTERING =================
+  const data = boxes.filter(
+    (box) =>
+      box.namaBox?.toLowerCase().includes(search.toLowerCase()) ||
+      box.kodeBox?.toLowerCase().includes(search.toLowerCase()),
   );
+
+  if (isLoading)
+    return <p className="text-center text-gray-400 text-sm p-5">Loading...</p>;
 
   return (
     <>
@@ -44,9 +27,9 @@ export default function Selesai({ orders = [], search = "" }: any) {
         {data.length === 0 ? (
           <p className="text-center text-gray-400 text-sm">Tidak ada data</p>
         ) : (
-          data.map((box: any) => (
+          data.map((box) => (
             <div
-              key={box.id}
+              key={box.idBox}
               onClick={() => setSelected(box)}
               className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm cursor-pointer"
             >
@@ -55,30 +38,40 @@ export default function Selesai({ orders = [], search = "" }: any) {
 
               {/* INFO */}
               <div className="text-[11px] text-gray-500 mb-2">
-                <p>• Nama Penanggung jawab box</p>
+                <p>
+                  Nama Penanggung Jawab: <b>{box.namaPenanggungJawab}</b>
+                </p>
               </div>
 
-              {/* ITEMS */}
+              {/* ITEMS (Preview items dari array stokPotongan) */}
               <div className="space-y-2">
-                {box.items.map((item: any) => (
-                  <div key={item.id} className="border rounded-lg p-2">
+                {box.stokPotongan.map((item) => (
+                  <div key={item.idQC} className="border rounded-lg p-2">
                     <div className="flex justify-between">
-                      <p className="text-xs">{item.nama}</p>
-                      <p className="text-sm font-bold">{item.qty}</p>
+                      <p className="text-xs">
+                        {item.namaBarang} - {item.ukuran}
+                      </p>
+                      <p className="text-sm font-bold">{item.jumlah}</p>
                     </div>
 
                     <div className="text-[10px] text-gray-500">
-                      <p>• kode Stok Potongan</p>
-                      <p>• Tgl Masuk Stok</p>
+                      <p>• {item.kodeStokPotongan}</p>
+                      <p>
+                        •{" "}
+                        {new Date(item.tanggalSelesaiQC).toLocaleDateString(
+                          "id-ID",
+                        )}
+                      </p>
                     </div>
                   </div>
                 ))}
               </div>
 
               {/* BARCODE */}
-              <div className="mt-3 h-12 rounded-lg border-2 border-dashed border-gray-300 bg-gray-100 flex items-center justify-center">
-                <span className="text-[10px] text-gray-400 tracking-widest">
-                  BARCODE
+              <div className="mt-3 h-20 flex-col rounded-lg flex items-center justify-center">
+                <BarcodeGenerator value={box.kodeBox} />
+                <span className="text-[10px] text-gray-400 tracking-widest uppercase">
+                  {box.kodeBox}
                 </span>
               </div>
             </div>
@@ -91,54 +84,55 @@ export default function Selesai({ orders = [], search = "" }: any) {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white w-[90%] max-w-sm rounded-2xl p-4 shadow-xl">
             {/* TITLE */}
-            <p className="text-sm font-semibold mb-2">{selected.namaBox}</p>
+            <p className="text-xl font-semibold mb-2">{selected.namaBox}</p>
 
             {/* INFO */}
-            <div className="text-xs text-gray-600 mb-2">
-              <p>• Nama Penanggung jawab box</p>
-              <p>• Tanggal masuk box</p>
+            <div className="text-xs text-gray-600 mb-4">
+              <p>
+                Nama Penanggung Jawab: <b>{selected.namaPenanggungJawab}</b>
+              </p>
+              <p>
+                Tanggal Masuk Stok:{" "}
+                <b>
+                  {new Date(selected.tanggalMasukStok).toLocaleString("id-ID")}
+                </b>
+              </p>
             </div>
 
             {/* ITEMS */}
-            <div className="space-y-2">
-              {selected.items.map((item: any) => (
-                <div key={item.id} className="bg-gray-100 rounded-lg p-2">
+            <div className="space-y-4 max-h-[400px] overflow-auto">
+              {selected.stokPotongan.map((item) => (
+                <div key={item.idQC} className="bg-gray-100 rounded-lg p-2">
                   <div className="flex justify-between">
-                    <p className="text-xs">{item.nama}</p>
-                    <p className="text-sm font-bold">{item.qty}</p>
+                    <p className="text-sm">
+                      {item.namaBarang} - {item.ukuran}
+                    </p>
+                    <p className="text-md font-bold">{item.jumlah}</p>
                   </div>
 
-                  <div className="text-[10px] text-gray-500">
-                    <p>• kode Stok Potongan</p>
-                    <p>• Tgl Masuk Stok</p>
+                  <div className="text-xs text-gray-500">
+                    <p>• Kode Stok Potongan: {item.kodeStokPotongan}</p>
+                    <p>
+                      • Selesai QC:{" "}
+                      {new Date(item.tanggalSelesaiQC).toLocaleString("id-ID")}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
 
             {/* BARCODE */}
-            <div className="mt-4 h-16 rounded-lg border-2 border-dashed border-gray-300 bg-gray-100 flex flex-col items-center justify-center gap-1">
-              {/* fake barcode lines */}
-              <div className="flex gap-[2px] h-6">
-                {Array.from({ length: 30 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className={`w-[2px] ${
-                      i % 3 === 0 ? "bg-gray-800" : "bg-gray-400"
-                    }`}
-                  />
-                ))}
-              </div>
-
-              <span className="text-[10px] text-gray-400 tracking-widest">
-                BARCODE
+            <div className="mt-4 h-20 rounded-lg flex flex-col items-center justify-center gap-1">
+              <BarcodeGenerator value={selected.kodeBox} />
+              <span className="text-[10px] text-gray-400 tracking-widest font-mono">
+                {selected.kodeBox}
               </span>
             </div>
 
             {/* CLOSE */}
             <div className="flex justify-end mt-3">
               <button
-                className="text-xs text-gray-500"
+                className="text-xs text-gray-500 hover:text-gray-800"
                 onClick={() => setSelected(null)}
               >
                 Tutup

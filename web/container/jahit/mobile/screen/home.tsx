@@ -6,12 +6,6 @@ import { useAuthStore } from "@/store/useAuthStore";
 export default function Home({ setScreen, handleLogout }: any) {
   const { session } = useAuthStore();
 
-  const stats = {
-    jobsPending: 5,
-    jobsDone: 12,
-    jobsProcess: 3,
-  };
-
   const menus = [
     {
       label: "Stock",
@@ -34,12 +28,15 @@ export default function Home({ setScreen, handleLogout }: any) {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400 flex justify-center items-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-gray-200 via-gray-300 to-gray-400 flex justify-center items-center p-4">
       {/* PHONE FRAME */}
       <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-2xl p-4 flex flex-col">
         {/* HEADER (SAMA DENGAN POTONG) */}
-        <div className="bg-gradient-to-r from-orange-400 to-amber-500 text-white rounded-2xl p-4 mb-4 shadow-md">
+        {/* HEADER (SELARAS LOGIN) */}
+        <div className="bg-linear-to-r from-orange-400 to-amber-500 text-white rounded-2xl p-4 mb-4 shadow-md">
           <p className="text-sm opacity-90">Welcome Back 👋</p>
+          <p className="font-bold text-lg">{session?.session.user.name}</p>
+          <p className="text-xs opacity-80">{session?.session.user.role}</p>
         </div>
 
         {/* PROFILE CARD */}

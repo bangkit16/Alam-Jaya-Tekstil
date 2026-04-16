@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -107,9 +108,17 @@ export default function LoginPage() {
         <div className="w-full max-w-sm md:max-w-md bg-white rounded-3xl shadow-2xl p-6 md:p-8">
           {/* HEADER */}
           <div className="mb-6">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+            <Image
+              src="/LOGO ALAM JAYA.jpeg"
+              alt="Logo"
+              width={250}
+              height={100}
+              className="mx-auto mb-6"
+              onClick={() => router.push("/")}
+            />
+            {/* <h2 className="text-xl md:text-2xl text-center font-bold text-gray-800">
               Alam Jaya Tekstil 👋
-            </h2>
+            </h2> */}
           </div>
 
           {/* ROLE DROPDOWN */}

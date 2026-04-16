@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -40,8 +41,16 @@ export default function Home() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 px-4">
       <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl text-center w-full max-w-sm p-6 sm:p-10 border border-white/40">
         {/* GLOW EFFECT */}
-        <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-400/20 blur-3xl rounded-full" />
-        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-purple-400/20 blur-3xl rounded-full" />
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-orange-300/20 blur-3xl rounded-full" />
+        {/* <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-amber-400/20 blur-3xl rounded-full" /> */}
+
+        <Image
+          src="/LOGO ALAM JAYA.jpeg"
+          alt="Logo"
+          width={250}
+          height={100}
+          className="mx-auto mb-6"
+        />
 
         {/* TITLE */}
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">
@@ -54,7 +63,7 @@ export default function Home() {
         {/* BUTTON LOGIN */}
         <button
           onClick={() => router.push("/login")}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-medium transition active:scale-95 shadow-md"
+          className="w-full bg-orange-400 hover:bg-orange-600 text-white py-2.5 rounded-lg font-medium transition active:scale-95 shadow-md"
         >
           Masuk ke Sistem
         </button>
@@ -64,7 +73,7 @@ export default function Home() {
           // ✅ REAL INSTALL BUTTON
           <button
             onClick={handleInstall}
-            className="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-medium transition active:scale-95 shadow-md"
+            className="w-full mt-3 bg-orange-400 hover:bg-orange-600 text-white py-2.5 rounded-lg font-medium transition active:scale-95 shadow-md"
           >
             Install Aplikasi
           </button>
@@ -74,7 +83,7 @@ export default function Home() {
             onClick={() =>
               alert("Gunakan Chrome → klik ⋮ → Add to Home Screen")
             }
-            className="w-full mt-3 border border-blue-600 text-blue-600 py-2.5 rounded-lg font-medium transition active:scale-95"
+            className="w-full mt-3 border border-orange-400 text-orange-500 py-2.5 rounded-lg font-medium transition active:scale-95"
           >
             Install Aplikasi
           </button>

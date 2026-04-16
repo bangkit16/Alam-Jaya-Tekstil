@@ -9,6 +9,7 @@ import { useGetDatabox, DataBox } from "@/services/stok-gudang/useGetDataBox";
 import { useGetPenanggungJawabBox } from "@/services/stok-gudang/useGetPenanggungJawabBox";
 // 1. Import hook mutation
 import { usePutMintaPotong } from "@/services/stok-gudang/usePutMintaPotong";
+import BarcodeGenerator from "@/components/BarcodeGenerator";
 
 export default function PermintaanResi({ search = "" }: { search?: string }) {
   const [selected, setSelected] = useState<PermintaanBarang | null>(null);
@@ -181,7 +182,8 @@ export default function PermintaanResi({ search = "" }: { search?: string }) {
 
                           {/* BARCODE PLACEHOLDER */}
 
-                          <div className="mt-2 h-8 bg-gray-50 border border-dashed rounded flex items-center justify-center text-[9px] text-gray-400">
+                          <div className="mt-2 h-20 flex-col  flex items-center justify-center text-[9px] text-gray-400">
+                            <BarcodeGenerator value={box.kodeBox} />
                             {box.kodeBox}
                           </div>
                         </div>

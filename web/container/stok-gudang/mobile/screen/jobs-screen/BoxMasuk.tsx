@@ -173,7 +173,7 @@ export default function BoxMasuk({ search = "" }: { search?: string }) {
             </div>
 
             {/* BUTTON */}
-            <div className="flex justify-between items-center mt-4">
+            <div className="flex justify-end items-center mt-4">
               <button
                 disabled={mutation.isPending}
                 onClick={() => {
@@ -196,7 +196,7 @@ export default function BoxMasuk({ search = "" }: { search?: string }) {
                   );
                 }}
                 className={`${
-                  mutation.isPending ? "bg-gray-400" : "bg-blue-600"
+                  mutation.isPending ? "bg-gray-400" : "bg-orange-500"
                 } text-white px-6 py-2 text-xs rounded-lg shadow-md font-semibold`}
               >
                 {mutation.isPending ? "MEMPROSES..." : "ACC BOX"}

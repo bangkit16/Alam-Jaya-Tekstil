@@ -13,33 +13,14 @@ export default function Page() {
 
   const isMobile = useIsMobile();
 
-  // useEffect(() => {
-  //   // dummy data
-  //   setOrders([
-  //     {
-  //       id: 1,
-  //       nama: "Hoodie hitam XL",
-  //       qty: 40,
-  //       kode: "HDX01",
-  //       status: "menunggu",
-  //     },
-  //     {
-  //       id: 2,
-  //       nama: "Kaos putih M",
-  //       qty: 25,
-  //       kode: "KTS02",
-  //       status: "proses",
-  //     },
-  //   ]);
-  // }, []);
-
   const handleLogout = async () => {
     try {
-      const logout = await api.post("/auth/logout");
+      await api.post("/auth/logout");
       localStorage.removeItem("accessToken");
       localStorage.removeItem("role");
       router.push("/login");
     } catch (error) {
+      console.error("Error logging out:", error);
       console.log("Logout API gagal");
     }
   };

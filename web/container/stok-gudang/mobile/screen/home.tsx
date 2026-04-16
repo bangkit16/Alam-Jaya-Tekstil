@@ -14,14 +14,14 @@ export default function Home({ setScreen, handleLogout }: HomeProps) {
   const { session } = useAuthStore();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400 flex justify-center items-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-gray-200 via-gray-300 to-gray-400 flex justify-center items-center p-4">
       {/* PHONE FRAME */}
       <div className="w-full max-w-sm h-[90vh] bg-white rounded-[40px] shadow-2xl p-4 flex flex-col">
         {/* HEADER (SAMA PERSIS) */}
-        <div className="bg-gradient-to-r from-orange-400 to-amber-500 text-white rounded-2xl p-4 mb-4 shadow-md">
+        <div className="bg-linear-to-r from-orange-400 to-amber-500 text-white rounded-2xl p-4 mb-4 shadow-md">
           <p className="text-sm opacity-90">Welcome Back 👋</p>
           <p className="font-bold text-lg">{session?.session.user.name}</p>
-          <p className="text-xs opacity-80">{session?.session.user.role}</p>
+          <p className="text-xs opacity-80">{session?.session.user.role.replaceAll("_", " ")}</p>
         </div>
 
         {/* PROFILE CARD (SAMA PERSIS) */}
@@ -41,14 +41,14 @@ export default function Home({ setScreen, handleLogout }: HomeProps) {
             <p className="text-gray-500">
               Divisi :
               <span className="text-gray-900 font-medium ml-1">
-                {session?.session.user.role}
+                {session?.session.user.role.replace("_", " ")}
               </span>
             </p>
 
             <p className="text-gray-500 truncate">
-              Alamat :
+              No Handphone :
               <span className="text-gray-900 font-medium ml-1">
-                {session?.session.user.email}
+                {session?.session.user.noHandphone}
               </span>
             </p>
           </div>

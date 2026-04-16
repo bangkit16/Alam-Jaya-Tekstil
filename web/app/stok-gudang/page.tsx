@@ -15,7 +15,7 @@ export default function Page() {
 
   const handleLogout = async () => {
     try {
-      const logout = await api.post("/auth/logout");
+      await api.post("/auth/logout");
     } catch (error) {
       console.log("logout fallback");
     } finally {
