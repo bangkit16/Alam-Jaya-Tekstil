@@ -3,73 +3,103 @@
 import { useState } from "react";
 import { Package, ClipboardList, CheckCircle } from "lucide-react";
 
+// 🔥 API
+import { useGetPenjahitMenunggu } from "@/services/jahit/useGetPenjahitMenunggu";
+import { useGetPenjahitProses } from "@/services/jahit/useGetPenjahitProses";
+import { useGetPenjahitSelesai } from "@/services/jahit/useGetPenjahitSelesai";
+
+import { usePutMulaiJahit } from "@/services/jahit/usePutMulaiJahit";
+import { usePutDikerjakan } from "@/services/jahit/usePutDikerjakan";
+import { usePutJeda } from "@/services/jahit/usePutJeda";
+import { usePutSelesaiJahit } from "@/services/jahit/usePutSelesaiJahit";
+
 type TabType = "menunggu" | "proses" | "selesai";
 
-type Order = {
-  id: number;
-  nama: string;
-  qty: number;
-  status: TabType;
-  kode?: string;
-};
-
-export default function PenjahitWeb({
-  orders,
-  setOrders,
-  handleLogout,
-}: {
-  orders: Order[];
-  setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
-  handleLogout: () => void;
-}) {
+export default function PenjahitWeb({ handleLogout }: any) {
   const [activeTab, setActiveTab] = useState<TabType>("menunggu");
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [jumlahSelesai, setJumlahSelesai] = useState("");
+  const [catatan, setCatatan] = useState("");
 
-  const filtered = orders.filter((o) => o.status === activeTab);
+  // ================= API =================
+  const { data: dataMenunggu = [] } = useGetPenjahitMenunggu();
+  const { data: dataProses = [] } = useGetPenjahitProses();
+  const { data: dataSelesai = [] } = useGetPenjahitSelesai();
 
-  const updateStatus = (newStatus: TabType) => {
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === selectedOrder?.id ? { ...o, status: newStatus } : o,
-      ),
-    );
+  const mutationMulai = usePutMulaiJahit();
+  const mutationJeda = usePutJeda();
+  const mutationDikerjakan = usePutDikerjakan();
+  const mutationSelesai = usePutSelesaiJahit();
+
+  // ================= DATA =================
+  const getData = () => {
+    if (activeTab === "menunggu") return dataMenunggu;
+    if (activeTab === "proses") return dataProses;
+    if (activeTab === "selesai") return dataSelesai;
+    return [];
+  };
+
+  // ================= ACTION =================
+  const handleProsesAPI = async () => {
+    if (!selectedOrder) return;
+    await mutationMulai.mutateAsync(selectedOrder.idProsesStokPotong);
     setSelectedOrder(null);
   };
 
-  const countMenunggu = orders.filter((o) => o.status === "menunggu").length;
-  const countProses = orders.filter((o) => o.status === "proses").length;
-  const countSelesai = orders.filter((o) => o.status === "selesai").length;
+  const handleJeda = async () => {
+    if (!selectedOrder) return;
+    await mutationJeda.mutateAsync(selectedOrder.idProsesStokPotong);
+    setSelectedOrder(null);
+  };
+
+  const handleDikerjakan = async () => {
+    if (!selectedOrder) return;
+    await mutationDikerjakan.mutateAsync(selectedOrder.idProsesStokPotong);
+    setSelectedOrder(null);
+  };
+
+  const handleSelesai = async () => {
+    if (!selectedOrder) return;
+
+    await mutationSelesai.mutateAsync({
+      id: selectedOrder.idProsesStokPotong,
+      jumlahSelesaiJahit: Number(jumlahSelesai),
+      catatan,
+    });
+
+    setSelectedOrder(null);
+    setJumlahSelesai("");
+    setCatatan("");
+  };
+
+  // ================= COUNT =================
+  const countMenunggu = dataMenunggu.length;
+  const countProses = dataProses.length;
+  const countSelesai = dataSelesai.length;
 
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* SIDEBAR */}
-      <div className="w-64 bg-white border-r border-gray-200 p-5 hidden md:flex flex-col">
-        <div>
-          <h1 className="text-lg font-semibold mb-6 text-gray-800">
-            Penjahit Panel
-          </h1>
+      <div className="w-64 bg-white border-r p-5 hidden md:flex flex-col">
+        <h1 className="text-lg font-semibold mb-6">Penjahit Panel</h1>
 
-          <div className="space-y-2">
-            {["menunggu", "proses", "selesai"].map((menu) => (
-              <button
-                key={menu}
-                onClick={() => setActiveTab(menu as TabType)}
-                className={`w-full text-left px-4 py-2 rounded-xl capitalize transition ${
-                  activeTab === menu
-                    ? "bg-gradient-to-r from-orange-400 to-amber-500 text-white shadow"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                {menu}
-              </button>
-            ))}
-          </div>
-        </div>
+        {["menunggu", "proses", "selesai"].map((menu) => (
+          <button
+            key={menu}
+            onClick={() => setActiveTab(menu as TabType)}
+            className={`mb-2 px-4 py-2 rounded-xl text-left capitalize ${
+              activeTab === menu
+                ? "bg-orange-400 text-white"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            {menu}
+          </button>
+        ))}
 
-        {/* LOGOUT */}
         <button
           onClick={handleLogout}
-          className="mt-auto bg-red-50 text-red-500 text-xs py-2 rounded-xl font-medium hover:bg-red-100 transition"
+          className="mt-auto bg-red-50 text-red-500 py-2 rounded-xl"
         >
           Logout
         </button>
@@ -77,128 +107,140 @@ export default function PenjahitWeb({
 
       {/* MAIN */}
       <div className="flex-1 p-6">
-        {/* HEADER */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-800">
-            Dashboard Jahit
-          </h2>
-
-          <div className="flex items-center gap-3">
-            <div className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-lg">
-              Divisi Penjahit
-            </div>
-
-            <button
-              onClick={handleLogout}
-              className="hidden md:block bg-gray-100 text-gray-700 text-xs px-4 py-1.5 rounded-xl font-medium hover:bg-gray-200 transition"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-
         {/* STATS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-3">
-            <Package className="text-orange-500" />
-            <div>
-              <p className="text-xs text-gray-500">Menunggu</p>
-              <h3 className="text-lg font-bold">{countMenunggu}</h3>
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-3">
-            <ClipboardList className="text-amber-500" />
-            <div>
-              <p className="text-xs text-gray-500">Proses</p>
-              <h3 className="text-lg font-bold">{countProses}</h3>
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-3">
-            <CheckCircle className="text-green-500" />
-            <div>
-              <p className="text-xs text-gray-500">Selesai</p>
-              <h3 className="text-lg font-bold">{countSelesai}</h3>
-            </div>
-          </div>
+        <div className="grid md:grid-cols-3 gap-4 mb-6">
+          <Stat icon={<Package />} title="Menunggu" value={countMenunggu} />
+          <Stat icon={<ClipboardList />} title="Proses" value={countProses} />
+          <Stat icon={<CheckCircle />} title="Selesai" value={countSelesai} />
         </div>
 
         {/* LIST */}
-        <div className="bg-gray-50 rounded-2xl p-4">
-          <h3 className="font-semibold mb-4 capitalize">Data {activeTab}</h3>
+        <div className="bg-gray-50 p-4 rounded-xl">
+          <h3 className="mb-4 capitalize">Data {activeTab}</h3>
 
           <div className="space-y-3">
-            {filtered.map((o) => (
+            {getData().map((job: any) => (
               <div
-                key={o.id}
-                onClick={() => setSelectedOrder(o)}
-                className="bg-white border border-gray-100 rounded-xl p-4 flex justify-between items-center shadow-sm hover:shadow transition cursor-pointer"
+                key={job.idProsesStokPotong}
+                onClick={() => setSelectedOrder(job)}
+                className={`border p-3 cursor-pointer ${
+                  job.isUrgent
+                    ? "border-red-300 bg-red-50/30"
+                    : "border-gray-300"
+                }`}
               >
-                <div>
-                  <p className="text-sm font-medium text-gray-800">{o.nama}</p>
-                  <p className="text-xs text-gray-400 mt-1">{o.kode || "-"}</p>
+                {job.isUrgent && (
+                  <p className="text-xs text-red-600 font-bold mb-1">URGENT</p>
+                )}
+
+                <div className="flex justify-between mb-2">
+                  <p className="text-sm font-medium">
+                    {job.namaBarang} - {job.ukuran}
+                  </p>
+                  <p className="text-lg font-bold">
+                    {job.jumlah || job.jumlahLolos || job.jumlahSelesai}
+                  </p>
                 </div>
 
-                <p className="text-lg font-bold text-orange-500">{o.qty}</p>
+                {/* ================= MENUNGGU ================= */}
+                {activeTab === "menunggu" && (
+                  <ul className="text-xs text-gray-600 space-y-1">
+                    <li>• Kode: {job.kodeStokPotongan}</li>
+                    <li>
+                      • Dikirim:{" "}
+                      {new Date(job.tanggalKirim).toLocaleString("id-ID")}
+                    </li>
+                  </ul>
+                )}
+
+                {/* ================= PROSES ================= */}
+                {activeTab === "proses" && (
+                  <ul className="text-xs text-gray-600 space-y-1">
+                    <li>• Kode: {job.kodeStokPotongan}</li>
+                    <li>
+                      • Tanggal Mulai Jahit:{" "}
+                      {new Date(job.tanggalMulaiJahit).toLocaleDateString(
+                        "id-ID",
+                      )}
+                    </li>
+                    <li>
+                      • Status:{" "}
+                      <span className="text-blue-600 font-bold">
+                        {job.status}
+                      </span>
+                    </li>
+                  </ul>
+                )}
+
+                {/* ================= SELESAI ================= */}
+                {activeTab === "selesai" && (
+                  <ul className="text-xs text-gray-600 space-y-1">
+                    <li>
+                      • Selesai pada:{" "}
+                      {new Date(job.tanggalSelesai).toLocaleDateString("id-ID")}
+                    </li>
+                    {job.catatan && <li>• Catatan: {job.catatan}</li>}
+                  </ul>
+                )}
               </div>
             ))}
           </div>
         </div>
-
-        {/* MOBILE LOGOUT */}
-        <div className="mt-6 md:hidden">
-          <button
-            onClick={handleLogout}
-            className="w-full bg-gray-100 text-gray-700 text-xs py-2 rounded-xl font-medium hover:bg-gray-200 transition"
-          >
-            Logout
-          </button>
-        </div>
       </div>
 
-      {/* MODAL */}
-      {selectedOrder && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white border border-gray-200 p-6 rounded-2xl w-[400px] shadow-lg">
-            <h2 className="font-semibold mb-3 text-gray-800">
-              {selectedOrder.nama}
-            </h2>
+      {/* ================= MODAL ================= */}
+      {selectedOrder && activeTab === "selesai" && (
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center"
+          onClick={() => setSelectedOrder(null)}
+        >
+          <div
+            className="bg-white p-5 w-full max-w-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="font-bold mb-3">Detail Pekerjaan</h3>
 
-            {selectedOrder.status === "menunggu" && (
-              <>
-                <input placeholder="Kode Potongan" className="input" />
-                <input placeholder="Nama Penjahit" className="input" />
-                <button
-                  onClick={() => updateStatus("proses")}
-                  className="mt-3 bg-orange-500 text-white px-3 py-1.5 rounded-lg text-xs"
-                >
-                  Proses
-                </button>
-              </>
+            {selectedOrder.isUrgent && (
+              <p className="text-red-600 font-bold mb-2">URGENT</p>
             )}
 
-            {selectedOrder.status === "proses" && (
-              <>
-                <input placeholder="Tanggal Selesai" className="input" />
-                <button
-                  onClick={() => updateStatus("selesai")}
-                  className="mt-3 bg-green-500 text-white px-3 py-1.5 rounded-lg text-xs"
-                >
-                  Selesai
-                </button>
-              </>
-            )}
+            <div className="flex justify-between mb-4">
+              <p>
+                {selectedOrder.namaBarang} - {selectedOrder.ukuran}
+              </p>
+              <p className="font-bold">{selectedOrder.jumlahSelesai}</p>
+            </div>
+
+            <ul className="text-sm space-y-2 mb-4">
+              <li>Kode: {selectedOrder.kodeStokPotongan}</li>
+              <li>
+                Waktu:{" "}
+                {new Date(selectedOrder.tanggalSelesai).toLocaleString("id-ID")}
+              </li>
+              <li>Catatan: {selectedOrder.catatan || "-"}</li>
+            </ul>
 
             <button
               onClick={() => setSelectedOrder(null)}
-              className="mt-4 text-xs text-gray-500"
+              className="w-full bg-gray-800 text-white py-2"
             >
-              Tutup
+              TUTUP
             </button>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function Stat({ icon, title, value }: any) {
+  return (
+    <div className="bg-white p-4 rounded-xl flex gap-2">
+      {icon}
+      <div>
+        <p className="text-xs">{title}</p>
+        <h3 className="font-bold">{value}</h3>
+      </div>
     </div>
   );
 }
