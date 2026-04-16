@@ -61,7 +61,7 @@ export default function Home({ setScreen, handleLogout }: any) {
             </p>
 
             <p className="text-gray-500 truncate">
-              Email :
+              No Handphone :
               <span className="text-gray-900 font-medium ml-1">
                 {session?.session.user.email}
               </span>

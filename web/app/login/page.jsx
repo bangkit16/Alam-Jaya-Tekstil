@@ -5,20 +5,36 @@ import { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import Image from "next/image";
+import { api } from "@/lib/axios";
 
 export default function LoginPage() {
   const router = useRouter();
 
-  const [mounted, setMounted] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [roleUI, setRoleUI] = useState("");
-  const { setSession } = useAuthStore();
+  const { session, setSession } = useAuthStore();
 
+  const redirectMap = {
+    RESI: "/resi",
+    POTONG: "/potong",
+    STOK_POTONG: "/stok-potong",
+    STOK_GUDANG: "/stok-gudang",
+    JAHIT: "/penjahit",
+    QC: "/qc",
+    KURIR: "/kurir",
+  };
+  
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (session?.session?.user?.role) {
+      const role = session.session.user.role.toUpperCase();
+
+      router.push(redirectMap[role] || "/");
+    }
+  }, [session]);
+
+  console.log(session);
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -27,18 +43,13 @@ export default function LoginPage() {
     }
 
     try {
-      const response = await fetch("https://api-alam.vercel.app/auth/login", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
+      const response = await api.post("auth/login", { username, password });
 
-      const data = await response.json();
+      const data = await response.data;
 
-      if (!response.ok) {
+      // console.log(response.data);
+      // return;
+      if (!response) {
         throw new Error(data.message || "Login gagal");
       }
 
@@ -55,15 +66,6 @@ export default function LoginPage() {
       });
 
       // redirect map (SUDAH pakai /penjahit)
-      const redirectMap = {
-        RESI: "/resi",
-        POTONG: "/potong",
-        STOK_POTONG: "/stok-potong",
-        STOK_GUDANG: "/stok-gudang",
-        JAHIT: "/penjahit",
-        QC: "/qc",
-        KURIR: "/kurir",
-      };
 
       router.push(redirectMap[data.user.role.toUpperCase()] || "/");
     } catch (error) {
@@ -71,8 +73,6 @@ export default function LoginPage() {
       alert("Login gagal, cek username / password atau server");
     }
   };
-
-  if (!mounted) return null;
 
   const roles = [
     "resi",
@@ -85,24 +85,7 @@ export default function LoginPage() {
   ].sort((a, b) => a.localeCompare(b));
 
   return (
-    <div className="min-h-screen flex bg-linear-to-br from-gray-200 via-gray-300 to-gray-400">
-      {/* LEFT */}
-      <div className="hidden md:flex flex-col justify-center w-1/2 px-16">
-        <div className="max-w-md">
-          <h1 className="text-4xl font-bold mb-4 text-gray-800">
-            Textile System
-          </h1>
-          <p className="text-gray-600">
-            Manage your workflow, stock, and production in one place.
-          </p>
-
-          <div className="mt-8 bg-white rounded-2xl p-4 shadow-md">
-            <p className="text-sm text-gray-500">System Status</p>
-            <p className="text-lg font-semibold text-green-500">● Online</p>
-          </div>
-        </div>
-      </div>
-
+    <div className="min-h-screen justify-center flex bg-linear-to-br from-gray-200 via-gray-300 to-gray-400">
       {/* LOGIN */}
       <div className="flex w-full md:w-1/2 items-center justify-center px-4">
         <div className="w-full max-w-sm md:max-w-md bg-white rounded-3xl shadow-2xl p-6 md:p-8">
@@ -113,8 +96,9 @@ export default function LoginPage() {
               alt="Logo"
               width={250}
               height={100}
-              className="mx-auto mb-6"
-              onClick={() => router.push("/")}
+              priority
+              className="mx-auto mb-6 h-auto w-auto"
+              onClick={()=> router.push("/")}
             />
             {/* <h2 className="text-xl md:text-2xl text-center font-bold text-gray-800">
               Alam Jaya Tekstil 👋
@@ -192,8 +176,7 @@ export default function LoginPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="text-gray-400 hover:text-gray-600"
               >
-                {mounted &&
-                  (showPassword ? <EyeOff size={18} /> : <Eye size={18} />)}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
