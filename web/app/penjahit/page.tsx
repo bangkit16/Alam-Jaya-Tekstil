@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import PenjahitMobile from "@/container/jahit/mobile/PenjahitMobile";
 import PenjahitWeb from "@/container/jahit/web/PenjahitWeb";

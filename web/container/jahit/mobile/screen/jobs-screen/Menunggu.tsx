@@ -6,6 +6,7 @@ import {
   PenjahitMenunggu,
 } from "@/services/jahit/useGetPenjahitMenunggu"; // Sesuaikan path hook
 import { usePutMulaiJahit } from "@/services/jahit/usePutMulaiJahit";
+import { toast } from "sonner";
 
 export default function Menunggu() {
   const [selected, setSelected] = useState<PenjahitMenunggu | null>(null);
@@ -27,10 +28,15 @@ export default function Menunggu() {
   const handleProses = async (job: PenjahitMenunggu) => {
     try {
       // Eksekusi API PUT ke server
-      await mutation.mutateAsync(job.idProsesStokPotong);
+      await mutation.mutate(job.idProsesStokPotong, {
+        onSuccess: (data) => {
+
+          toast.success(data.message);
+          handleClose();
+        },
+      });
 
       // Jika sukses, tutup modal (Invalidasi data diurus otomatis oleh hook)
-      handleClose();
     } catch (error) {
       // Error sudah dihandle oleh alert di dalam hook
       console.error("Mutation failed");
@@ -159,7 +165,7 @@ export default function Menunggu() {
               <button
                 onClick={() => handleProses(selected)}
                 disabled={mutation.isPending} // Disable saat loading
-                className="flex-1 bg-gray-800 text-white text-xs py-2.5 rounded-sm font-bold disabled:bg-gray-400"
+                className="flex-1 bg-orange-500 text-white text-xs py-2.5 rounded-sm font-bold disabled:bg-orange-300"
               >
                 {mutation.isPending ? "MEMPROSES..." : "PROSES"}
               </button>

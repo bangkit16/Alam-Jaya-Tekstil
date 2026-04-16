@@ -7,6 +7,7 @@ import {
 import { useGetListKurir } from "@/services/kurir/useGetListKurir";
 import { usePutAmbilJob } from "@/services/kurir/usePutAmbilJob";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function Menunggu() {
   // Service Data
@@ -32,13 +33,16 @@ export default function Menunggu() {
         idKurir: selectedKurirId,
       },
       {
-        onSuccess: () => handleClose(),
+        onSuccess: (data) => {
+          toast.success(data.message);
+          handleClose()
+        },
       },
     );
   };
 
   if (loadingJobs)
-    return <div className="p-5 text-xs text-gray-500">Memuat antrean...</div>;
+    return <div className="p-5 text-xs text-gray-500 text-center">Memuat antrean...</div>;
 
   return (
     <>
@@ -144,7 +148,7 @@ export default function Menunggu() {
               <button
                 disabled={!selectedKurirId || mutation.isPending}
                 onClick={handleConfirmAmbil}
-                className="flex-1 bg-gray-800 text-white text-xs py-2 rounded-sm active:scale-95 disabled:bg-gray-400 transition-all"
+                className="flex-1 bg-orange-500 text-white text-xs py-2 rounded-sm active:scale-95 disabled:bg-orange-300 transition-all"
               >
                 {mutation.isPending ? "MEMPROSES..." : "AMBIL JOB"}
               </button>

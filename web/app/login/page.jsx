@@ -26,15 +26,27 @@ export default function LoginPage() {
     KURIR: "/kurir",
   };
   
-  useEffect(() => {
-    if (session?.session?.user?.role) {
-      const role = session.session.user.role.toUpperCase();
+  // const sessionLog = async () => {
+  //   try {
+  //     const response = await api.get("auth/session");
+  //     const data = await response.data;
+  //     // if (data) {
+  //     //   setSession({
+  //     //     session: {
+  //     //       id: data.user.id,
+  //     //       user: data.user,
+  //     //       createdAt: new Date().toISOString(),
+  //     //     },
+  //     //   });
+  //     // }
+  //     if (data) router.push(redirectMap[data.user.role.toLowerCase()] || "/");
+  //   } catch (error) {
+  //     return;
+  //     // router.push("/login");
+  //   }
+  // };
 
-      router.push(redirectMap[role] || "/");
-    }
-  }, [session]);
-
-  console.log(session);
+  // sessionLog();
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -98,7 +110,7 @@ export default function LoginPage() {
               height={100}
               priority
               className="mx-auto mb-6 h-auto w-auto"
-              onClick={()=> router.push("/")}
+              onClick={() => router.push("/")}
             />
             {/* <h2 className="text-xl md:text-2xl text-center font-bold text-gray-800">
               Alam Jaya Tekstil 👋

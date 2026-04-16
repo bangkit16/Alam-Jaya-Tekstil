@@ -5,6 +5,7 @@ import { useGetStock } from "@/services/stok-potong/useGetStock";
 import { useGetPenjahit } from "@/services/stok-potong/useGetPenjahit";
 import { usePutStock } from "@/services/stok-potong/usePutStock";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export default function Stock() {
   const queryClient = useQueryClient();
@@ -51,6 +52,7 @@ export default function Stock() {
       {
         onSuccess: () => {
           console.log("✅ BERHASIL KIRIM");
+          toast.success("Berhasil dikirim menunggu kurir");
 
           queryClient.invalidateQueries({
             queryKey: ["stok-potong-stock"],
@@ -155,7 +157,7 @@ export default function Stock() {
           onClick={handleClose}
         >
           <div
-            className="bg-white p-4 w-full max-w-sm shadow-xl"
+            className="bg-white p-4 w-full max-w-sm shadow-xl rounded-md"
             onClick={(e) => e.stopPropagation()}
           >
             {(() => {
@@ -217,11 +219,11 @@ export default function Stock() {
                     <button
                       onClick={handleSubmit}
                       disabled={!namaPenjahit || isPending || isLocked}
-                      className={`text-xs px-4 py-1.5 rounded-sm transition
+                      className={`text-xs px-4 py-1.5 rounded-sm transition text-white
                         ${
                           !namaPenjahit || isLocked
-                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                            : "bg-gray-200 hover:bg-gray-300 active:scale-95"
+                            ? "bg-orange-300 text-orange-500 cursor-not-allowed"
+                            : "bg-orange-500 hover:bg-orange-700 active:scale-95"
                         }
                       `}
                     >

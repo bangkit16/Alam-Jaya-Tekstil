@@ -6,6 +6,7 @@ import {
   KurirProses,
 } from "@/services/kurir/useGetKurirProses";
 import { usePutSelesaiJob } from "@/services/kurir/usePutSelesaiJob";
+import { toast } from "sonner";
 
 export default function Proses() {
   const [selectedJob, setSelectedJob] = useState<KurirProses | null>(null);
@@ -20,13 +21,16 @@ export default function Proses() {
 
   const handleSelesai = (id: string) => {
     mutation.mutate(id, {
-      onSuccess: () => handleClose(),
+      onSuccess: (data) => {
+        toast.success(data.message);
+        handleClose();
+      },
     });
   };
 
   if (isLoading)
     return (
-      <div className="p-5 text-xs text-gray-500 italic">
+      <div className="p-5 text-xs text-gray-500 italic text-center">
         Memuat data proses...
       </div>
     );
@@ -41,26 +45,26 @@ export default function Proses() {
             onClick={() => setSelectedJob(job)}
             className={`relative border rounded-sm p-3 cursor-pointer transition-colors ${
               job.isUrgent
-                ? "border-red-500 bg-red-50 hover:bg-red-100"
+                ? "border-red-500 bg-red-50/30 hover:bg-red-100"
                 : "border-gray-300 hover:bg-gray-50"
             }`}
           >
             {/* LABEL URGENT */}
+
+            {/* HEADER */}
             {job.isUrgent && (
-              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+              <span className=" bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
                 URGENT
               </span>
             )}
-
-            {/* HEADER */}
             <div className="flex justify-between items-center mb-2">
               <p
-                className={`text-sm font-medium ${job.isUrgent ? "text-red-900" : "text-gray-800"}`}
+                className={`text-sm font-medium ${job.isUrgent ? "text-gray-900" : "text-gray-800"}`}
               >
                 {job.namaBarang} - {job.ukuran}
               </p>
               <p
-                className={`text-lg font-bold ${job.isUrgent ? "text-red-700" : "text-gray-900"}`}
+                className={`text-lg font-bold ${job.isUrgent ? "text-gray-700" : "text-gray-900"}`}
               >
                 {job.jumlahLolos}
               </p>
@@ -68,14 +72,12 @@ export default function Proses() {
 
             {/* DETAIL */}
             <ul
-              className={`text-xs space-y-1 ${job.isUrgent ? "text-red-800" : "text-gray-700"}`}
+              className={`text-xs space-y-1 ${job.isUrgent ? "text-gray-800" : "text-gray-700"}`}
             >
               <li>Kode Stok Potongan: {job.kodeStokPotongan}</li>
               <li>Dikirim Dari: {job.dikirimDari}</li>
               <li>Dikirim Ke: {job.dikirimKe}</li>
-              <li
-                className={`${job.isUrgent ? "text-red-600" : "text-blue-600"} font-medium`}
-              >
+              <li>
                 Tanggal Berangkat :{" "}
                 {new Date(job.tanggalBerangkat).toLocaleDateString("id-ID")}
               </li>
@@ -102,13 +104,13 @@ export default function Proses() {
           >
             {/* LABEL URGENT POJOK KANAN */}
             {selectedJob.isUrgent && (
-              <span className="absolute top-0 right-0 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 uppercase">
+              <span className=" bg-red-500 text-white text-sm font-bold px-2 py-0.5  uppercase">
                 URGENT
               </span>
             )}
 
             {/* HEADER */}
-            <div className="flex justify-between items-center mb-3">
+            <div className="flex justify-between items-center my-3">
               <p className="text-sm font-medium text-gray-800">
                 {selectedJob.namaBarang}
               </p>
@@ -150,9 +152,7 @@ export default function Proses() {
               <button
                 disabled={mutation.isPending}
                 onClick={() => handleSelesai(selectedJob.idProsesStokPotong)}
-                className={`flex-1 text-white text-xs py-2 rounded-sm active:scale-95 disabled:bg-gray-400 ${
-                  selectedJob.isUrgent ? "bg-gray-800" : "bg-gray-800"
-                }`}
+                className={`flex-1 text-white text-xs py-2 rounded-sm active:scale-95 disabled:bg-gray-400 bg-orange-500 text-semibold ${mutation.isPending ? "bg-gray-400" : ""}`}
               >
                 {mutation.isPending ? "LOADING..." : "SELESAI"}
               </button>

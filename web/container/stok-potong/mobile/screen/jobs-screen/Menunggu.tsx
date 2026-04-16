@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useGetPermintaanStokPotong } from "@/services/stok-potong/useGetPermintaan";
 import { usePutMenunggu } from "@/services/stok-potong/usePutMenunggu";
+import { toast } from "sonner";
 
 type stockType = {
   idPermintaan: string;
@@ -72,11 +73,11 @@ export default function MenungguStock() {
       {/* ================= MODAL ================= */}
       {selectedItem && (
         <div
-          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4 "
           onClick={handleCloseModal}
         >
           <div
-            className="bg-white p-4 w-full max-w-sm shadow-xl border border-gray-300"
+            className="bg-white p-4 w-full max-w-sm shadow-xl border border-gray-300 rounded-md"
             onClick={(e) => e.stopPropagation()}
           >
             {/* HEADER */}
@@ -120,11 +121,11 @@ export default function MenungguStock() {
                   console.log("🚀 KIRIM ID:", selectedItem.idStokPotong);
 
                   mutate(selectedItem.idStokPotong, {
-                    onSuccess: () => {
-                      console.log("✅ BERHASIL PINDAH KE PROSES");
+                    onSuccess: (data) => {
+                      console.log("✅ BERHASIL PINDAH KE PROSES" , data);
 
                       handleCloseModal();
-
+                      toast.success(data.message);
                       // 🔥 refresh list biar hilang dari menunggu
                       refetch();
                     },
@@ -133,7 +134,7 @@ export default function MenungguStock() {
                     },
                   });
                 }}
-                className="bg-gray-200 text-gray-700 text-xs px-4 py-1.5 rounded-sm hover:bg-gray-300 active:scale-95 transition disabled:opacity-50"
+                className="bg-orange-500 text-white text-xs px-4 py-1.5 rounded-sm hover:bg-orange-700 active:scale-95 transition disabled:opacity-50"
               >
                 {isPending ? "Loading..." : "Cek"}
               </button>

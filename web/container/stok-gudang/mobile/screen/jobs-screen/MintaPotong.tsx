@@ -238,7 +238,7 @@ export default function MintaPotong({ search = "" }: any) {
               </button>
               <button
                 type="submit"
-                className="bg-blue-600 text-white text-xs px-4 py-1 rounded shadow hover:bg-blue-700"
+                className="bg-orange-500 text-white text-xs px-4 py-1 rounded shadow hover:bg-blue-700"
               >
                 {mutationPost.isPending ? "MENGIRIM..." : "KIRIM"}
               </button>

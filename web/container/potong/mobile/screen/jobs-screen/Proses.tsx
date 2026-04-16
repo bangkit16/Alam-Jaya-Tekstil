@@ -22,8 +22,8 @@ export default function Proses() {
   const [selectedProses, setSelectedProses] = useState<prosesType | null>(null);
 
   const { data: dataProses, isLoading } = useGetProses();
-  const { mutate: mutateProses } = usePutProses();
-  const { data: pemotongData } = useGetPemotong();
+  const { mutate: mutateProses, isPending } = usePutProses();
+  const { data: pemotongData  } = useGetPemotong();
 
   const [form, setForm] = useState({
     kode_potongan: "",
@@ -88,6 +88,12 @@ export default function Proses() {
       toast.error("Jumlah hasil wajib diisi");
       isValid = false;
     }
+
+    // if (Number(jumlahLolos) > selectedProses?.jumlahMinta) {
+    //   newErrors.jumlah_lolos = true;
+    //   toast.error("Jumlah Lolos tidak boleh diatas jumlah diminta");
+    //   isValid = false;
+    // }
 
     if (pemotongList.length === 0) {
       newErrors.pemotong = true;
@@ -338,10 +344,11 @@ export default function Proses() {
 
             <div className="flex justify-end mt-5">
               <button
+              disabled={isPending}
                 type="submit"
                 className="bg-gradient-to-r from-orange-400 to-amber-500 text-white text-xs px-5 py-2 rounded-xl font-semibold shadow hover:opacity-90 active:scale-95 transition"
               >
-                SELESAI
+                {isPending ? "Proses..." : "Selesai"}
               </button>
             </div>
           </form>

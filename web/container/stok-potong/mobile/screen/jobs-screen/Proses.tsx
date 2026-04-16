@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
-import { useGetProses } from "@/services/stok-potong/useGetProses";
+import { useGetProses, ProsesType } from "@/services/stok-potong/useGetProses";
 import { usePutProses } from "@/services/stok-potong/usePutProses";
 import { useGetPengecek } from "@/services/stok-potong/useGetPengecek";
 
@@ -15,36 +15,53 @@ import { toast } from "sonner";
 /* ===============================
    ZOD SCHEMA
 ================================= */
-const prosesSchema = z.object({
-  pengecek: z
-    .array(z.string())
-    .min(1, "Pilih minimal 1 pengecek")
-    .max(2, "Maksimal 2 pengecek"),
-  kode_potongan: z.string().min(1, "Kode potongan wajib diisi"),
-  jumlah_lolos: z
-        .any() // Menghindari konflik awal tipe data
+const prosesSchema = (jumlahHasil: number) =>
+  z
+    .object({
+      pengecek: z
+        .array(z.string())
+        .min(1, "Pilih minimal 1 pengecek")
+        .max(2, "Maksimal 2 pengecek"),
+
+      kode_potongan: z.string().min(1, "Kode potongan wajib diisi"),
+
+      jumlah_lolos: z
+        .any()
         .refine((val) => val !== "", "Jumlah Lolos wajib diisi")
         .transform((val) => Number(val))
         .refine((val) => !isNaN(val), "Harus berupa angka")
-        .refine((val) => val > 0, "Minimal jumlah adalah 1"),
-  jumlah_reject: z
-        .any() // Menghindari konflik awal tipe data
+        .refine((val) => val >= 0, "Minimal jumlah adalah 0"),
+
+      jumlah_reject: z
+        .any()
         .refine((val) => val !== "", "Jumlah Reject wajib diisi")
         .transform((val) => Number(val))
         .refine((val) => !isNaN(val), "Harus berupa angka")
-        .refine((val) => val > 0, "Minimal jumlah adalah 1"),
-  catatan: z.string().optional(),
-});
+        .refine((val) => val >= 0, "Minimal jumlah adalah 0"),
 
-type ProsesFormValues = z.infer<typeof prosesSchema>;
+      catatan: z.string().optional(),
+    })
+    .superRefine((data, ctx) => {
+      const total = data.jumlah_lolos + data.jumlah_reject;
 
-type prosesType = {
-  idStokBarang: string;
-  idStokPotong: string;
-  namaBarang: string;
-  ukuran: "M" | "L" | "XL" | "XXL";
-  jumlahHasil: number;
-};
+      if (total > jumlahHasil) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["jumlah_lolos"],
+          message: `Total melebihi jumlah hasil (${jumlahHasil})`,
+        });
+      }
+
+      if (total < jumlahHasil) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["jumlah_reject"],
+          message: `Total kurang dari jumlah hasil (${jumlahHasil})`,
+        });
+      }
+    });
+
+type ProsesFormValues = z.infer<ReturnType<typeof prosesSchema>>;
 
 type pengecekType = {
   id: string;
@@ -57,7 +74,9 @@ export default function Proses() {
   const { mutate, isPending } = usePutProses();
 
   const [selectedPermintaan, setSelectedPermintaan] =
-    useState<prosesType | null>(null);
+    useState<ProsesType | null>(null);
+
+  const jumlahHasil = selectedPermintaan?.jumlahHasil || 0;
 
   const {
     register,
@@ -67,17 +86,33 @@ export default function Proses() {
     setValue,
     formState: { errors },
   } = useForm<ProsesFormValues>({
-    resolver: zodResolver(prosesSchema),
+    resolver: zodResolver(prosesSchema(jumlahHasil)),
     defaultValues: {
       pengecek: [],
-      kode_potongan: "",
+      kode_potongan: selectedPermintaan?.kodeKain || "",
       jumlah_lolos: 0,
       jumlah_reject: 0,
       catatan: "",
     },
   });
 
+  useEffect(() => {
+    if (selectedPermintaan) {
+      reset({
+        pengecek: [],
+        kode_potongan: selectedPermintaan.kodeKain || "",
+        jumlah_lolos: 0,
+        jumlah_reject: 0,
+        catatan: "",
+      });
+    }
+  }, [selectedPermintaan, reset]);
+
+  if (isPending) return <p className="text-center">Loading...</p>;
+
   const selectedPengecek = watch("pengecek");
+
+  console.log("plis", data);
 
   const handleClose = () => {
     setSelectedPermintaan(null);
@@ -99,8 +134,8 @@ export default function Proses() {
         },
       },
       {
-        onSuccess: () => {
-          toast.success("Berhasil disimpan");
+        onSuccess: (data : any) => {
+          toast.success("Berhasil dipindah ke selesai");
           handleClose();
         },
       },
@@ -116,7 +151,7 @@ export default function Proses() {
         {isLoading ? (
           <p className="text-center py-4">Loading...</p>
         ) : (
-          data?.map((item: prosesType) => (
+          data?.map((item: ProsesType) => (
             <div
               key={item.idStokPotong}
               onClick={() => setSelectedPermintaan(item)}
@@ -125,6 +160,9 @@ export default function Proses() {
               <div>
                 <p className="text-sm font-semibold text-gray-800">
                   {item.namaBarang} - {item.ukuran}
+                </p>
+                <p className="text-xs text-gray-500 ">
+                  Kode Kain : {item.kodeKain}
                 </p>
               </div>
 
@@ -152,11 +190,16 @@ export default function Proses() {
             {/* Header */}
             <div className="flex justify-between mb-4">
               <p className="text-sm font-semibold">
-                {selectedPermintaan.namaBarang}
+                {selectedPermintaan.namaBarang} - {selectedPermintaan.ukuran}
               </p>
 
               <p className="text-lg font-bold">
                 {selectedPermintaan.jumlahHasil}
+              </p>
+            </div>
+            <div className="flex justify-between mb-2">
+              <p className="text-xs font-">
+                Kode Kain : {selectedPermintaan.kodeKain}
               </p>
             </div>
 
@@ -304,7 +347,7 @@ export default function Proses() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="bg-blue-600 text-white text-xs px-6 py-2 rounded font-medium disabled:opacity-50 active:scale-95 transition"
+                className="bg-orange-500 text-white text-xs px-6 py-2 rounded font-medium disabled:opacity-50 active:scale-95 transition"
               >
                 {isPending ? "Menyimpan..." : "Selesai"}
               </button>

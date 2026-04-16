@@ -6,6 +6,7 @@ export type ProsesType = {
   idStokBarang: string;
   idStokPotong: string; // 🔥 WAJIB
   namaBarang: string;
+  kodeKain: string;
   ukuran: "M" | "L" | "XL" | "XXL";
   jumlahHasil: number;
 };
@@ -33,6 +34,8 @@ const fetcher = async (): Promise<ProsesType[]> => {
     namaBarang: item.namaBarang || item.nama_barang,
 
     ukuran: item.ukuran,
+
+    kodeKain: item.kodeKain,
 
     jumlahHasil: item.jumlahHasil || item.jumlah_hasil || 0,
   }));
