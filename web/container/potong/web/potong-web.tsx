@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Package, ClipboardList, Truck } from "lucide-react";
+import { Package } from "lucide-react";
 
 import { useGetPermintaan } from "@/services/potong/useGetPermintaan";
 import { useGetProses } from "@/services/potong/useGetProses";
@@ -18,8 +18,10 @@ type TabType = "menunggu" | "proses" | "selesai";
 
 export default function PotongWeb({ handleLogout }: any) {
   const [activeTab, setActiveTab] = useState<TabType>("menunggu");
-
   const [selectedProses, setSelectedProses] = useState<any>(null);
+
+  // 🔥 TAMBAHAN (UNTUK EXPAND MENUNGGU)
+  const [selectedMenunggu, setSelectedMenunggu] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     kode_potongan: "",
@@ -117,11 +119,10 @@ export default function PotongWeb({ handleLogout }: any) {
     (activeTab === "proses" && isLoadingProses) ||
     (activeTab === "selesai" && isLoadingSelesai);
 
-  // ================= UI =================
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-100 to-orange-50">
       {/* SIDEBAR */}
-      <div className="w-64 bg-white border-r border-gray-200 p-5 hidden md:flex flex-col">
+      <div className="w-64 bg-white/70 backdrop-blur-xl border-r border-white/40 p-5 hidden md:flex flex-col shadow-lg">
         <div>
           <h1 className="text-lg font-semibold mb-6 text-gray-800">
             Divisi Potong
@@ -134,7 +135,7 @@ export default function PotongWeb({ handleLogout }: any) {
                 onClick={() => setActiveTab(menu as TabType)}
                 className={`w-full text-left px-4 py-2 rounded-xl capitalize transition ${
                   activeTab === menu
-                    ? "bg-gradient-to-r from-orange-400 to-amber-500 text-white shadow"
+                    ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg scale-[1.02]"
                     : "text-gray-600 hover:bg-gray-100"
                 }`}
               >
@@ -154,163 +155,201 @@ export default function PotongWeb({ handleLogout }: any) {
 
       {/* MAIN */}
       <div className="flex-1 p-6">
-        <div className="bg-gray-50 rounded-2xl p-4">
-          <h3 className="font-semibold mb-4 capitalize">Data {activeTab}</h3>
+        {/* 🔥 SUMMARY */}
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="bg-white/70 p-4 rounded-2xl shadow text-center">
+            <p className="text-xs text-gray-500">Menunggu</p>
+            <p className="text-2xl font-bold text-yellow-500">
+              {dataPermintaan?.length || 0}
+            </p>
+          </div>
+
+          <div className="bg-white/70 p-4 rounded-2xl shadow text-center">
+            <p className="text-xs text-gray-500">Proses</p>
+            <p className="text-2xl font-bold text-blue-500">
+              {dataProses?.length || 0}
+            </p>
+          </div>
+
+          <div className="bg-white/70 p-4 rounded-2xl shadow text-center">
+            <p className="text-xs text-gray-500">Selesai</p>
+            <p className="text-2xl font-bold text-green-500">
+              {dataSelesai?.length || 0}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white/60 backdrop-blur-xl rounded-2xl p-6 shadow-md border border-white/40">
+          {/* HEADER */}
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-semibold capitalize text-lg">
+              Data {activeTab}
+            </h3>
+
+            <span className="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded-full">
+              {getData().length} item
+            </span>
+          </div>
 
           {isLoading ? (
             <p className="text-center text-gray-500">Loading...</p>
+          ) : getData().length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+              <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+                <Package size={30} />
+              </div>
+              <p className="font-semibold text-gray-500 mb-1">
+                Belum ada data {activeTab}
+              </p>
+              <p className="text-xs text-gray-400">Data akan muncul di sini</p>
+            </div>
           ) : (
             <div className="space-y-3">
-              {getData().map((item: any) => (
-                <div
-                  key={item.idPermintaan}
-                  className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition"
-                >
-                  {/* ================= SELESAI ================= */}
-                  {activeTab === "selesai" ? (
-                    <div>
-                      <div className="flex justify-between mb-2">
-                        <p className="text-sm font-semibold text-gray-800">
-                          {item.namaBarang} - {item.ukuran}
-                        </p>
-                        <p className="text-lg font-bold text-gray-900">
-                          {item.jumlahDiminta}
-                        </p>
-                      </div>
+              {getData().map((item: any) => {
+                const isOpen = selectedMenunggu === item.idPermintaan;
 
-                      <div className="h-px bg-gray-200 mb-3" />
-
-                      <div className="text-xs text-gray-600 space-y-1">
-                        <p>
-                          Nama Produk :
-                          <span className="ml-1 font-medium text-gray-800">
-                            {item.namaBarang}
+                return (
+                  <div
+                    key={item.idPermintaan}
+                    onClick={() =>
+                      activeTab === "menunggu" &&
+                      setSelectedMenunggu(isOpen ? null : item.idPermintaan)
+                    }
+                    className="bg-white/70 backdrop-blur-md border border-white/40 rounded-2xl p-4 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                  >
+                    {/* ================= SELESAI ================= */}
+                    {activeTab === "selesai" ? (
+                      <div>
+                        <div className="flex justify-between mb-2">
+                          <p className="text-sm font-semibold text-gray-800">
+                            {item.namaBarang} - {item.ukuran}
+                          </p>
+                          <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full">
+                            Selesai
                           </span>
-                        </p>
+                        </div>
 
-                        <p>
-                          Ukuran :
-                          <span className="ml-1 font-medium text-gray-800">
-                            {item.ukuran}
-                          </span>
-                        </p>
+                        <div className="h-px bg-gray-200 mb-3" />
 
-                        <p>
-                          Kode Kain :
-                          <span className="ml-1 font-medium text-gray-800">
-                            {item.kodeKain || "-"}
-                          </span>
-                        </p>
-
-                        <p>
-                          Nama Pemotong :
-                          <span className="ml-1 font-medium text-gray-800">
+                        <div className="text-xs text-gray-600 space-y-1">
+                          <p>Nama Produk : {item.namaBarang}</p>
+                          <p>Ukuran : {item.ukuran}</p>
+                          <p>Kode Kain : {item.kodeKain || "-"}</p>
+                          <p>
+                            Pemotong :
                             {Array.isArray(item.pemotong)
                               ? item.pemotong.join(", ")
                               : item.pemotong || "-"}
+                          </p>
+                          <p>Jumlah Diminta : {item.jumlahMinta}</p>
+                          <p>Jumlah Hasil : {item.jumlahHasil}</p>
+                        </div>
+                      </div>
+                    ) : activeTab === "proses" ? (
+                      <div onClick={() => openModalProses(item)}>
+                        {item.isUrgent && (
+                          <span className="inline-block bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full animate-pulse mb-1">
+                            URGENT
                           </span>
-                        </p>
+                        )}
 
-                        <p>
-                          Jumlah Diminta :
-                          <span className="ml-1 font-medium text-gray-800">
+                        <div className="flex justify-between items-center">
+                          <p className="text-sm font-semibold text-gray-800">
+                            {item.namaBarang} - {item.ukuran}
+                          </p>
+
+                          <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
+                            Proses
+                          </span>
+                        </div>
+
+                        <div className="h-px bg-gray-200 my-2" />
+
+                        <div className="text-xs text-gray-500 space-y-1">
+                          <p>NAMA PRODUK : {item.namaBarang}</p>
+                          <p>UKURAN : {item.ukuran}</p>
+                          <p>JUMLAH : {item.jumlahMinta}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {/* 🔥 MENUNGGU (FIX SESUAI UI) */}
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="text-sm font-semibold text-gray-800">
+                              {item.namaBarang} - {item.ukuran}
+                            </p>
+
+                            {/* 🔥 INFO RINGKAS (SEBELUM KLIK) */}
+                            <div className="text-[11px] text-gray-400 mt-1 space-y-0.5 uppercase">
+                              <p>NAMA PRODUK : {item.namaBarang}</p>
+                              <p>UKURAN : {item.ukuran}</p>
+                              <p>JUMLAH DIMINTA : {item.jumlahMinta}</p>
+                            </div>
+                          </div>
+
+                          <p className="text-2xl font-bold text-gray-800">
                             {item.jumlahMinta}
-                          </span>
-                        </p>
+                          </p>
+                        </div>
 
-                        <p>
-                          Jumlah Hasil :
-                          <span className="ml-1 font-medium text-gray-800">
-                            {item.jumlahHasil}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  ) : activeTab === "proses" ? (
-                    /* ================= PROSES (FIX SESUAI GAMBAR) ================= */
-                    <div onClick={() => openModalProses(item)}>
-                      {item.isUrgent && (
-                        <p className="text-red-500 text-xs font-bold mb-1 uppercase">
-                          URGENT
-                        </p>
-                      )}
+                        {/* 🔥 EXPAND (SETELAH KLIK) */}
+                        {isOpen && (
+                          <>
+                            <div className="h-px bg-gray-200 my-3" />
 
-                      <div className="flex justify-between items-center">
-                        <p className="text-sm font-semibold text-gray-800">
-                          {item.namaBarang} - {item.ukuran}
-                        </p>
+                            <div className="text-sm text-gray-600 space-y-1">
+                              <p>Jumlah diminta : {item.jumlahMinta}</p>
+                              <p>Kategori : {item.kategori || "Kaos"}</p>
+                            </div>
 
-                        <p className="text-xl font-bold text-gray-900">
-                          {item.jumlahMinta}
-                        </p>
-                      </div>
+                            <p className="text-center text-gray-400 text-sm mt-3">
+                              Lanjut ke proses?
+                            </p>
 
-                      <div className="h-px bg-gray-200 my-2" />
+                            <div className="flex gap-3 mt-3">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handlePermintaan(item);
+                                }}
+                                className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2 rounded-xl text-sm font-semibold"
+                              >
+                                PROSES
+                              </button>
 
-                      <div className="text-xs text-gray-500 space-y-1">
-                        <p>
-                          NAMA PRODUK :
-                          <span className="ml-1 font-bold text-gray-700">
-                            {item.namaBarang}
-                          </span>
-                        </p>
-
-                        <p>
-                          UKURAN :
-                          <span className="ml-1 font-bold text-gray-700">
-                            {item.ukuran}
-                          </span>
-                        </p>
-
-                        <p>
-                          JUMLAH DIMINTA :
-                          <span className="ml-1 font-bold text-gray-700">
-                            {item.jumlahMinta}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    /* ================= MENUNGGU ================= */
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="text-sm font-semibold text-gray-800">
-                          {item.namaBarang} - {item.ukuran}
-                        </p>
-                      </div>
-
-                      <div className="text-right">
-                        <p className="text-xl font-bold text-gray-900">
-                          {item.jumlahMinta}
-                        </p>
-
-                        <button
-                          onClick={() => handlePermintaan(item)}
-                          className="mt-2 bg-gradient-to-r from-orange-400 to-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold"
-                        >
-                          Proses
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedMenunggu(null);
+                                }}
+                                className="flex-1 bg-gray-200 text-gray-600 py-2 rounded-xl text-sm font-semibold"
+                              >
+                                TIDAK
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
 
-        {/* MODAL PROSES */}
+        {/* MODAL */}
         {selectedProses && (
           <div
             className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-            onClick={() => setSelectedProses(null)} //
+            onClick={() => setSelectedProses(null)}
           >
             <form
               onSubmit={handleSubmitProses}
-              onClick={(e) => e.stopPropagation()} //
-              className="bg-white p-6 rounded-2xl w-full max-w-sm shadow-xl space-y-4"
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white/80 backdrop-blur-xl p-6 rounded-3xl w-full max-w-sm shadow-2xl space-y-4 border border-white/40"
             >
-              {/* HEADER */}
               <div>
                 <p className="text-sm font-semibold">
                   {selectedProses.namaBarang} - {selectedProses.ukuran}
@@ -322,7 +361,6 @@ export default function PotongWeb({ handleLogout }: any) {
 
               <div className="h-px bg-gray-200" />
 
-              {/* INPUT */}
               <input
                 placeholder="Kode Kain"
                 value={form.kode_potongan}
@@ -335,11 +373,9 @@ export default function PotongWeb({ handleLogout }: any) {
                 className="w-full bg-gray-100 px-3 py-2 rounded-xl text-sm"
               />
 
-              {/* SELECT PEMOTONG */}
               <select
                 onChange={(e) => {
                   const id = e.target.value;
-
                   if (!id) return;
                   if (pemotongList.includes(id)) {
                     toast.error("Sudah dipilih");
@@ -362,7 +398,6 @@ export default function PotongWeb({ handleLogout }: any) {
                 ))}
               </select>
 
-              {/* TAG PEMOTONG */}
               <div className="flex flex-wrap gap-2">
                 {pemotongList.map((id) => {
                   const nama =
@@ -390,7 +425,6 @@ export default function PotongWeb({ handleLogout }: any) {
                 })}
               </div>
 
-              {/* INPUT HASIL */}
               <input
                 placeholder="Jumlah hasil"
                 value={form.jumlah_lolos}
@@ -403,8 +437,7 @@ export default function PotongWeb({ handleLogout }: any) {
                 className="w-full bg-gray-100 px-3 py-2 rounded-xl text-sm"
               />
 
-              {/* BUTTON */}
-              <button className="w-full bg-gradient-to-r from-orange-400 to-amber-500 text-white py-2.5 rounded-xl text-sm font-semibold">
+              <button className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:scale-105 active:scale-95 transition text-white py-2.5 rounded-xl text-sm font-semibold">
                 SELESAI
               </button>
             </form>
