@@ -53,8 +53,15 @@ export const useGetKurirMenunggu = () => {
   return useQuery<KurirMenunggu[], Error>({
     queryKey: ["kurir", "menunggu"],
     queryFn: fetchKurirMenunggu,
+
+    // ✅ TAMBAHAN FIX CACHE (INI KUNCI MASALAH)
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+
     retry: 1,
-    // Error handling sederhana sesuai template
+
     meta: {
       onError: (error: Error) => {
         console.error("Gagal mengambil data kurir menunggu:", error.message);
