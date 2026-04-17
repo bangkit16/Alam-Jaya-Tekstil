@@ -21,6 +21,7 @@ export default class StokPotongController {
             namaBarang: true,
             ukuran: true,
             tanggalMasuk: true,
+            isUrgent: true,
             stokPotong: {
               select: {
                 pemotong: {
@@ -51,6 +52,7 @@ export default class StokPotongController {
         pemotong: item.stokPotong.pemotong.map((p: any) => p.user.nama),
         jumlahHasil: item.stokPotong.jumlahHasil,
         tanggalSelesaiPotong: item.tanggalMasuk,
+        isUrgent: item.isUrgent,
       }));
 
       return res.status(200).json(data);
@@ -132,6 +134,7 @@ export default class StokPotongController {
             namaBarang: true,
             ukuran: true,
             tanggalMasuk: true,
+            isUrgent: true,
             stokPotong: {
               select: {
                 pemotong: {
@@ -158,6 +161,7 @@ export default class StokPotongController {
         idStokPotong: item.stokPotong.id,
         namaBarang: item.namaBarang,
         ukuran: item.ukuran,
+        isUrgent: item.isUrgent,
         kodeKain: item.stokPotong.kodeKain,
         pemotong: item.stokPotong.pemotong.map((p: any) => p.user.nama),
         jumlahHasil: item.stokPotong.jumlahHasil,
@@ -283,39 +287,6 @@ export default class StokPotongController {
 
   public static async getDataStok(req: Request, res: Response) {
     try {
-      // const result = await prisma.$transaction(async (tx) => {
-      //   // Implementation for fetching selesai data
-      //   const dataProses = await tx.permintaan.findMany({
-      //     where: { status: { in: ["PROSES_STOK_POTONG", "MENUNGGU_KURIR"] } },
-      //     select: {
-      //       id: true,
-      //       namaBarang: true,
-      //       ukuran: true,
-      //       tanggalMasuk: true,
-      //       stokPotong: {
-      //         select: {
-      //           status: true,
-      //           kodeStokPotongan: true,
-      //           jumlahLolos: true,
-      //           tanggalSelesai: true,
-      //           pemotong: {
-      //             select: {
-      //               user: {
-      //                 select: {
-      //                   nama: true,
-      //                 },
-      //               },
-      //             },
-      //           },
-      //           id: true,
-      //           jumlahHasil: true,
-      //         },
-      //       },
-      //     },
-      //   });
-      //   return { dataProses };
-      // });
-
       const dataPotong = await prisma.stokPotong.findMany({
         where: {
           status: { in: [StatusStokPotong.KIRIM, StatusStokPotong.SELESAI] },
@@ -332,6 +303,7 @@ export default class StokPotongController {
               namaBarang: true,
               ukuran: true,
               tanggalMasuk: true,
+              isUrgent: true,
             },
           },
         },
@@ -343,6 +315,7 @@ export default class StokPotongController {
         namaBarang: item.permintaan.namaBarang,
         status: item.status,
         ukuran: item.permintaan.ukuran,
+        isUrgent: item.permintaan.isUrgent,
         kodeStokPotongan: item.kodeStokPotongan,
         jumlahLolos: item.jumlahLolos,
         tanggalMasukPotong: item.tanggalSelesai,

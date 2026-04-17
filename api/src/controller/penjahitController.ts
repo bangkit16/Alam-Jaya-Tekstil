@@ -11,8 +11,6 @@ import z from "zod";
 import { Validator } from "../lib/validator.js";
 import { stat } from "node:fs";
 
-
-
 export default class PenjahitController {
   public static async getDataMenunggu(req: Request, res: Response) {
     try {
@@ -91,10 +89,10 @@ export default class PenjahitController {
               permintaan: {
                 update: {
                   status: StatusPermintaan.PROSES_JAHIT,
-                }
-              }
+                },
+              },
             },
-          }
+          },
         },
         select: {
           penjahit: {
@@ -340,10 +338,10 @@ export default class PenjahitController {
               permintaan: {
                 update: {
                   status: StatusPermintaan.MENUNGGU_KURIR,
-                }
-              }
-            }
-          }
+                },
+              },
+            },
+          },
         },
         select: {
           jumlahSelesai: true,
@@ -365,7 +363,7 @@ export default class PenjahitController {
           },
         },
       });
-      
+
       TrackLog.logPermintaan(
         String(updateSelesai.stokPotong.permintaan.id),
         `Proses jahitan selesai oleh penjahit ${updateSelesai.penjahit?.nama}, No Handphone : (${updateSelesai.penjahit?.noHandphone}). Menunggu proses QC. `,
@@ -398,7 +396,13 @@ export default class PenjahitController {
       const userId = req.user?.id;
       const dataMenunggu = await prisma.prosesStokPotong.findMany({
         where: {
-          status: StatusProses.MENUNGGU_PENGIRIMAN_KE_QC,
+          status: {
+            in: [
+              StatusProses.MENUNGGU_PENGIRIMAN_KE_QC,
+              StatusProses.PROSES_PENGIRIMAN,
+              StatusProses.SELESAI_PENGIRIMAN_KE_QC,
+            ],
+          },
           penjahitId: userId,
         },
         select: {
