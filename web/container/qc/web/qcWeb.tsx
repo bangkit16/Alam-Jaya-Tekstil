@@ -11,6 +11,8 @@ import { usePutQCProses } from "@/services/qc/usePutQCProses";
 import { useGetQCMasukBox } from "@/services/qc/useGetQCBoxMasuk";
 import { useGetPenanggungJawabBox } from "@/services/qc/useGetPenanggungJawabBox";
 import { usePostPackingBox } from "@/services/qc/usePostPackingBox";
+import { useGetQCSelesai } from "@/services/qc/useGetQCSelesai";
+import BarcodeGenerator from "@/components/BarcodeGenerator";
 
 type TabType = "menunggu" | "proses" | "masuk_box" | "selesai";
 
@@ -26,7 +28,9 @@ export default function QCWeb({ handleLogout }: any) {
   const [selectedBox, setSelectedBox] = useState<string[]>([]);
   const [openPacking, setOpenPacking] = useState(false);
   const [namaBox, setNamaBox] = useState("");
-  const [penanggungJawabId, setPenanggungJawabId] = useState<string[]>([]);
+  const [penanggungJawabId, setPenanggungJawabId] = useState("");
+  const { data: qcSelesai, isLoading: loadingSelesai } = useGetQCSelesai();
+  const [selectedSelesai, setSelectedSelesai] = useState<any | null>(null);
 
   const { data: qcMasukBox, isLoading: loadingBox } = useGetQCMasukBox();
   const { data: listPJ } = useGetPenanggungJawabBox();
@@ -68,7 +72,9 @@ export default function QCWeb({ handleLogout }: any) {
         ? qcProses || []
         : activeTab === "masuk_box"
           ? qcMasukBox || []
-          : data.filter((d) => d.status === activeTab);
+          : activeTab === "selesai"
+            ? qcSelesai || []
+            : data.filter((d) => d.status === activeTab);
 
   // ================= ACTION =================
   const updateStatus = (id: any, status: TabType) => {
@@ -87,18 +93,12 @@ export default function QCWeb({ handleLogout }: any) {
   const count = (status: TabType) => {
     if (status === "menunggu") return qcMenunggu?.length || 0;
     if (status === "proses") return qcProses?.length || 0;
-    if (status === "masuk_box") return qcMasukBox?.length || 0;
+    if (status === "selesai") return qcSelesai?.length || 0;
     return data.filter((d) => d.status === status).length;
   };
 
   const toggleBox = (id: string) => {
     setSelectedBox((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
-    );
-  };
-
-  const togglePJ = (id: string) => {
-    setPenanggungJawabId((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
@@ -179,6 +179,8 @@ export default function QCWeb({ handleLogout }: any) {
             {filtered.map((item: any) => {
               const isMenunggu = activeTab === "menunggu";
               const isProses = activeTab === "proses";
+              const isSelesai = activeTab === "selesai";
+              const isMasukBox = activeTab === "masuk_box";
 
               return (
                 <div
@@ -187,6 +189,7 @@ export default function QCWeb({ handleLogout }: any) {
                     if (isMenunggu) setSelected(item);
                     if (isProses) setSelectedProses(item);
                     if (activeTab === "masuk_box") toggleBox(item.idQC);
+                    if (isSelesai) setSelectedSelesai(item);
                   }}
                   className={`bg-white border rounded-xl p-4 flex justify-between items-center shadow-sm hover:shadow transition cursor-pointer
 ${
@@ -199,7 +202,9 @@ ${
                     <p className="text-sm font-medium">
                       {isMenunggu || isProses
                         ? `${item.namaBarang} - ${item.ukuran}`
-                        : item.nama}
+                        : isSelesai
+                          ? item.namaBox
+                          : item.nama}
                     </p>
 
                     {/* 🔥 DETAIL */}
@@ -212,6 +217,21 @@ ${
                     {/* 🔥 MASUK BOX DETAIL */}
                     {activeTab === "masuk_box" && (
                       <div className="text-xs text-gray-500 mt-2 space-y-1">
+                        {/* 🔥 SELESAI DETAIL */}
+                        {isSelesai && (
+                          <div className="text-xs text-gray-500 mt-2 space-y-1">
+                            <p>• Nama Box : {item.namaBox}</p>
+                            <p>
+                              • Penanggung Jawab : {item.namaPenanggungJawab}
+                            </p>
+                            <p>
+                              • Tanggal Masuk :
+                              {new Date(
+                                item.tanggalMasukStok,
+                              ).toLocaleDateString()}
+                            </p>
+                          </div>
+                        )}
                         <p>• Kode Potongan : {item.kodeStokPotongan}</p>
                         <p>• Nama Penjahit : {item.namaPenjahit}</p>
                         <p>
@@ -362,6 +382,99 @@ ${
               Tidak ada data
             </p>
           )}
+
+          {/* MODAL SELESAI */}
+          {selectedSelesai && (
+            <div
+              className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+              onClick={() => setSelectedSelesai(null)}
+            >
+              <div
+                className="bg-white rounded-2xl p-6 w-[95%] max-w-lg"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* HEADER */}
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h2 className="font-semibold">{selectedSelesai.namaBox}</h2>
+
+                    <p className="text-xs text-gray-500">
+                      Penanggung Jawab :{selectedSelesai.namaPenanggungJawab}
+                    </p>
+                  </div>
+
+                  <p className="text-xl font-bold text-green-500">SELESAI</p>
+                </div>
+
+                {/* INFO */}
+                <div className="bg-gray-100 p-3 rounded-xl mb-4 text-sm">
+                  <p>
+                    Tanggal Masuk :
+                    {new Date(
+                      selectedSelesai.tanggalMasukStok,
+                    ).toLocaleDateString("id-ID")}
+                  </p>
+                </div>
+
+                {/* LIST BARANG */}
+                <div className="space-y-2 max-h-60 overflow-auto">
+                  {selectedSelesai.stokPotongan?.map((stok: any) => (
+                    <div
+                      key={stok.idQC}
+                      className="border rounded-lg p-3 bg-gray-50"
+                    >
+                      <div className="flex justify-between">
+                        <div>
+                          <p className="text-sm font-medium">
+                            {stok.namaBarang} - {stok.ukuran}
+                          </p>
+
+                          <p className="text-xs text-gray-500">
+                            {stok.kodeStokPotongan}
+                          </p>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="font-semibold">{stok.jumlah}</p>
+
+                          {stok.isUrgent && (
+                            <span className="text-xs bg-red-500 text-white px-2 py-1 rounded">
+                              URGENT
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-gray-400 mt-1">
+                        {new Date(stok.tanggalSelesaiQC).toLocaleString(
+                          "id-ID",
+                        )}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* BARCODE */}
+                <div className="mt-4 flex flex-col items-center">
+                  <BarcodeGenerator value={selectedSelesai.kodeBox} />
+
+                  <span className="text-[10px] text-gray-400 tracking-widest">
+                    {selectedSelesai.kodeBox}
+                  </span>
+                </div>
+
+                {/* BUTTON */}
+                <div className="flex justify-end mt-4">
+                  <button
+                    onClick={() => setSelectedSelesai(null)}
+                    className="px-4 py-2 bg-gray-200 rounded"
+                  >
+                    Tutup
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           {selected && (
             <div
               className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
@@ -450,25 +563,25 @@ ${
                 </p>
 
                 <div className="space-y-2 max-h-32 overflow-auto">
-                  {listPJ?.map((pj: any) => (
-                    <label
-                      key={pj.id}
-                      className={`flex justify-between items-center p-2 rounded-lg border cursor-pointer
-        ${
-          penanggungJawabId.includes(pj.id)
-            ? "border-orange-500 bg-orange-50"
-            : "border-gray-200"
-        }`}
-                    >
-                      <span className="text-sm">{pj.nama}</span>
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-gray-400 mb-2">
+                      PENANGGUNG JAWAB
+                    </p>
 
-                      <input
-                        type="checkbox"
-                        checked={penanggungJawabId.includes(pj.id)}
-                        onChange={() => togglePJ(pj.id)}
-                      />
-                    </label>
-                  ))}
+                    <select
+                      value={penanggungJawabId}
+                      onChange={(e) => setPenanggungJawabId(e.target.value)}
+                      className="w-full border rounded-lg p-2"
+                    >
+                      <option value="">Pilih Penanggung Jawab</option>
+
+                      {listPJ?.map((pj: any) => (
+                        <option key={pj.id} value={pj.id}>
+                          {pj.nama}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 <p className="text-xs text-gray-400 mt-1">
@@ -522,7 +635,7 @@ ${
                           setOpenPacking(false);
                           setSelectedBox([]);
                           setNamaBox("");
-                          setPenanggungJawabId([]);
+                          setPenanggungJawabId("");
                         },
                       },
                     )
