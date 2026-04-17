@@ -2,24 +2,40 @@ import type { Request, Response } from 'express';
 import { prisma } from '../lib/prisma.js';
 import TrackLog from '../lib/trackLog.js';
 import { StatusPermintaan, StatusStokPotong } from '../generated/prisma/enums.js';
+import { getPagination, wrapPagination } from '../utils/pagination.js';
 // import { UkuranProduk } from "../generated/prisma/enums";
 
 export default class PotongController {
   public static async getDataMenunggu(req: Request, res: Response) {
     try {
-      const permintaan = await prisma.permintaan.findMany({
-        where: { status: "MENUNGGU_POTONG" },
-        select: {
-          id: true,
-          namaBarang: true,
-          kategori: true,
-          jenisPermintaan: true,
-          ukuran: true,
-          isUrgent: true,
-          jumlahMinta: true,
-          tanggalMasuk: true,
-        },
-      });
+      // 1. Ambil parameter pagination
+      const { prisma: pg, page, limit } = getPagination(req);
+
+      // 2. Definisi filter 'where' agar konsisten antara query data dan count
+      const whereCondition = { status: StatusPermintaan.MENUNGGU_POTONG };
+
+      // 3. Eksekusi query data dan count secara paralel menggunakan Promise.all
+      const [permintaan, total] = await Promise.all([
+        prisma.permintaan.findMany({
+          where: whereCondition,
+          ...pg, // Inject skip dan take
+          select: {
+            id: true,
+            namaBarang: true,
+            kategori: true,
+            jenisPermintaan: true,
+            ukuran: true,
+            isUrgent: true,
+            jumlahMinta: true,
+            tanggalMasuk: true,
+          },
+        }),
+        prisma.permintaan.count({
+          where: whereCondition,
+        }),
+      ]);
+
+      // 4. Transformasi data (Mapping)
       const data = permintaan.map((item: any) => ({
         idPermintaan: item.id,
         namaBarang: item.namaBarang,
@@ -30,7 +46,12 @@ export default class PotongController {
         jumlahMinta: item.jumlahMinta,
         tanggalMasukPermintaan: item.tanggalMasuk,
       }));
-      return res.status(200).json(data);
+
+      // 5. Return response dengan format yang ditentukan
+      return res.status(200).json({
+        data: data,
+        meta: wrapPagination(total, page, limit),
+      });
     } catch (error) {
       console.error("Error fetching permintaan data:", error);
       return res.status(500).json({ message: "Internal server error" });
