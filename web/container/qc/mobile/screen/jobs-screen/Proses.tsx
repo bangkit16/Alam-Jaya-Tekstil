@@ -11,45 +11,71 @@ import { useGetPengecek } from "@/services/qc/useGetPengecek";
 import { usePutQCProses } from "@/services/qc/usePutQCProses";
 
 // ================= VALIDATION =================
-const schema = z.object({
-  idPengecek: z
-    .array(z.string())
-    .min(1, "Minimal pilih 1 pengecek")
-    .max(2, "Maksimal 2 pengecek"),
+const schema = (jumlahSelesaiJahit: number) =>
+  z
+    .object({
+      idPengecek: z
+        .array(z.string())
+        .min(1, "Minimal pilih 1 pengecek")
+        .max(2, "Maksimal 2 pengecek"),
 
-  jumlahLolos: z
-    .any() // Menghindari konflik awal tipe data
-    .refine((val) => val !== "", "Jumlah Lolos wajib diisi")
-    .transform((val) => Number(val))
-    .refine((val) => !isNaN(val), "Harus berupa angka")
-    .refine((val) => val >= 0, "Jumlah tidak boleh negatif"),
-  jumlahPermak: z
-    .any() // Menghindari konflik awal tipe data
-    .refine((val) => val !== "", "Jumlah Permak wajib diisi")
-    .transform((val) => Number(val))
-    .refine((val) => !isNaN(val), "Harus berupa angka")
-    .refine((val) => val >= 0, "Jumlah tidak boleh negatif"),
-  jumlahReject: z
-    .any() // Menghindari konflik awal tipe data
-    .refine((val) => val !== "", "Jumlah Reject wajib diisi")
-    .transform((val) => Number(val))
-    .refine((val) => !isNaN(val), "Harus berupa angka")
-    .refine((val) => val >= 0, "Jumlah tidak boleh negatif"),
-  jumlahTurunSize: z
-    .any() // Menghindari konflik awal tipe data
-    .refine((val) => val !== "", "Jumlah Turun size wajib diisi")
-    .transform((val) => Number(val))
-    .refine((val) => !isNaN(val), "Harus berupa angka")
-    .refine((val) => val >= 0, "Jumlah tidak boleh negatif"),
-  jumlahKotor: z
-    .any() // Menghindari konflik awal tipe data
-    .refine((val) => val !== "", "Jumlah Kotor wajib diisi")
-    .transform((val) => Number(val))
-    .refine((val) => !isNaN(val), "Harus berupa angka")
-    .refine((val) => val >= 0, "Jumlah tidak boleh negatif"),
-});
+      jumlahLolos: z
+        .any() // Menghindari konflik awal tipe data
+        .refine((val) => val !== "", "Jumlah Lolos wajib diisi")
+        .transform((val) => Number(val))
+        .refine((val) => !isNaN(val), "Harus berupa angka")
+        .refine((val) => val >= 0, "Jumlah tidak boleh negatif"),
+      jumlahPermak: z
+        .any() // Menghindari konflik awal tipe data
+        .refine((val) => val !== "", "Jumlah Permak wajib diisi")
+        .transform((val) => Number(val))
+        .refine((val) => !isNaN(val), "Harus berupa angka")
+        .refine((val) => val >= 0, "Jumlah tidak boleh negatif"),
+      jumlahReject: z
+        .any() // Menghindari konflik awal tipe data
+        .refine((val) => val !== "", "Jumlah Reject wajib diisi")
+        .transform((val) => Number(val))
+        .refine((val) => !isNaN(val), "Harus berupa angka")
+        .refine((val) => val >= 0, "Jumlah tidak boleh negatif"),
+      jumlahTurunSize: z
+        .any() // Menghindari konflik awal tipe data
+        .refine((val) => val !== "", "Jumlah Turun size wajib diisi")
+        .transform((val) => Number(val))
+        .refine((val) => !isNaN(val), "Harus berupa angka")
+        .refine((val) => val >= 0, "Jumlah tidak boleh negatif"),
+      jumlahKotor: z
+        .any() // Menghindari konflik awal tipe data
+        .refine((val) => val !== "", "Jumlah Kotor wajib diisi")
+        .transform((val) => Number(val))
+        .refine((val) => !isNaN(val), "Harus berupa angka")
+        .refine((val) => val >= 0, "Jumlah tidak boleh negatif"),
+    })
+    .superRefine((data, ctx) => {
+      const total =
+        data.jumlahLolos +
+        data.jumlahPermak +
+        data.jumlahReject +
+        data.jumlahTurunSize +
+        data.jumlahKotor;
 
-type FormType = z.infer<typeof schema>;
+      if (total > jumlahSelesaiJahit) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["jumlahLolos"],
+          message: `Total melebihi jumlah selesai jahit (${jumlahSelesaiJahit})`,
+        });
+      }
+
+      if (total < jumlahSelesaiJahit) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["jumlahKotor"],
+          message: `Total kurang dari jumlah selesai jahit (${jumlahSelesaiJahit})`,
+        });
+      }
+    });
+
+type FormType = z.infer<ReturnType<typeof schema>>;
 
 export default function Proses({ search = "" }: { search: string }) {
   const [selected, setSelected] = useState<QCProses | null>(null);
@@ -57,6 +83,8 @@ export default function Proses({ search = "" }: { search: string }) {
   const { data: orders = [], isLoading, isError } = useGetQCProses();
   const { data: dataPengecek = [] } = useGetPengecek();
   const { mutate, isPending } = usePutQCProses();
+
+  const jumlahTarget = selected?.jumlahSelesaiJahit || 0;
 
   const {
     register,
@@ -66,7 +94,7 @@ export default function Proses({ search = "" }: { search: string }) {
     setValue,
     formState: { errors },
   } = useForm<FormType>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema(jumlahTarget)),
     defaultValues: {
       idPengecek: [],
       jumlahLolos: 0,
@@ -94,8 +122,8 @@ export default function Proses({ search = "" }: { search: string }) {
     mutate(
       { idQC: idQc, body: payload },
       {
-        onSuccess: () => {
-          toast.success("Berhasil disimpan");
+        onSuccess: (data) => {
+          toast.success(data.message);
           closeModal();
         },
       },
@@ -141,7 +169,7 @@ export default function Proses({ search = "" }: { search: string }) {
               className="bg-white border-2 border-gray-200 rounded-xl p-3 cursor-pointer hover:border-orange-300 transition-colors"
             >
               {o.isUrgent && (
-                <span className="mb-2 inline-block bg-red-100 text-red-600 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                <span className="text-red-500 text-sm mb-2 rounded-full font-bold">
                   URGENT
                 </span>
               )}
@@ -408,6 +436,15 @@ export default function Proses({ search = "" }: { search: string }) {
                     )}
                   </div>
                 </div>
+                  <p className="text-xs text-gray-500 text-center">
+                    Total:
+                    {Number(watch("jumlahLolos") || 0) +
+                      Number(watch("jumlahPermak") || 0) +
+                      Number(watch("jumlahReject") || 0) +
+                      Number(watch("jumlahTurunSize") || 0) +
+                      Number(watch("jumlahKotor") || 0)}
+                    / {selected.jumlahSelesaiJahit}
+                  </p>
               </div>
 
               {/* BUTTON */}
@@ -423,7 +460,7 @@ export default function Proses({ search = "" }: { search: string }) {
                 <button
                   disabled={isPending}
                   type="submit"
-                  className={`flex-1 bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 text-xs rounded-xl shadow-md transition-colors`}
+                  className={`flex-1 bg-orange-500 hover:bg-orange-700 text-white font-medium py-2 text-xs rounded-xl shadow-md transition-colors`}
                 >
                   {isPending ? "Sedang menyimpan..." : "Simpan"}
                 </button>

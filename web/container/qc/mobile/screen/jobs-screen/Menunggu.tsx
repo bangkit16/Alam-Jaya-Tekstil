@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useGetQCMenunggu } from '@/services/qc/useGetQCMenunggu';
 import { usePutMulaiQC } from '@/services/qc/usePutMulaiQC';
+import { toast } from 'sonner';
 
 export default function Menunggu({ search = '' }: any) {
   const [selected, setSelected] = useState<any>(null);
@@ -94,7 +95,9 @@ export default function Menunggu({ search = '' }: any) {
                 className='bg-orange-500 text-white px-3 py-1 text-xs rounded shadow disabled:opacity-50'
                 onClick={() => {
                   prosesQC(selected.idQC, {
-                    onSuccess: () => {
+
+                    onSuccess: (data) => {
+                      toast.success(data.message);
                       setSelected(null);
                     },
                   });

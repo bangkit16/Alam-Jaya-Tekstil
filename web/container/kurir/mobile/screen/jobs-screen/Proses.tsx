@@ -43,19 +43,13 @@ export default function Proses() {
           <div
             key={job.idProsesStokPotong}
             onClick={() => setSelectedJob(job)}
-            className={`relative border rounded-sm p-3 cursor-pointer transition-colors ${
-              job.isUrgent
-                ? "border-red-500 bg-red-50/30 hover:bg-red-100"
-                : "border-gray-300 hover:bg-gray-50"
-            }`}
+            className={`relative border rounded-sm p-3 cursor-pointer transition-colors `}
           >
             {/* LABEL URGENT */}
 
             {/* HEADER */}
             {job.isUrgent && (
-              <span className=" bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-                URGENT
-              </span>
+              <span className=" text-red-500 text-sm font-bold ">URGENT</span>
             )}
             <div className="flex justify-between items-center mb-2">
               <p
@@ -104,7 +98,7 @@ export default function Proses() {
           >
             {/* LABEL URGENT POJOK KANAN */}
             {selectedJob.isUrgent && (
-              <span className=" bg-red-500 text-white text-sm font-bold px-2 py-0.5  uppercase">
+              <span className=" text-red-500 text-sm font-bold  uppercase">
                 URGENT
               </span>
             )}
@@ -126,6 +120,12 @@ export default function Proses() {
                   Kode:
                 </span>{" "}
                 {selectedJob.kodeStokPotongan}
+              </li>
+              <li>
+                <span className="text-gray-400 uppercase text-[10px]">
+                  Dikirim Dari:
+                </span>{" "}
+                {selectedJob.dikirimDari}
               </li>
               <li>
                 <span className="text-gray-400 uppercase text-[10px]">

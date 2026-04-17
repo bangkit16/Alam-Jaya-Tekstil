@@ -44,9 +44,9 @@ export default function MasukBox({ search = "" }: { search: string }) {
         idQc: selectedItems, // Array ID yang dipilih
       },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           // Reset state jika berhasil
-          toast.success(`Berhasil melakukan packing box ${namaBox}`);
+          toast.success(data.message);
           setOpen(false);
           setSelectedItems([]);
           setNamaBox("");
@@ -88,7 +88,7 @@ export default function MasukBox({ search = "" }: { search: string }) {
                   <p>• Kode Potongan : {o.kodeStokPotongan}</p>
                   <p>• Nama Penjahit : {o.namaPenjahit}</p>
                   <p>
-                    • Tanggal Seleai QC :{" "}
+                    • Tanggal Selesai QC :{" "}
                     {new Date(o.tanggalSelesaiQC).toLocaleDateString("id-ID")}
                   </p>
                 </div>

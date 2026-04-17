@@ -52,21 +52,19 @@ export default function Menunggu() {
           <div
             key={job.idProsesStokPotong}
             onClick={() => setSelectedJob(job)}
-            className={`border rounded-sm p-3 cursor-pointer hover:bg-gray-50 transition-colors ${
-              job.isUrgent ? "border-red-300 bg-red-50/30" : "border-gray-300"
-            }`}
+            className={`border rounded-sm p-3 cursor-pointer hover:bg-gray-50 transition-colors `}
           >
             {/* HEADER */}
+            {job.isUrgent && (
+              <span className="text-sm text-red-500  uppercase font-bold">
+                Urgent
+              </span>
+            )}
             <div className="flex justify-between items-start mb-2">
               <div>
                 <p className="text-sm font-medium text-gray-800">
                   {job.namaBarang} - {job.ukuran}
                 </p>
-                {job.isUrgent && (
-                  <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full uppercase font-bold">
-                    Urgent
-                  </span>
-                )}
               </div>
               <p className="text-lg font-bold text-gray-900">
                 {job.jumlahLolos}
@@ -76,8 +74,10 @@ export default function Menunggu() {
             {/* DETAIL */}
             <ul className="text-xs text-gray-700 space-y-1">
               <li>
-                • <span className="font-semibold">{job.kodeStokPotongan}</span>{" "}
-                (Kode Potong)
+                • Kode Potong: {" "}
+                <span className="font-semibold">
+                  {job.kodeStokPotongan}
+                </span>{" "}
               </li>
               <li>
                 • Dikirim Dari:{" "}

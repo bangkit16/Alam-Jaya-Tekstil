@@ -76,7 +76,7 @@ export default function MintaPotong({ search = "" }: any) {
 
   // ================= DATA LIST =================
   const { data: permintaanData, isLoading } = useGetPermintaanPotong();
-  
+
   const mutationPost = usePostMintaPotong();
   const { data: dataKategori } = useGetKategori();
 
@@ -96,47 +96,52 @@ export default function MintaPotong({ search = "" }: any) {
   return (
     <>
       {/* ================= HEADER BUTTON ================= */}
-      <div className="mb-3 flex justify-center">
-        <button
-          onClick={() => setOpen(true)}
-          className="bg-gray-300 text-xs px-3 py-1 rounded shadow"
-        >
-          MINTA POTONG
-        </button>
-      </div>
 
       {/* ================= LIST ================= */}
-      <div className="flex flex-col gap-2">
-        {filtered.map((item) => (
-          <div
-            key={item.idPermintaan}
-            className="bg-white border rounded-xl p-3 shadow-sm"
+      <div className="flex flex-col h-full gap-2">
+        <div className="flex flex-col gap-2 flex-1 overflow-auto">
+          {filtered.map((item) => (
+            <div
+              key={item.idPermintaan}
+              className="bg-white border rounded-xl p-3 shadow-sm"
+            >
+              {item.isUrgent && (
+                <p className="text-[10px] text-red-500 font-bold mb-1">
+                  URGENT
+                </p>
+              )}
+
+              <div className="flex justify-between">
+                <p className="text-sm font-medium">
+                  {item.namaBarang} - {item.ukuran}
+                </p>
+                <p className="text-lg font-bold">{item.jumlahMinta}</p>
+              </div>
+
+              <div className="flex justify-between items-center mt-2">
+                <p className="text-xs text-gray-600 uppercase">
+                  STATUS : {item.status.replace(/_/g, " ")}
+                </p>
+
+                <button
+                  onClick={() => setSelectedId(item.idPermintaan)} // Trigger tracking API
+                  className="bg-gray-300 text-[10px] px-2 py-1 rounded"
+                >
+                  TRACK
+                </button>
+              </div>
+            </div>
+          ))}
+          {/* BUTTON PACKING */}
+        </div>
+        <div className=" flex justify-center">
+          <button
+            onClick={() => setOpen(true)}
+            className="bg-amber-500 text-sm w-full px-3 py-2 rounded-xl font-bold text-white shadow"
           >
-            {item.isUrgent && (
-              <p className="text-[10px] text-red-500 font-bold mb-1">URGENT</p>
-            )}
-
-            <div className="flex justify-between">
-              <p className="text-sm font-medium">
-                {item.namaBarang} - {item.ukuran}
-              </p>
-              <p className="text-lg font-bold">{item.jumlahMinta}</p>
-            </div>
-
-            <div className="flex justify-between items-center mt-2">
-              <p className="text-xs text-gray-600 uppercase">
-                STATUS : {item.status.replace(/_/g, " ")}
-              </p>
-
-              <button
-                onClick={() => setSelectedId(item.idPermintaan)} // Trigger tracking API
-                className="bg-gray-300 text-[10px] px-2 py-1 rounded"
-              >
-                TRACK
-              </button>
-            </div>
-          </div>
-        ))}
+            MINTA POTONG
+          </button>
+        </div>
       </div>
 
       {/* ================= MODAL FORM ================= */}
@@ -199,11 +204,13 @@ export default function MintaPotong({ search = "" }: any) {
                 className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${errors.kategori ? "border border-red-500" : ""}`}
               >
                 <option value="">Pilih Kategori</option>
-                {dataKategori.map((kat : { id: string; slug: string; namaKategori: string; }) => (
-                  <option key={kat.id} value={kat.slug}>
-                    {kat.namaKategori}
-                  </option>
-                ))}
+                {dataKategori.map(
+                  (kat: { id: string; slug: string; namaKategori: string }) => (
+                    <option key={kat.id} value={kat.slug}>
+                      {kat.namaKategori}
+                    </option>
+                  ),
+                )}
               </select>
               {errors.kategori && (
                 <p className="text-[10px] text-red-500">

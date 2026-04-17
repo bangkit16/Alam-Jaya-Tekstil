@@ -120,7 +120,7 @@ export default function Selesai() {
                   Produk
                 </label>
                 <p className="text-sm font-semibold">
-                  {selectedJob.namaBarang}
+                  {selectedJob.namaBarang} 
                 </p>
               </div>
 

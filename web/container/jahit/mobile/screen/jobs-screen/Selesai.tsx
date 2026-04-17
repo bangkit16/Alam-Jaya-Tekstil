@@ -37,7 +37,7 @@ export default function Selesai() {
             <div
               key={job.idProsesStokPotong}
               onClick={() => setSelected(job)}
-              className={` border border-gray-300 ${job.isUrgent ? "border-2 border-red-200 bg-red-50" : ""} rounded-sm p-3 cursor-pointer hover:bg-gray-50 transition-colors`}
+              className={` border border-gray-300 rounded-sm p-3 cursor-pointer hover:bg-gray-50 transition-colors`}
             >
               {job.isUrgent && (
                 <div className="flex justify-between items-center mb-1">
@@ -57,12 +57,11 @@ export default function Selesai() {
               {/* DETAIL RINGKAS */}
               <ul className="text-xs text-gray-700 space-y-1">
                 <li>
-                  • Selesai pada:{" "}
-                  {new Date(job.tanggalSelesai).toLocaleDateString("id-ID", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
+                  Kode Potongan : {job.kodeStokPotongan}
+                </li>
+                <li>
+                  Selesai pada :{" "}
+                  {new Date(job.tanggalSelesai).toLocaleString("id-ID")}
                 </li>
                 {job.catatan && (
                   <li className="text-gray-500 italic">
@@ -86,7 +85,7 @@ export default function Selesai() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* HEADER */}
-            <div className="flex justify-between items-center mb-4 border-b pb-2">
+            {/* <div className="flex justify-between items-center mb-4 border-b pb-2">
               <p className="text-sm font-bold text-gray-800 uppercase tracking-tight">
                 Detail Pekerjaan
               </p>
@@ -96,7 +95,7 @@ export default function Selesai() {
               >
                 ✕
               </button>
-            </div>
+            </div> */}
             {selected.isUrgent && (
               <div className="flex justify-between items-center mb-1">
                 <p className="text-sm font-bold text-red-600">URGENT</p>

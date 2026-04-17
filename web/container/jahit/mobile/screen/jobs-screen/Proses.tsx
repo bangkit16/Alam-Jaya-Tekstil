@@ -61,7 +61,11 @@ export default function Proses() {
     if (!selected) return;
 
     if (newStatus === "JEDA") {
-      await mutasiJeda.mutateAsync(selected.idProsesStokPotong);
+      await mutasiJeda.mutateAsync(selected.idProsesStokPotong, {
+        onSuccess: () => {
+
+        },
+      });
     } else {
       await mutasiDikerjakan.mutateAsync(selected.idProsesStokPotong);
     }
@@ -82,9 +86,7 @@ export default function Proses() {
             <div
               key={job.idProsesStokPotong}
               onClick={() => setSelected(job)}
-              className={`border border-gray-300 rounded-sm p-3 cursor-pointer hover:bg-gray-50 ${
-                job.isUrgent ? "border-2 border-red-200 bg-red-50" : ""
-              }`}
+              className={`border border-gray-300 rounded-sm p-3 cursor-pointer hover:bg-gray-50`}
             >
               {job.isUrgent && (
                 <span className="text-[10px] text-red-600 font-bold block mb-1">
@@ -100,22 +102,22 @@ export default function Proses() {
                 </p>
               </div>
               <ul className="text-xs text-gray-700 space-y-1">
-                <li>• Kode Stok Potongan: {job.kodeStokPotongan}</li>
+                <li>Kode Stok Potongan: {job.kodeStokPotongan}</li>
                 <li>
-                  • Tanggal Mulai Jahit:{" "}
-                  {new Date(job.tanggalMulaiJahit).toLocaleDateString("id-ID", {
+                  Tanggal Mulai Jahit:{" "}
+                  {new Date(job.tanggalMulaiJahit).toLocaleTimeString("id-ID", {
                     day: "numeric",
                     month: "short",
                     year: "numeric",
                   })}
                 </li>
                 <li>
-                  • Status:{" "}
+                  Status:{" "}
                   <span
                     className={
                       job.status === "JEDA"
-                        ? "text-orange-600 font-bold"
-                        : "text-blue-600 font-bold"
+                        ? "bg-orange-600 font-bold py-0.5 px-2 rounded-xl text-white"
+                        : "bg-amber-500 font-bold py-0.5 px-2 rounded-xl text-white"
                     }
                   >
                     {job.status}
@@ -157,9 +159,9 @@ export default function Proses() {
                 </p>
               )}
               <ul className="text-xs text-gray-700 space-y-1 my-4">
-                <li>• Kode Stok Potongan: {selected.kodeStokPotongan}</li>
+                <li>Kode Stok Potongan: {selected.kodeStokPotongan}</li>
                 <li>
-                  • Tanggal Mulai Jahit:{" "}
+                  Tanggal Mulai Jahit:{" "}
                   {new Date(selected.tanggalMulaiJahit).toLocaleDateString(
                     "id-ID",
                     {
@@ -170,11 +172,11 @@ export default function Proses() {
                   )}
                 </li>
                 <li>
-                  • Status:{" "}
+                  Status:{" "}
                   <span
                     className={
                       selected.status === "JEDA"
-                        ? "text-orange-600 font-bold"
+                        ? "text-orange-600 font-bold "
                         : "text-blue-600 font-bold"
                     }
                   >
@@ -190,7 +192,7 @@ export default function Proses() {
                 <input
                   {...register("jumlahSelesaiJahit")}
                   type="number"
-                  placeholder={`Jumlah selesai (Max: ${selected.jumlahLolos})`}
+                  placeholder={`Jumlah selesai `}
                   className={`w-full bg-gray-100 px-3 py-2 text-xs outline-none ${errors.jumlahSelesaiJahit ? "border border-red-500" : ""}`}
                 />
                 {errors.jumlahSelesaiJahit && (
@@ -212,8 +214,12 @@ export default function Proses() {
                 <>
                   <button
                     onClick={handleSubmit(onConfirmSelesai)}
-                    disabled={mutasiSelesai.isPending}
-                    className="w-full bg-gray-800 text-white text-xs py-2.5 rounded-sm font-bold disabled:bg-gray-400"
+                    disabled={
+                      mutasiSelesai.isPending ||
+                      mutasiDikerjakan.isPending ||
+                      mutasiJeda.isPending
+                    }
+                    className="w-full bg-orange-500 text-white text-xs py-2.5 rounded-sm font-bold disabled:bg-orange-200"
                   >
                     {mutasiSelesai.isPending
                       ? "MENGIRIM..."
@@ -222,8 +228,12 @@ export default function Proses() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleUpdateStatus("JEDA")}
-                      disabled={mutasiJeda.isPending}
-                      className="flex-1 bg-orange-500 text-white text-xs py-2 rounded-sm disabled:bg-gray-400"
+                      disabled={
+                        mutasiSelesai.isPending ||
+                        mutasiDikerjakan.isPending ||
+                        mutasiJeda.isPending
+                      }
+                      className="flex-1 bg-amber-500 text-white text-xs py-2 rounded-sm disabled:bg-amber-200"
                     >
                       {mutasiJeda.isPending ? "..." : "JEDA"}
                     </button>
@@ -239,8 +249,12 @@ export default function Proses() {
                 <>
                   <button
                     onClick={() => handleUpdateStatus("DIKERJAKAN")}
-                    disabled={mutasiDikerjakan.isPending}
-                    className="w-full bg-blue-600 text-white text-xs py-2.5 rounded-sm font-bold disabled:bg-gray-400"
+                    disabled={
+                      mutasiSelesai.isPending ||
+                      mutasiDikerjakan.isPending ||
+                      mutasiJeda.isPending
+                    }
+                    className="w-full bg-orange-500 text-white text-xs py-2.5 rounded-sm font-bold disabled:bg-orange-200"
                   >
                     {mutasiDikerjakan.isPending
                       ? "MEMPROSES..."
