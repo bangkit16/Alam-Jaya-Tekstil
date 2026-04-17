@@ -87,7 +87,7 @@ export default function KurirWeb({ handleLogout }: any) {
 
   // ================= UI =================
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-100 to-orange-50">
       {/* SIDEBAR */}
       <div className="w-64 bg-white border-r p-5 hidden md:flex flex-col">
         <h1 className="text-lg font-semibold mb-6">Kurir Panel</h1>
@@ -127,7 +127,15 @@ export default function KurirWeb({ handleLogout }: any) {
 
         {/* LIST */}
         <div className="bg-gray-50 p-4 rounded-xl">
-          <h3 className="mb-4 capitalize">Data {activeTab}</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-semibold capitalize text-lg">
+              Data {activeTab}
+            </h3>
+
+            <span className="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded-full">
+              {getData().length} item
+            </span>
+          </div>
 
           {isLoading ? (
             <p>Loading...</p>
@@ -138,7 +146,7 @@ export default function KurirWeb({ handleLogout }: any) {
                 onClick={() =>
                   activeTab === "selesai" && setSelectedSelesai(job)
                 }
-                className="border border-gray-300 rounded-sm p-3 mb-3 cursor-pointer hover:bg-gray-50"
+                className="bg-white/70 backdrop-blur-md border border-white/40 rounded-2xl p-4 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
               >
                 {/* HEADER */}
                 <div className="flex justify-between mb-2">
@@ -191,7 +199,7 @@ export default function KurirWeb({ handleLogout }: any) {
                         e.stopPropagation();
                         setSelectedJob(job);
                       }}
-                      className="bg-orange-400 text-white px-2 py-1 text-xs rounded"
+                      className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1.5 text-xs rounded-lg font-semibold hover:scale-105 active:scale-95 transition"
                     >
                       Ambil
                     </button>
@@ -239,14 +247,18 @@ export default function KurirWeb({ handleLogout }: any) {
   );
 }
 
-function Card({ title, count, icon }: any) {
+function Card({ title, count }: any) {
+  const color =
+    title === "Menunggu"
+      ? "text-yellow-500"
+      : title === "Proses"
+        ? "text-blue-500"
+        : "text-green-500";
+
   return (
-    <div className="bg-white p-4 rounded-xl flex gap-2">
-      {icon || <Truck />}
-      <div>
-        <p className="text-xs">{title}</p>
-        <h3 className="font-bold">{count}</h3>
-      </div>
+    <div className="bg-white/70 p-4 rounded-2xl shadow text-center">
+      <p className="text-xs text-gray-500">{title}</p>
+      <p className={`text-2xl font-bold ${color}`}>{count}</p>
     </div>
   );
 }

@@ -78,7 +78,7 @@ export default function PenjahitWeb({ handleLogout }: any) {
   const countSelesai = dataSelesai.length;
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-100 to-orange-50">
       {/* SIDEBAR */}
       <div className="w-64 bg-white border-r p-5 hidden md:flex flex-col">
         <h1 className="text-lg font-semibold mb-6">Penjahit Panel</h1>
@@ -233,14 +233,18 @@ export default function PenjahitWeb({ handleLogout }: any) {
   );
 }
 
-function Stat({ icon, title, value }: any) {
+function Stat({ title, value }: any) {
+  const color =
+    title === "Menunggu"
+      ? "text-yellow-500"
+      : title === "Proses"
+        ? "text-blue-500"
+        : "text-green-500";
+
   return (
-    <div className="bg-white p-4 rounded-xl flex gap-2">
-      {icon}
-      <div>
-        <p className="text-xs">{title}</p>
-        <h3 className="font-bold">{value}</h3>
-      </div>
+    <div className="bg-white/70 p-4 rounded-2xl shadow text-center">
+      <p className="text-xs text-gray-500">{title}</p>
+      <p className={`text-2xl font-bold ${color}`}>{value}</p>
     </div>
   );
 }

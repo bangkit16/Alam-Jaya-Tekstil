@@ -245,9 +245,9 @@ export default function StokPotongWeb({ handleLogout, session }: any) {
 
   return (
     <>
-      <div className="flex min-h-screen bg-gray-100">
+      <div className="flex min-h-screen bg-gradient-to-br from-gray-100 to-orange-50">
         {/* SIDEBAR */}
-        <div className="w-64 bg-white border-r p-5 hidden md:flex flex-col">
+        <div className="w-64 bg-white/70 backdrop-blur-xl border-r border-white/40 p-5 hidden md:flex flex-col shadow-lg">
           <h1 className="text-lg font-semibold mb-6">Stok Potong</h1>
 
           {["menunggu", "proses", "stok"].map((menu) => (
@@ -256,7 +256,7 @@ export default function StokPotongWeb({ handleLogout, session }: any) {
               onClick={() => setActiveTab(menu as TabType)}
               className={`w-full text-left px-4 py-2 rounded-xl ${
                 activeTab === menu
-                  ? "bg-orange-400 text-white"
+                  ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg scale-[1.02]"
                   : "text-gray-600"
               }`}
             >
@@ -275,20 +275,29 @@ export default function StokPotongWeb({ handleLogout, session }: any) {
         {/* MAIN */}
         <div className="flex-1 p-6">
           {/* HEADER */}
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold">Dashboard Stok</h2>
-            <p className="text-xs text-gray-500">
-              {session?.user?.name} • {session?.user?.role}
-            </p>
-          </div>
+          <div className="mb-6"></div>
 
           {/* CARDS */}
-          <div className="grid md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white p-4 rounded-xl">
-              Menunggu: {countMenunggu}
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            {/* MENUNGGU */}
+            <div className="bg-white/70 p-4 rounded-2xl shadow text-center">
+              <p className="text-xs text-gray-500">Menunggu</p>
+              <p className="text-2xl font-bold text-yellow-500">
+                {countMenunggu}
+              </p>
             </div>
-            <div className="bg-white p-4 rounded-xl">Proses: {countProses}</div>
-            <div className="bg-white p-4 rounded-xl">Stok: {countStok}</div>
+
+            {/* PROSES */}
+            <div className="bg-white/70 p-4 rounded-2xl shadow text-center">
+              <p className="text-xs text-gray-500">Proses</p>
+              <p className="text-2xl font-bold text-blue-500">{countProses}</p>
+            </div>
+
+            {/* STOK */}
+            <div className="bg-white/70 p-4 rounded-2xl shadow text-center">
+              <p className="text-xs text-gray-500">Stok</p>
+              <p className="text-2xl font-bold text-green-500">{countStok}</p>
+            </div>
           </div>
 
           {/* LIST */}
@@ -303,52 +312,99 @@ export default function StokPotongWeb({ handleLogout, session }: any) {
       {/* ================= MODAL PROSES ================= */}
       {selectedProses && (
         <div
-          className="fixed inset-0 bg-black/40 flex items-center justify-center"
+          className="fixed inset-0 bg-black/40 bg-black/30 flex items-center justify-center z-50"
           onClick={() => setSelectedProses(null)}
         >
           <div
-            className="bg-white p-4 w-full max-w-sm"
             onClick={(e) => e.stopPropagation()}
+            className="bg-white/80 backdrop-blur-xl p-6 rounded-3xl w-full max-w-sm shadow-2xl border border-white/40"
           >
-            <p className="font-semibold mb-3">{selectedProses.namaBarang}</p>
+            {/* HEADER */}
+            <div className="mb-4">
+              <p className="text-sm text-gray-500">
+                {selectedProses.namaBarang} - {selectedProses.ukuran}
+              </p>
+              <h2 className="text-lg font-bold text-gray-800">Input Hasil</h2>
+            </div>
 
-            <select
-              onChange={(e) => {
-                const val = e.target.value;
-                if (selectedPengecek.includes(val)) return;
-                if (selectedPengecek.length >= 2) return;
-                setSelectedPengecek([...selectedPengecek, val]);
-              }}
-              className="w-full border p-2 mb-2"
-            >
-              <option>Pilih pengecek</option>
-              {pengecekList?.map((p: pengecekType) => (
-                <option key={p.id} value={p.id}>
-                  {p.nama}
-                </option>
-              ))}
-            </select>
+            <div className="h-px bg-gray-200 mb-4" />
 
-            <input
-              placeholder="Kode"
-              className="w-full border p-2 mb-2"
-              onChange={(e) => setForm({ ...form, kode: e.target.value })}
-            />
+            {/* FORM */}
+            <div className="space-y-3">
+              <select
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (!val) return;
 
-            <input
-              type="number"
-              placeholder="Lolos"
-              className="w-full border p-2 mb-2"
-              onChange={(e) => setForm({ ...form, lolos: e.target.value })}
-            />
+                  if (selectedPengecek.includes(val)) return;
 
-            <input
-              type="number"
-              placeholder="Reject"
-              className="w-full border p-2 mb-2"
-              onChange={(e) => setForm({ ...form, reject: e.target.value })}
-            />
+                  setSelectedPengecek([...selectedPengecek, val]);
+                }}
+                className="w-full bg-gray-100 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              >
+                <option value="">Pilih pengecek</option>
+                {pengecekList?.map((p: pengecekType) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nama}
+                  </option>
+                ))}
+              </select>
 
+              <div className="flex flex-wrap gap-2">
+                {selectedPengecek.map((id) => {
+                  const nama =
+                    pengecekList?.find((p: any) => p.id === id)?.nama || id;
+
+                  return (
+                    <div
+                      key={id}
+                      className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs flex items-center gap-2"
+                    >
+                      {nama}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSelectedPengecek((prev) =>
+                            prev.filter((p) => p !== id),
+                          )
+                        }
+                        className="text-red-500"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <input
+                placeholder="Kode"
+                className="w-full bg-gray-100 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                onChange={(e) => setForm({ ...form, kode: e.target.value })}
+              />
+
+              <input
+                type="number"
+                placeholder="Lolos"
+                className="w-full bg-gray-100 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                onChange={(e) => setForm({ ...form, lolos: e.target.value })}
+              />
+
+              <input
+                type="number"
+                placeholder="Reject"
+                className="w-full bg-gray-100 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                onChange={(e) => setForm({ ...form, reject: e.target.value })}
+              />
+
+              <input
+                placeholder="Catatan (opsional)"
+                className="w-full bg-gray-100 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                onChange={(e) => setForm({ ...form, catatan: e.target.value })}
+              />
+            </div>
+
+            {/* BUTTON */}
             <button
               onClick={() => {
                 mutateProses({
@@ -365,7 +421,7 @@ export default function StokPotongWeb({ handleLogout, session }: any) {
                 setSelectedProses(null);
                 setSelectedPengecek([]);
               }}
-              className="w-full bg-blue-500 text-white py-2"
+              className="mt-5 w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:scale-105 active:scale-95 transition text-white py-2.5 rounded-xl text-sm font-semibold"
             >
               {pendingProses ? "Loading..." : "Simpan"}
             </button>
@@ -380,7 +436,7 @@ export default function StokPotongWeb({ handleLogout, session }: any) {
           onClick={handleCloseStock}
         >
           <div
-            className="bg-white p-4 w-full max-w-sm"
+            className="bg-white/80 backdrop-blur-xl p-6 rounded-3xl w-full max-w-sm shadow-2xl space-y-4 border border-white/40"
             onClick={(e) => e.stopPropagation()}
           >
             <p className="font-semibold mb-3">{selectedStock.namaBarang}</p>

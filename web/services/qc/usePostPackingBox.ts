@@ -1,11 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/axios";
 
-// const use_mock = false;
-
 // Type Definitions
 export interface PackingBody {
-  idPenanggungJawabBox: string;
+  idPenanggungJawabBox: string[];
   namaBox: string;
   idQc: string[];
 }
@@ -23,7 +21,6 @@ export const usePostPackingBox = () => {
   return useMutation({
     mutationFn: postPackingBox,
     onSuccess: (data) => {
-      // Refresh daftar Masuk Box agar item yang sudah di-packing hilang dari list
       queryClient.invalidateQueries({ queryKey: ["qc", "masukbox"] });
       queryClient.invalidateQueries({ queryKey: ["qc", "selesai"] });
       alert(data.message || "Berhasil melakukan packing!");
