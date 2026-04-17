@@ -79,14 +79,16 @@ export default function Menunggu() {
   //
   const queryClient = useQueryClient();
 
+  // console.log(dataPermintaan)
+
   return (
     <>
       {/* ================= LIST ================= */}
       <div className="flex flex-col gap-3 overflow-y-auto">
         {isLoadingPermintaan ? (
           <p className="text-center py-4">Loading...</p>
-        ) : dataPermintaan && dataPermintaan.length > 0 ? (
-          dataPermintaan.map((permintaan: permintaanType, index: number) => (
+        ) : dataPermintaan.data && dataPermintaan.data.length > 0 ? (
+          dataPermintaan.data.map((permintaan: permintaanType, index: number) => (
             <div
               key={`${permintaan.idPermintaan}-${index}`}
               onClick={() => setSelectedPermintaan(permintaan)}
