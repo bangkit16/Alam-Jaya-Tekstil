@@ -78,21 +78,19 @@ export default function Menunggu() {
             <div
               key={job.idProsesStokPotong}
               onClick={() => setSelected(job)}
-              className={`border rounded-sm p-3 cursor-pointer hover:bg-gray-50 transition-colors ${
-                job.isUrgent ? "border-red-300 bg-red-50/30" : "border-gray-300"
-              }`}
+              className={`border rounded-sm p-3 cursor-pointer hover:bg-gray-50 transition-colors`}
             >
               {/* HEADER */}
               <div className="flex justify-between items-center mb-2">
                 <div>
-                  <p className="text-sm font-medium text-gray-800">
-                    {job.namaBarang} - {job.ukuran}
-                  </p>
                   {job.isUrgent && (
-                    <span className="text-[9px] font-bold text-red-600 text-xl uppercase">
+                    <span className="text-sm font-bold text-red-600 uppercase">
                       Urgent
                     </span>
                   )}
+                  <p className="text-sm font-medium text-gray-800">
+                    {job.namaBarang} - {job.ukuran}
+                  </p>
                 </div>
 
                 <p className="text-lg font-bold text-gray-900">{job.jumlah}</p>
@@ -132,7 +130,7 @@ export default function Menunggu() {
             <div className="flex justify-between items-center mb-3">
               <div>
                 {selected.isUrgent && (
-                  <span className="text-base font-bold text-red-600 uppercase">
+                  <span className="text-sm font-bold text-red-600 uppercase">
                     Urgent
                   </span>
                 )}

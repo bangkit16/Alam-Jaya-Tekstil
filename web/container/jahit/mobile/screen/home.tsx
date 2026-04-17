@@ -93,10 +93,23 @@ export default function Home({ setScreen, handleLogout }: any) {
 
           <div className="mt-3 space-y-2 text-xs">
             <div className="bg-white p-2 rounded-lg shadow-sm">
-              ✂️ Job baru diterima
-            </div>
-            <div className="bg-white p-2 rounded-lg shadow-sm">
-              ✅ Job selesai dikirim
+              <h3 className="font-bold mb-2">Manajemen Tugas Penjahit</h3>
+              Sistem manajemen penjahit dengan tiga tahap utama: Menunggu, untuk
+              antrean potongan kain; Proses, untuk pengerjaan aktif dengan fitur
+              jeda/lanjut; dan Selesai, untuk hasil akhir yang telah rampung.
+              <p className="">Pantau produktivitas melalui tiga kategori: </p>
+              <ul>
+                <li>
+                  <strong>Menunggu</strong> untuk antrean potongan kain,
+                </li>
+                <li>
+                  <strong>Proses</strong> untuk pengerjaan aktif (tersedia fitur
+                  jeda/lanjut), dan
+                </li>
+                <li>
+                  <strong>Selesai</strong> untuk jahitan yang telah rampung.
+                </li>
+              </ul>
             </div>
           </div>
         </div>

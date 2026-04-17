@@ -32,7 +32,7 @@ export default function Selesai() {
                 </p>
 
                 <p className="text-lg font-bold text-gray-900">
-                  {item.jumlahDiminta}
+                  {item.jumlahMinta}
                 </p>
               </div>
 
@@ -111,7 +111,7 @@ export default function Selesai() {
               </p>
 
               <p className="text-lg font-bold text-gray-900">
-                {selectedItem.jumlahDiminta}
+                {selectedItem.jumlahMinta}
               </p>
             </div>
 

@@ -134,7 +134,7 @@ export default function Proses() {
         },
       },
       {
-        onSuccess: (data : any) => {
+        onSuccess: (data: any) => {
           toast.success("Berhasil dipindah ke selesai");
           handleClose();
         },
@@ -148,9 +148,7 @@ export default function Proses() {
           LIST DATA
       ================================= */}
       <div className="flex flex-col flex-1 overflow-y-auto gap-3">
-        {isLoading ? (
-          <p className="text-center py-4">Loading...</p>
-        ) : (
+        {data && data.length > 0 ? (
           data?.map((item: ProsesType) => (
             <div
               key={item.idStokPotong}
@@ -171,6 +169,8 @@ export default function Proses() {
               </p>
             </div>
           ))
+        ) : (
+          <p className="text-center py-4">Loading...</p>
         )}
       </div>
 

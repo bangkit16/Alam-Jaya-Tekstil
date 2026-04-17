@@ -33,7 +33,7 @@ export default function Menunggu() {
 
   const { data: dataPermintaan, isLoading: isLoadingPermintaan } =
     useGetPermintaan();
-  const { mutate: mutatePermintaan ,data : dataMutate } = usePutPermintaan();
+  const { mutate: mutatePermintaan, data: dataMutate } = usePutPermintaan();
 
   // Inisialisasi React Hook Form
   const {
@@ -217,7 +217,7 @@ export default function Menunggu() {
                           queryKey: ["permintaans"],
                         }); // 🔥 TAMBAH INI
                         handleCloseModal();
-                        toast.success((dataMutate as any)?.message);
+                        toast.success("Berhasil dipindah ke proses");
                       },
                     },
                   );
