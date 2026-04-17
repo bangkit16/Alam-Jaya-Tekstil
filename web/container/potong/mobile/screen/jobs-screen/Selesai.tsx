@@ -36,7 +36,6 @@ export default function Selesai() {
 
   return (
     <>
-
       <div className="flex flex-col gap-3 overflow-y-auto px-2">
         {isLoading ? (
           <p className="text-center py-4">Loading...</p>
