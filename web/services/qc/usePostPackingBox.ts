@@ -3,7 +3,7 @@ import { api } from "../../lib/axios";
 
 // Type Definitions
 export interface PackingBody {
-  idPenanggungJawabBox: string[];
+  idPenanggungJawabBox: string;
   namaBox: string;
   idQc: string[];
 }
