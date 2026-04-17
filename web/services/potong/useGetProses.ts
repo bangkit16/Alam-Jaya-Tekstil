@@ -1,66 +1,74 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { api } from "../../lib/axios";
 
-const use_mock = false;
-
-const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
-
-// ✅ TYPE (biar aman & konsisten dengan backend)
-type Proses = {
+// --- 1. TYPES ---
+export type Proses = {
   idPermintaan: string;
   namaBarang: string;
   kodeKain: string;
-  jumlahMinta: number;
   ukuran: string;
   isUrgent: boolean;
-  pengecek: string;
-  pemotong: string;
+  pemotong: string[]; // Sekarang array of strings
+  jumlahHasil: number;
+  jumlahMinta: number;
 };
 
-const fetcher = async (): Promise<Proses[]> => {
-  if (use_mock) {
-    await delay(1000);
-    return [
-      {
-        idPermintaan: "a1b2c3d4-e5f6",
-        namaBarang: "Kemeja Flanel Kotak (MOCK)",
-        kodeKain: "FLN-001",
-        jumlahMinta: 45,
-        ukuran: "L",
-        isUrgent: true,
-        pengecek: "Budi Santoso",
-        pemotong: "Andi Wijaya",
-      },
-      {
-        idPermintaan: "b2c3d4e5-f6g7",
-        namaBarang: "Celana Chino Slim Fit (MOCK)",
-        kodeKain: "CHN-022",
-        jumlahMinta: 30,
-        ukuran: "M",
-        isUrgent: false,
-        pengecek: "Siti Aminah",
-        pemotong: "Eko Prasetyo",
-      },
-      {
-        idPermintaan: "c3d4e5f6-g7h8",
-        namaBarang: "Kaos Oversize Hitam (MOCK)",
-        kodeKain: "COT-099",
-        jumlahMinta: 120,
-        ukuran: "XL",
-        isUrgent: false,
-        pengecek: "Rina Rose",
-        pemotong: "Dani Ramadhan",
-      },
-    ];
-  }
+export type APIResponse = {
+  data: Proses[];
+  meta: {
+    totalData: number;
+    totalPages: number;
+    currentPage: number;
+    nextPage: number | null;
+    prevPage: number | null;
+  };
+};
 
-  const response = await api.get("/potong/proses");
+// --- 2. FETCHER FUNCTIONS ---
+// Kita pisahkan logic fetch agar reusable
+const fetchProses = async (page: number): Promise<APIResponse> => {
+  const response = await api.get("/potong/proses", {
+    params: { page },
+  });
   return response.data;
 };
 
-export const useGetProses = () => {
-  return useQuery<Proses[]>({
-    queryKey: ["proses"], // ✅ WAJIB SAMA DENGAN INVALIDATE
-    queryFn: fetcher,
+// --- 3. HOOKS ---
+
+/**
+ * Hook untuk Web (Pagination)
+ * @param page Halaman yang sedang aktif
+ */
+export const useGetProses = (page: number = 1) => {
+  return useQuery<APIResponse>({
+    queryKey: ["proses", page], // Key unik berdasarkan halaman
+    queryFn: () => fetchProses(page),
+    placeholderData: (previousData) => previousData, // UI tidak kedip saat ganti page
+    staleTime: 1000 * 60 * 5, // Data dianggap segar selama 5 menit
+  });
+};
+
+/**
+ * Hook untuk Mobile (Infinite Scroll)
+ * Menggunakan useInfiniteQuery dari TanStack Query
+ */
+export const useGetProsesInfinite = () => {
+  return useInfiniteQuery<APIResponse>({
+    queryKey: ["proses", "infinite"],
+    queryFn: ({ pageParam = 1 }) => fetchProses(pageParam as number),
+    initialPageParam: 1,
+    /**
+     * getNextPageParam mengambil data dari meta.nextPage
+     * Jika null, berarti sudah halaman terakhir
+     */
+    getNextPageParam: (lastPage) => {
+      return lastPage.meta.nextPage ?? undefined;
+    },
+    /**
+     * getPreviousPageParam (Opsional) jika butuh scroll ke atas
+     */
+    getPreviousPageParam: (firstPage) => {
+      return firstPage.meta.prevPage ?? undefined;
+    },
   });
 };

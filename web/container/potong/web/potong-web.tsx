@@ -11,7 +11,7 @@ import { usePutProses } from "@/services/potong/usePutProses";
 import { usePutStokPotong } from "@/services/potong/usePutStokPotong";
 
 import { useGetPemotong } from "@/services/potong/useGetPemotong";
-import { useGetPermintaanSelesai } from "@/services/potong/useGetPermintaanSelesai";
+import { useGetSelesai } from "@/services/potong/useGetPermintaanSelesai";
 import { toast } from "sonner";
 
 type TabType = "menunggu" | "proses" | "selesai";
@@ -39,7 +39,7 @@ export default function PotongWeb({ handleLogout }: any) {
   const { data: dataProses, isLoading: isLoadingProses } = useGetProses();
 
   const { data: dataSelesai, isLoading: isLoadingSelesai } =
-    useGetPermintaanSelesai();
+    useGetSelesai();
 
   const { mutate: mutatePermintaan } = usePutPermintaan();
   const { mutate: mutateProses } = usePutProses();
@@ -108,9 +108,9 @@ export default function PotongWeb({ handleLogout }: any) {
 
   // ================= DATA =================
   const getData = () => {
-    if (activeTab === "menunggu") return dataPermintaan || [];
-    if (activeTab === "proses") return dataProses || [];
-    if (activeTab === "selesai") return dataSelesai || [];
+    if (activeTab === "menunggu") return dataPermintaan?.data || [];
+    if (activeTab === "proses") return dataProses?.data || [];
+    if (activeTab === "selesai") return dataSelesai?.data || [];
     return [];
   };
 
@@ -167,14 +167,14 @@ export default function PotongWeb({ handleLogout }: any) {
           <div className="bg-white/70 p-4 rounded-2xl shadow text-center">
             <p className="text-xs text-gray-500">Proses</p>
             <p className="text-2xl font-bold text-blue-500">
-              {dataProses?.length || 0}
+              {dataProses?.data.length || 0}
             </p>
           </div>
 
           <div className="bg-white/70 p-4 rounded-2xl shadow text-center">
             <p className="text-xs text-gray-500">Selesai</p>
             <p className="text-2xl font-bold text-green-500">
-              {dataSelesai?.length || 0}
+              {dataSelesai?.data.length || 0}
             </p>
           </div>
         </div>

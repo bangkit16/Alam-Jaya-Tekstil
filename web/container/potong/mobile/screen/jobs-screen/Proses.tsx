@@ -15,7 +15,7 @@ type prosesType = {
   isUrgent: boolean;
   kodeKain?: string;
   pengecek?: string;
-  pemotong?: string;
+  pemotong?: string[];
 };
 
 export default function Proses() {
@@ -168,8 +168,8 @@ export default function Proses() {
       <div className="flex flex-col gap-3 overflow-y-auto">
         {isLoading ? (
           <p className="text-center py-4">Loading...</p>
-        ) : dataProses && dataProses.length > 0 ? (
-          dataProses.map((proses: prosesType, index: number) => (
+        ) : dataProses?.data && dataProses.data.length > 0 ? (
+          dataProses.data.map((proses: prosesType, index: number) => (
             <div
               key={`${proses.idPermintaan}-${index}`}
               onClick={() => handleSelectProses(proses)}

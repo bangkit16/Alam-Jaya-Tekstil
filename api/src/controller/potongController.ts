@@ -255,10 +255,20 @@ export default class PotongController {
     try {
       // 2. Jalankan query data dan count secara paralel dengan Promise.all
       const { prisma: pg, page, limit } = getPagination(req);
+      const search = req.query.search as string;
 
       const [result, total] = await Promise.all([
         prisma.stokPotong.findMany({
           ...pg, // Menyisipkan skip dan take untuk Prisma
+          where: {
+            // status: StatusStokPotong.SELESAI,
+            permintaan: {
+              OR: [
+                { namaBarang: { contains: search, mode: "insensitive" } },
+                // { ukuran: { contains: search, mode: "insensitive" } },
+              ],
+            },
+          },
           include: {
             permintaan: true,
             pemotong: {
