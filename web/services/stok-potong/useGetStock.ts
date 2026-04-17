@@ -6,6 +6,7 @@ export type StockType = {
   idStokPotong: string;
   namaBarang: string;
   ukuran: "M" | "L" | "XL" | "XXL";
+  isUrgent: boolean;
   jumlahLolos: number;
   kodeStokPotongan: string;
   tanggalMasukPotong: string;
@@ -33,6 +34,7 @@ const fetcher = async (): Promise<StockType[]> => {
 
     namaBarang: item.namaBarang,
     ukuran: item.ukuran,
+    isUrgent: item.isUrgent,
     jumlahLolos: item.jumlahLolos,
     kodeStokPotongan: item.kodeStokPotongan,
     tanggalMasukPotong: item.tanggalMasukPotong,

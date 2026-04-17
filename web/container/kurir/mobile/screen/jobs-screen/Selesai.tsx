@@ -56,10 +56,12 @@ export default function Selesai() {
               className="border border-gray-300 rounded-sm p-3 cursor-pointer hover:bg-gray-50 transition-colors"
             >
               {/* HEADER */}
+              {job.isUrgent && (
+                <p className="text-xs text-red-500 font-semibold mb-2">
+                  URGENT
+                </p>
+              )}
               <div className="flex justify-between items-start mb-2">
-                {/* {job.isUrgent && (
-                  
-                )} */}
                 <div>
                   <p className="text-sm font-medium text-gray-800 leading-tight">
                     {job.namaBarang}
@@ -115,12 +117,17 @@ export default function Selesai() {
             </div>
 
             <div className="space-y-3">
+              {selectedJob.isUrgent && (
+                <p className="text-xs text-red-500 font-semibold mb-2">
+                  URGENT
+                </p>
+              )}
               <div>
                 <label className="text-[10px] text-gray-400 uppercase font-bold">
                   Produk
                 </label>
                 <p className="text-sm font-semibold">
-                  {selectedJob.namaBarang} 
+                  {selectedJob.namaBarang}
                 </p>
               </div>
 

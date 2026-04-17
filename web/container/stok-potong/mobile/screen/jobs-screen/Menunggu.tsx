@@ -11,6 +11,7 @@ type stockType = {
   idStokPotong: string; // 🔥 WAJIB (buat PUT API)
   namaBarang: string;
   ukuran: "M" | "L" | "XL" | "XXL";
+  isUrgent: boolean;
   kodeKain: string;
   pemotong: string[];
   jumlahHasil: number;
@@ -45,6 +46,11 @@ export default function MenungguStock() {
               className="bg-white border border-gray-100 rounded-xl px-3 py-3 shadow-sm cursor-pointer hover:bg-gray-50 active:scale-[0.98] transition"
             >
               {/* HEADER */}
+              {item.isUrgent && (
+                <p className="text-xs text-red-500 font-semibold mb-2">
+                  URGENT
+                </p>
+              )}
               <div className="flex justify-between items-center mb-2">
                 <p className="text-xs font-semibold text-gray-800">
                   {item.namaBarang} - {item.ukuran}
@@ -81,6 +87,9 @@ export default function MenungguStock() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* HEADER */}
+            {selectedItem.isUrgent && (
+              <p className="text-xs text-red-500 font-semibold mb-2">URGENT</p>
+            )}
             <div className="flex justify-between items-center mb-3">
               <p className="text-sm font-medium text-gray-800">
                 {selectedItem.namaBarang} - {selectedItem.ukuran}
@@ -122,7 +131,7 @@ export default function MenungguStock() {
 
                   mutate(selectedItem.idStokPotong, {
                     onSuccess: (data) => {
-                      console.log("✅ BERHASIL PINDAH KE PROSES" , data);
+                      console.log("✅ BERHASIL PINDAH KE PROSES", data);
 
                       handleCloseModal();
                       toast.success(data.message);

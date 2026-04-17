@@ -7,6 +7,7 @@ export type ProsesType = {
   idStokPotong: string; // 🔥 WAJIB
   namaBarang: string;
   kodeKain: string;
+  isUrgent: boolean;
   ukuran: "M" | "L" | "XL" | "XXL";
   jumlahHasil: number;
 };
@@ -34,6 +35,8 @@ const fetcher = async (): Promise<ProsesType[]> => {
     namaBarang: item.namaBarang || item.nama_barang,
 
     ukuran: item.ukuran,
+
+    isUrgent: item.isUrgent,
 
     kodeKain: item.kodeKain,
 

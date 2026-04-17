@@ -9,6 +9,7 @@ export type MenungguType = {
   namaBarang: string;
   ukuran: "M" | "L" | "XL" | "XXL";
   kodeKain: string;
+  isUrgent: boolean;
   pemotong: string[];
   jumlahHasil: number;
   tanggalSelesaiPotong: string;
@@ -29,19 +30,17 @@ const fetcher = async (): Promise<MenungguType[]> => {
   }
 
   // 🔥 MAPPING WAJIB (ANTI undefined ID)
-  return result.map((item: any) => ({
+  return result.map((item: MenungguType) => ({
     idPermintaan: item.idPermintaan,
 
     idStokBarang:
-      item.idStokBarang ||
-      item.id_stok_barang || // fallback snake_case
-      item.id ||
-      "",
+      item.idStokBarang ,
 
-    idStokPotong: item.idStokPotong || item.id_stok_potong || item.idStokBarang,
+    idStokPotong: item.idStokPotong ,
 
     namaBarang: item.namaBarang,
     ukuran: item.ukuran,
+    isUrgent: item.isUrgent,
     kodeKain: item.kodeKain,
     pemotong: item.pemotong || [],
     jumlahHasil: item.jumlahHasil,

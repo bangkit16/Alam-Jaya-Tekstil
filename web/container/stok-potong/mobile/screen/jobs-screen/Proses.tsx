@@ -151,11 +151,16 @@ export default function Proses() {
         {data && data.length > 0 ? (
           data?.map((item: ProsesType) => (
             <div
-              key={item.idStokPotong}
-              onClick={() => setSelectedPermintaan(item)}
-              className="border border-gray-300 rounded-2xl p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50"
+            key={item.idStokPotong}
+            onClick={() => setSelectedPermintaan(item)}
+            className="border border-gray-300 rounded-2xl p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50"
             >
               <div>
+              {item.isUrgent && (
+                <p className="text-xs text-red-500 font-semibold mb-2">
+                  URGENT
+                </p>
+              )}
                 <p className="text-sm font-semibold text-gray-800">
                   {item.namaBarang} - {item.ukuran}
                 </p>
@@ -188,6 +193,9 @@ export default function Proses() {
             className="bg-white w-full max-w-sm rounded-xl p-4 shadow-xl"
           >
             {/* Header */}
+            {selectedPermintaan.isUrgent && (
+              <p className="text-xs text-red-500 font-semibold mb-2">URGENT</p>
+            )}
             <div className="flex justify-between mb-4">
               <p className="text-sm font-semibold">
                 {selectedPermintaan.namaBarang} - {selectedPermintaan.ukuran}

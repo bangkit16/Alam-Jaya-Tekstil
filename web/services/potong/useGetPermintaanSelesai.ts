@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/axios";
+import { is } from "zod/v4/locales";
 
 const use_mock = false; // ❗ WAJIB FALSE
 
@@ -18,6 +19,7 @@ const fetcher = async () => {
     idPermintaan: item.idPermintaan,
     namaBarang: item.namaBarang,
     ukuran: item.ukuran,
+    isUrgent: item.isUrgent,
     kodeKain: item.kodeKain,
     pemotong: item.pemotong,
     jumlahMinta: item.jumlahMinta,

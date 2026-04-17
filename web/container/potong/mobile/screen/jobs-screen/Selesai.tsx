@@ -9,6 +9,7 @@ export default function Selesai() {
 
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
+
   const handleCloseModal = () => {
     setSelectedItem(null);
   };
@@ -25,6 +26,11 @@ export default function Selesai() {
               onClick={() => setSelectedItem(item)} // ✅ klik buka modal
               className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50"
             >
+              {item.isUrgent && (
+                <p className="text-xs text-red-500 font-semibold mb-2">
+                  URGENT
+                </p>
+              )}
               {/* HEADER */}
               <div className="flex justify-between items-start mb-2">
                 <p className="text-sm font-semibold text-gray-800 leading-snug">
@@ -105,6 +111,9 @@ export default function Selesai() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* HEADER */}
+            {selectedItem.isUrgent && (
+              <p className="text-xs text-red-500 font-semibold mb-2">URGENT</p>
+            )}
             <div className="flex justify-between items-start mb-3">
               <p className="text-sm font-semibold text-gray-800 leading-snug">
                 {selectedItem.namaBarang} - {selectedItem.ukuran}

@@ -23,7 +23,7 @@ export default function Stock() {
   };
 
   const handleSubmit = () => {
-    console.log(selectedStock , namaPenjahit)
+    console.log(selectedStock, namaPenjahit);
 
     // return;
     if (!selectedStock) return;
@@ -32,8 +32,6 @@ export default function Stock() {
       console.error("❌ Penjahit belum dipilih");
       return;
     }
-
-    
 
     const id = selectedStock?.idStokPotong;
 
@@ -92,6 +90,11 @@ export default function Stock() {
                 `}
               >
                 {/* HEADER */}
+                {item.isUrgent && (
+                  <p className="text-xs text-red-500 font-semibold mb-2">
+                    URGENT
+                  </p>
+                )}
                 <div className="flex justify-between items-center mb-2">
                   <div>
                     <p className="text-sm font-medium text-gray-800">
@@ -166,6 +169,11 @@ export default function Stock() {
               return (
                 <>
                   {/* HEADER */}
+                  {selectedStock.isUrgent && (
+                    <p className="text-xs text-red-500 font-semibold mb-2">
+                      URGENT
+                    </p>
+                  )}
                   <div className="flex justify-between items-center mb-3">
                     <p className="text-sm font-medium text-gray-800">
                       {selectedStock?.namaBarang} - {selectedStock?.ukuran}

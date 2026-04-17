@@ -11,6 +11,7 @@ export interface KurirSelesaiResponse {
   dikirimDari: string;
   dikirimKe: string;
   namaKurir: string;
+  isUrgent: boolean;
   jumlah: number;
   tanggalBerangkat: string;
   tanggalSampai: string;
@@ -28,6 +29,7 @@ const fetchKurirSelesai = async (): Promise<KurirSelesaiResponse[]> => {
         dikirimDari: "Stok Potong",
         dikirimKe: "Penjahit (Budi Santoso)",
         namaKurir: "Joni Iskandar",
+        isUrgent: true,
         jumlah: 20,
         tanggalBerangkat: "2026-04-15T06:14:25.315Z",
         tanggalSampai: "2026-04-15T06:41:56.218Z",
