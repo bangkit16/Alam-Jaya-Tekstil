@@ -46,6 +46,11 @@ type pengecekType = {
 };
 
 export default function StokPotongWeb({ handleLogout, session }: any) {
+  //
+  const [searchStok, setSearchStok] = useState("");
+  const [currentPageStok, setCurrentPageStok] = useState(1);
+  const itemsPerPageStok = 3;
+
   const [activeTab, setActiveTab] = useState<TabType>("menunggu");
 
   // ================= MENUNGGU =================
@@ -108,6 +113,24 @@ export default function StokPotongWeb({ handleLogout, session }: any) {
   const countMenunggu = data?.length || 0;
   const countProses = prosesData?.length || 0;
   const countStok = stockData?.length || 0;
+
+  // 🔥 FILTER STOK
+  const filteredStock =
+    activeTab === "stok"
+      ? (stockData || []).filter((item: any) =>
+          `${item.namaBarang} ${item.ukuran} ${item.kodeStokPotongan}`
+            .toLowerCase()
+            .includes(searchStok.toLowerCase()),
+        )
+      : stockData || [];
+
+  // 🔥 PAGINATION STOK
+  const totalPagesStok = Math.ceil(filteredStock.length / itemsPerPageStok);
+
+  const paginatedStock = filteredStock.slice(
+    (currentPageStok - 1) * itemsPerPageStok,
+    currentPageStok * itemsPerPageStok,
+  );
 
   // ================= MENUNGGU =================
   const renderMenunggu = () => {
@@ -181,7 +204,7 @@ export default function StokPotongWeb({ handleLogout, session }: any) {
       );
     }
 
-    return stockData.map((item: any) => {
+    return paginatedStock.map((item: any) => {
       const isLocked = item.status !== "SELESAI";
 
       return (
@@ -300,12 +323,62 @@ export default function StokPotongWeb({ handleLogout, session }: any) {
             </div>
           </div>
 
+          {activeTab === "stok" && (
+            <input
+              placeholder="Search stok..."
+              value={searchStok}
+              onChange={(e) => {
+                setSearchStok(e.target.value);
+                setCurrentPageStok(1);
+              }}
+              className="mb-3 w-full md:w-72 bg-white border border-gray-200 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
+          )}
+
           {/* LIST */}
           <div className="bg-gray-50 p-4 rounded-xl space-y-3">
             {activeTab === "menunggu" && renderMenunggu()}
             {activeTab === "proses" && renderProses()}
             {activeTab === "stok" && renderStok()}
           </div>
+          {/*  */}
+          {activeTab === "stok" && totalPagesStok > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-4">
+              <button
+                onClick={() =>
+                  setCurrentPageStok((prev) => Math.max(prev - 1, 1))
+                }
+                className="px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm"
+              >
+                Prev
+              </button>
+
+              {Array.from({ length: totalPagesStok }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentPageStok(i + 1)}
+                  className={`px-3 py-1 rounded-lg text-sm ${
+                    currentPageStok === i + 1
+                      ? "bg-orange-500 text-white"
+                      : "bg-gray-100 hover:bg-gray-200"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+
+              <button
+                onClick={() =>
+                  setCurrentPageStok((prev) =>
+                    Math.min(prev + 1, totalPagesStok),
+                  )
+                }
+                className="px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

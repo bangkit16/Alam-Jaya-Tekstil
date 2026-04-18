@@ -469,7 +469,7 @@ ${
                     onClick={() => setSelectedSelesai(null)}
                     className="px-4 py-2 bg-gray-200 rounded"
                   >
-                    Tutup ......
+                    Tutup
                   </button>
                 </div>
               </div>

@@ -22,6 +22,11 @@ type TabType = "menunggu" | "proses" | "selesai";
 export default function KurirWeb({ handleLogout }: any) {
   const [activeTab, setActiveTab] = useState<TabType>("menunggu");
 
+  // 🔥 SEARCH + PAGINATION SELESAI
+  const [searchSelesai, setSearchSelesai] = useState("");
+  const [currentPageSelesai, setCurrentPageSelesai] = useState(1);
+  const itemsPerPageSelesai = 5;
+
   // ================= API =================
   const {
     data: dataMenunggu,
@@ -72,7 +77,7 @@ export default function KurirWeb({ handleLogout }: any) {
   const getData = () => {
     if (activeTab === "menunggu") return dataMenunggu || [];
     if (activeTab === "proses") return dataProses || [];
-    if (activeTab === "selesai") return dataSelesai || [];
+    if (activeTab === "selesai") return paginatedSelesai;
     return [];
   };
 
@@ -84,6 +89,26 @@ export default function KurirWeb({ handleLogout }: any) {
   const countMenunggu = dataMenunggu?.length || 0;
   const countProses = dataProses?.length || 0;
   const countSelesai = dataSelesai?.length || 0;
+
+  // 🔥 FILTER SELESAI
+  const filteredSelesai =
+    activeTab === "selesai"
+      ? (dataSelesai || []).filter((item: any) =>
+          `${item.namaBarang} ${item.dikirimKe} ${item.dikirimDari}`
+            .toLowerCase()
+            .includes(searchSelesai.toLowerCase()),
+        )
+      : dataSelesai || [];
+
+  // 🔥 PAGINATION SELESAI
+  const totalPagesSelesai = Math.ceil(
+    filteredSelesai.length / itemsPerPageSelesai,
+  );
+
+  const paginatedSelesai = filteredSelesai.slice(
+    (currentPageSelesai - 1) * itemsPerPageSelesai,
+    currentPageSelesai * itemsPerPageSelesai,
+  );
 
   // ================= UI =================
   return (
@@ -126,14 +151,31 @@ export default function KurirWeb({ handleLogout }: any) {
         </div>
 
         {/* LIST */}
-        <div className="bg-gray-50 p-4 rounded-xl">
-          <div className="flex justify-between items-center mb-4">
+        <div
+          key={activeTab === "selesai" ? currentPageSelesai : activeTab}
+          className="bg-gray-50 p-4 rounded-xl"
+        >
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-4">
+            {activeTab === "selesai" && (
+              <input
+                placeholder="Search nama / tujuan / asal..."
+                value={searchSelesai}
+                onChange={(e) => {
+                  setSearchSelesai(e.target.value);
+                  setCurrentPageSelesai(1);
+                }}
+                className="w-full md:w-72 bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              />
+            )}
             <h3 className="font-semibold capitalize text-lg">
               Data {activeTab}
             </h3>
 
             <span className="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded-full">
-              {getData().length} item
+              {activeTab === "selesai"
+                ? filteredSelesai.length
+                : getData().length}{" "}
+              item
             </span>
           </div>
 
@@ -142,7 +184,7 @@ export default function KurirWeb({ handleLogout }: any) {
           ) : (
             getData().map((job: any) => (
               <div
-                key={job.idProsesStokPotong}
+                key={`${job.idProsesStokPotong}-${currentPageSelesai}`}
                 onClick={() =>
                   activeTab === "selesai" && setSelectedSelesai(job)
                 }
@@ -207,6 +249,43 @@ export default function KurirWeb({ handleLogout }: any) {
                 )}
               </div>
             ))
+          )}
+          {activeTab === "selesai" && totalPagesSelesai > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-6">
+              <button
+                onClick={() =>
+                  setCurrentPageSelesai((prev) => Math.max(prev - 1, 1))
+                }
+                className="px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm"
+              >
+                Prev
+              </button>
+
+              {Array.from({ length: totalPagesSelesai }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentPageSelesai(i + 1)}
+                  className={`px-3 py-1 rounded-lg text-sm ${
+                    currentPageSelesai === i + 1
+                      ? "bg-orange-500 text-white"
+                      : "bg-gray-100 hover:bg-gray-200"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+
+              <button
+                onClick={() =>
+                  setCurrentPageSelesai((prev) =>
+                    Math.min(prev + 1, totalPagesSelesai),
+                  )
+                }
+                className="px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm"
+              >
+                Next
+              </button>
+            </div>
           )}
         </div>
       </div>
