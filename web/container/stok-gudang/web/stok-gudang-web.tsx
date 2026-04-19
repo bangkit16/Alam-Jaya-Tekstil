@@ -45,6 +45,8 @@ import { useGetKategori } from "@/services/stok-gudang/useGetKategori";
 
 import { useForm } from "react-hook-form";
 
+import { useQueryClient } from "@tanstack/react-query";
+
 type TabType = "boxMasuk" | "dataBox" | "permintaanResi" | "mintaPotong";
 
 export default function StokGudangWeb({ handleLogout }: any) {
@@ -174,86 +176,101 @@ function BoxMasukWeb() {
   const { data, isLoading, isError } = useGetBoxMasuk();
   const { data: penerima } = useGetPenerimaBox();
   const mutation = usePutBoxMasuk();
+  const queryClient = useQueryClient();
 
   if (isLoading) return <p className="text-center">Loading...</p>;
   if (isError) return <p className="text-center text-red-500">Error</p>;
 
   return (
     <>
+      {/* GRID */}
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {data?.map((box) => {
-          const isOpen = openCollapse === box.idBox;
+        {data?.length === 0 ? (
+          <div className="col-span-full text-center text-gray-400 py-10">
+            Belum ada box masuk
+          </div>
+        ) : (
+          data?.map((box) => {
+            const isOpen = openCollapse === box.idBox;
 
-          return (
-            <div key={box.idBox} className="bg-white rounded-2xl border p-4">
-              <div onClick={() => setSelected(box)} className="cursor-pointer">
-                <p className="font-bold">{box.namaBox}</p>
+            return (
+              <div key={box.idBox} className="bg-white rounded-2xl border p-4">
+                {/* HEADER */}
+                <div
+                  onClick={() => setSelected(box)}
+                  className="cursor-pointer"
+                >
+                  <p className="font-bold">{box.namaBox}</p>
 
-                <div className="text-xs text-gray-500 mb-2">
-                  <p>Penanggung Jawab: {box.namaPenanggungJawab}</p>
-                  <p>
-                    Tgl Masuk:{" "}
-                    {new Date(box.tanggalMasukStok).toLocaleString("id-ID")}
-                  </p>
+                  <div className="text-xs text-gray-500 mb-2">
+                    <p>Penanggung Jawab: {box.namaPenanggungJawab}</p>
+                    <p>
+                      Tgl Masuk:{" "}
+                      {new Date(box.tanggalMasukStok).toLocaleString("id-ID")}
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setOpenCollapse(isOpen ? null : box.idBox);
-                }}
-                className="w-full flex justify-between items-center bg-gray-50 px-3 py-2 rounded-xl border"
-              >
-                <span className="flex items-center gap-2 text-sm">
-                  <PackageSearch size={16} />
-                  Lihat Isi Box
-                </span>
+                {/* COLLAPSE */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setOpenCollapse(isOpen ? null : box.idBox);
+                  }}
+                  className="w-full flex justify-between items-center bg-gray-50 px-3 py-2 rounded-xl border"
+                >
+                  <span className="flex items-center gap-2 text-sm">
+                    <PackageSearch size={16} />
+                    Lihat Isi Box
+                  </span>
 
-                <ChevronDown
-                  className={`transition ${isOpen ? "rotate-180" : ""}`}
-                />
-              </button>
+                  <ChevronDown
+                    className={`transition ${isOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
 
-              {isOpen && (
-                <div className="mt-3 space-y-2">
-                  {box.stokPotongan.map((item) => (
-                    <div
-                      key={item.idQC}
-                      className="bg-gray-50 border rounded-lg p-3"
-                    >
-                      <div className="flex justify-between">
-                        <div>
-                          <p className="text-sm font-medium">
-                            {item.namaBarang} - {item.ukuran}
-                          </p>
+                {/* CONTENT */}
+                {isOpen && (
+                  <div className="mt-3 space-y-2">
+                    {box.stokPotongan?.map((item) => (
+                      <div
+                        key={item.idQC}
+                        className="bg-gray-50 border rounded-lg p-3"
+                      >
+                        <div className="flex justify-between">
+                          <div>
+                            <p className="text-sm font-medium">
+                              {item.namaBarang} - {item.ukuran}
+                            </p>
 
-                          <p className="text-xs text-gray-500">
-                            Kode Stok Potongan: {item.kodeStokPotongan}
-                          </p>
+                            <p className="text-xs text-gray-500">
+                              Kode: {item.kodeStokPotongan}
+                            </p>
 
-                          <p className="text-xs text-gray-500">
-                            Tgl Selesai QC:{" "}
-                            {new Date(item.tanggalSelesaiQC).toLocaleDateString(
-                              "id-ID",
-                            )}
-                          </p>
+                            <p className="text-xs text-gray-500">
+                              QC:{" "}
+                              {new Date(
+                                item.tanggalSelesaiQC,
+                              ).toLocaleDateString("id-ID")}
+                            </p>
+                          </div>
+
+                          <b>{item.jumlah}</b>
                         </div>
-
-                        <b className="text-lg">{item.jumlah}</b>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
 
-              <div className="mt-4 flex flex-col items-center">
-                <BarcodeGenerator value={box.kodeBox} />
-                <span className="text-xs mt-1">{box.kodeBox}</span>
+                {/* BARCODE */}
+                <div className="mt-4 flex flex-col items-center">
+                  <BarcodeGenerator value={box.kodeBox} />
+                  <span className="text-xs mt-1">{box.kodeBox}</span>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
       {/* MODAL */}
@@ -269,14 +286,6 @@ function BoxMasukWeb() {
 
             <h3 className="font-bold mb-2">{selected.namaBox}</h3>
 
-            <div className="text-xs text-gray-500 mb-3">
-              <p>Penanggung Jawab: {selected.namaPenanggungJawab}</p>
-              <p>
-                Tgl Masuk:{" "}
-                {new Date(selected.tanggalMasukStok).toLocaleString("id-ID")}
-              </p>
-            </div>
-
             <select
               value={idPenerimaBox}
               onChange={(e) => setIdPenerimaBox(e.target.value)}
@@ -289,26 +298,6 @@ function BoxMasukWeb() {
                 </option>
               ))}
             </select>
-
-            <div className="space-y-2 mb-3">
-              {selected.stokPotongan.map((item) => (
-                <div
-                  key={item.idQC}
-                  className="bg-gray-50 border rounded-lg p-3"
-                >
-                  <div className="flex justify-between">
-                    <p className="text-sm font-medium">{item.namaBarang}</p>
-                    <b>{item.jumlah}</b>
-                  </div>
-
-                  <p className="text-xs text-gray-500">
-                    Kode: {item.kodeStokPotongan}
-                  </p>
-
-                  <p className="text-xs text-gray-500">Ukuran: {item.ukuran}</p>
-                </div>
-              ))}
-            </div>
 
             <button
               onClick={() => {
@@ -324,8 +313,12 @@ function BoxMasukWeb() {
                       setSelected(null);
                       setIdPenerimaBox("");
 
-                      // 🔥 PINDAH TAB
-                      window.location.reload(); // simple dulu
+                      queryClient.invalidateQueries({
+                        queryKey: ["boxMasuk"],
+                      });
+                      queryClient.invalidateQueries({
+                        queryKey: ["dataBox"],
+                      });
                     },
                   },
                 );

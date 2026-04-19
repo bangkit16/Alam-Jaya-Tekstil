@@ -157,8 +157,16 @@ export default function StokPotongWeb({ handleLogout, session }: any) {
 
     if (!data || data.length === 0) {
       return (
-        <div className="text-center py-10 border-2 border-dashed border-gray-200 rounded-2xl">
-          <p className="text-gray-500 font-medium">Data Kosong</p>
+        <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+          <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+            <Package size={30} />
+          </div>
+
+          <p className="font-semibold text-gray-500 mb-1">
+            Belum ada data menunggu
+          </p>
+
+          <p className="text-xs text-gray-400">Data akan muncul di sini</p>
         </div>
       );
     }
@@ -193,7 +201,21 @@ export default function StokPotongWeb({ handleLogout, session }: any) {
     if (loadingProses) return <p className="text-center py-4">Loading...</p>;
 
     if (!prosesData || prosesData.length === 0) {
-      return <p className="text-center text-gray-400 py-6">Data kosong</p>;
+      return (
+        <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+          <div className="bg-blue-100 text-blue-500 p-4 rounded-full mb-4">
+            <Package size={30} />
+          </div>
+
+          <p className="font-semibold text-gray-500 mb-1">
+            Belum ada data proses
+          </p>
+
+          <p className="text-xs text-gray-400">
+            Data proses akan muncul di sini
+          </p>
+        </div>
+      );
     }
 
     return prosesData.map((item: prosesType) => (
@@ -217,8 +239,14 @@ export default function StokPotongWeb({ handleLogout, session }: any) {
 
     if (!stockData || stockData.length === 0) {
       return (
-        <div className="text-center py-10 border-2 border-dashed border-gray-200 rounded-2xl">
-          <p className="text-gray-500 font-medium">Data Kosong</p>
+        <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+          <div className="bg-green-100 text-green-500 p-4 rounded-full mb-4">
+            <Package size={30} />
+          </div>
+
+          <p className="font-semibold text-gray-500 mb-1">Belum ada stok</p>
+
+          <p className="text-xs text-gray-400">Data stok akan muncul di sini</p>
         </div>
       );
     }

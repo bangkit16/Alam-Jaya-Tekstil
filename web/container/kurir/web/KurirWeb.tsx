@@ -119,7 +119,7 @@ export default function KurirWeb({ handleLogout }: any) {
         )
       : dataSelesai?.data || [];
 
-  console.log(filteredSelesai)
+  console.log(filteredSelesai);
 
   // 🔥 PAGINATION SELESAI
   const totalPagesSelesai = Math.ceil(
@@ -216,7 +216,35 @@ export default function KurirWeb({ handleLogout }: any) {
           </div>
 
           {isLoading ? (
-            <p>Loading...</p>
+            <p className="text-center py-6 text-gray-400">Loading...</p>
+          ) : getData().length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+              {/* ICON DINAMIS */}
+              <div
+                className={`p-4 rounded-full mb-4
+      ${
+        activeTab === "menunggu"
+          ? "bg-yellow-100 text-yellow-500"
+          : activeTab === "proses"
+            ? "bg-blue-100 text-blue-500"
+            : "bg-green-100 text-green-500"
+      }`}
+              >
+                {activeTab === "menunggu" && <ClipboardList size={30} />}
+                {activeTab === "proses" && <Truck size={30} />}
+                {activeTab === "selesai" && <CheckCircle size={30} />}
+              </div>
+
+              {/* TITLE */}
+              <p className="font-semibold text-gray-500 mb-1 capitalize">
+                Belum ada data {activeTab}
+              </p>
+
+              {/* DESC */}
+              <p className="text-xs text-gray-400">
+                Data {activeTab} akan muncul di sini
+              </p>
+            </div>
           ) : (
             getData().map((job: any) => (
               <div
