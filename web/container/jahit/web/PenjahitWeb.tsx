@@ -237,76 +237,105 @@ export default function PenjahitWeb({ handleLogout }: any) {
             )}
           </div>
 
+          {/*  */}
           <div className="space-y-3">
-            {getData().map((job: any) => (
-              <div
-                key={`${job.idProsesStokPotong}-${currentPageSelesai}`}
-                onClick={() => {
-                  if (activeTab === "menunggu" || activeTab === "proses") {
-                    setSelectedOrder(job);
-                  }
-                }}
-                className={`border p-3 cursor-pointer ${
-                  job.isUrgent
-                    ? "border-red-300 bg-red-50/30"
-                    : "border-gray-300"
-                }`}
-              >
-                {job.isUrgent && (
-                  <p className="text-xs text-red-600 font-bold mb-1">URGENT</p>
-                )}
-
-                <div className="flex justify-between mb-2">
-                  <p className="text-sm font-medium">
-                    {job.namaBarang} - {job.ukuran}
-                  </p>
-                  <p className="text-lg font-bold">
-                    {job.jumlah || job.jumlahLolos || job.jumlahSelesai}
-                  </p>
+            {getData().length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                <div
+                  className={`p-4 rounded-full mb-4
+        ${
+          activeTab === "menunggu"
+            ? "bg-yellow-100 text-yellow-500"
+            : activeTab === "proses"
+              ? "bg-blue-100 text-blue-500"
+              : "bg-green-100 text-green-500"
+        }`}
+                >
+                  {activeTab === "menunggu" && <ClipboardList size={30} />}
+                  {activeTab === "proses" && <Package size={30} />}
+                  {activeTab === "selesai" && <CheckCircle size={30} />}
                 </div>
 
-                {/* ================= MENUNGGU ================= */}
-                {activeTab === "menunggu" && (
-                  <div className="text-xs text-gray-600 space-y-1">
-                    <p>• Kode: {job.kodeStokPotongan}</p>
-                    <p>
-                      • Dikirim:{" "}
-                      {new Date(job.tanggalKirim).toLocaleDateString("id-ID")}
+                <p className="font-semibold text-gray-500 mb-1 capitalize">
+                  Belum ada data {activeTab}
+                </p>
+
+                <p className="text-xs text-gray-400">
+                  Data {activeTab} akan muncul di sini
+                </p>
+              </div>
+            ) : (
+              getData().map((job: any) => (
+                <div
+                  key={`${job.idProsesStokPotong}-${currentPageSelesai}`}
+                  onClick={() => {
+                    if (activeTab === "menunggu" || activeTab === "proses") {
+                      setSelectedOrder(job);
+                    }
+                  }}
+                  className={`border p-3 cursor-pointer ${
+                    job.isUrgent
+                      ? "border-red-300 bg-red-50/30"
+                      : "border-gray-300"
+                  }`}
+                >
+                  {job.isUrgent && (
+                    <p className="text-xs text-red-600 font-bold mb-1">
+                      URGENT
+                    </p>
+                  )}
+
+                  <div className="flex justify-between mb-2">
+                    <p className="text-sm font-medium">
+                      {job.namaBarang} - {job.ukuran}
+                    </p>
+                    <p className="text-lg font-bold">
+                      {job.jumlah || job.jumlahLolos || job.jumlahSelesai}
                     </p>
                   </div>
-                )}
 
-                {/* ================= PROSES ================= */}
-                {activeTab === "proses" && (
-                  <ul className="text-xs text-gray-600 space-y-1">
-                    <li>• Kode: {job.kodeStokPotongan}</li>
-                    <li>
-                      • Tanggal Mulai Jahit:{" "}
-                      {new Date(job.tanggalMulaiJahit).toLocaleDateString(
-                        "id-ID",
-                      )}
-                    </li>
-                    <li>
-                      • Status:{" "}
-                      <span className="text-blue-600 font-bold">
-                        {job.status}
-                      </span>
-                    </li>
-                  </ul>
-                )}
+                  {activeTab === "menunggu" && (
+                    <div className="text-xs text-gray-600 space-y-1">
+                      <p>• Kode: {job.kodeStokPotongan}</p>
+                      <p>
+                        • Dikirim:{" "}
+                        {new Date(job.tanggalKirim).toLocaleDateString("id-ID")}
+                      </p>
+                    </div>
+                  )}
 
-                {/* ================= SELESAI ================= */}
-                {activeTab === "selesai" && (
-                  <ul className="text-xs text-gray-600 space-y-1">
-                    <li>
-                      • Selesai pada:{" "}
-                      {new Date(job.tanggalSelesai).toLocaleDateString("id-ID")}
-                    </li>
-                    {job.catatan && <li>• Catatan: {job.catatan}</li>}
-                  </ul>
-                )}
-              </div>
-            ))}
+                  {activeTab === "proses" && (
+                    <ul className="text-xs text-gray-600 space-y-1">
+                      <li>• Kode: {job.kodeStokPotongan}</li>
+                      <li>
+                        • Tanggal Mulai Jahit:{" "}
+                        {new Date(job.tanggalMulaiJahit).toLocaleDateString(
+                          "id-ID",
+                        )}
+                      </li>
+                      <li>
+                        • Status:{" "}
+                        <span className="text-blue-600 font-bold">
+                          {job.status}
+                        </span>
+                      </li>
+                    </ul>
+                  )}
+
+                  {activeTab === "selesai" && (
+                    <ul className="text-xs text-gray-600 space-y-1">
+                      <li>
+                        • Selesai pada:{" "}
+                        {new Date(job.tanggalSelesai).toLocaleDateString(
+                          "id-ID",
+                        )}
+                      </li>
+                      {job.catatan && <li>• Catatan: {job.catatan}</li>}
+                    </ul>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
         {activeTab === "selesai" && totalPagesSelesai > 1 && (

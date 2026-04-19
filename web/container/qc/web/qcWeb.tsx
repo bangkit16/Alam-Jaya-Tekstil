@@ -220,97 +220,83 @@ export default function QCWeb({ handleLogout }: any) {
           )}
 
           <div className="space-y-3">
-            {filtered.map((item: any) => {
-              const isMenunggu = activeTab === "menunggu";
-              const isProses = activeTab === "proses";
-              const isSelesai = activeTab === "selesai";
-              const isMasukBox = activeTab === "masuk_box";
-
-              return (
+            {filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                {/* ICON */}
                 <div
-                  key={isMenunggu || isProses ? item.idQC : item.id}
-                  onClick={() => {
-                    if (isMenunggu) setSelected(item);
-                    if (isProses) setSelectedProses(item);
-                    if (activeTab === "masuk_box") toggleBox(item.idQC);
-                    if (isSelesai) setSelectedSelesai(item);
-                  }}
-                  className={`bg-white border rounded-xl p-4 flex justify-between items-center shadow-sm hover:shadow transition cursor-pointer
-${
-  activeTab === "masuk_box" && selectedBox.includes(item.idQC)
-    ? "border-orange-500 bg-orange-50"
-    : ""
-}`}
+                  className={`p-4 rounded-full mb-4
+        ${
+          activeTab === "menunggu"
+            ? "bg-yellow-100 text-yellow-500"
+            : activeTab === "proses"
+              ? "bg-blue-100 text-blue-500"
+              : activeTab === "masuk_box"
+                ? "bg-purple-100 text-purple-500"
+                : "bg-green-100 text-green-500"
+        }`}
                 >
-                  <div>
-                    <p className="text-sm font-medium">
-                      {isMenunggu || isProses
-                        ? `${item.namaBarang} - ${item.ukuran}`
-                        : isSelesai
-                          ? item.namaBox
-                          : item.nama}
-                    </p>
+                  {activeTab === "menunggu" && <Package size={30} />}
+                  {activeTab === "proses" && <ClipboardList size={30} />}
+                  {activeTab === "masuk_box" && <Archive size={30} />}
+                  {activeTab === "selesai" && <CheckCircle size={30} />}
+                </div>
 
-                    {/* 🔥 DETAIL */}
-                    {(isMenunggu || isProses) && (
-                      <p className="text-xs text-gray-500">
-                        {item.namaPenjahit} • {item.kodeStokPotongan}
+                {/* TEXT */}
+                <p className="font-semibold text-gray-500 mb-1 capitalize">
+                  Belum ada data {activeTab.replace("_", " ")}
+                </p>
+
+                <p className="text-xs text-gray-400">
+                  Data {activeTab.replace("_", " ")} akan muncul di sini
+                </p>
+              </div>
+            ) : (
+              filtered.map((item: any) => {
+                const isMenunggu = activeTab === "menunggu";
+                const isProses = activeTab === "proses";
+                const isSelesai = activeTab === "selesai";
+
+                return (
+                  <div
+                    key={item.idQC || item.id}
+                    onClick={() => {
+                      if (isMenunggu) setSelected(item);
+                      if (isProses) setSelectedProses(item);
+                      if (activeTab === "masuk_box") toggleBox(item.idQC);
+                      if (isSelesai) setSelectedSelesai(item);
+                    }}
+                    className={`bg-white border rounded-xl p-4 flex justify-between items-center shadow-sm hover:shadow transition cursor-pointer
+          ${
+            activeTab === "masuk_box" && selectedBox.includes(item.idQC)
+              ? "border-orange-500 bg-orange-50"
+              : ""
+          }`}
+                  >
+                    <div>
+                      <p className="text-sm font-medium">
+                        {isMenunggu || isProses
+                          ? `${item.namaBarang} - ${item.ukuran}`
+                          : isSelesai
+                            ? item.namaBox
+                            : item.nama}
                       </p>
-                    )}
 
-                    {/* 🔥 MASUK BOX DETAIL */}
-                    {activeTab === "masuk_box" && (
-                      <div className="text-xs text-gray-500 mt-2 space-y-1">
-                        {/* 🔥 SELESAI DETAIL */}
-                        {isSelesai && (
-                          <div className="text-xs text-gray-500 mt-2 space-y-1">
-                            <p>• Nama Box : {item.namaBox}</p>
-                            <p>
-                              • Penanggung Jawab : {item.namaPenanggungJawab}
-                            </p>
-                            <p>
-                              • Tanggal Masuk :
-                              {new Date(
-                                item.tanggalMasukStok,
-                              ).toLocaleDateString()}
-                            </p>
-                          </div>
-                        )}
-                        <p>• Kode Potongan : {item.kodeStokPotongan}</p>
-                        <p>• Nama Penjahit : {item.namaPenjahit}</p>
-                        <p>
-                          • Tanggal Selesai QC :{" "}
-                          {new Date(item.tanggalSelesaiQC).toLocaleDateString()}
+                      {(isMenunggu || isProses) && (
+                        <p className="text-xs text-gray-500">
+                          {item.namaPenjahit} • {item.kodeStokPotongan}
                         </p>
-                      </div>
-                    )}
+                      )}
+                    </div>
 
-                    {/* 🔥 KHUSUS PROSES TAMBAHAN */}
-                    {isProses && (
-                      <p className="text-xs text-blue-500">
-                        Mulai QC:{" "}
-                        {new Date(item.tanggalMulaiQC).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-3">
                     <span className="font-bold">
                       {isMenunggu || isProses
                         ? item.jumlahSelesaiJahit
                         : item.qty}
                     </span>
-
-                    {/* 🔥 URGENT */}
-                    {(isMenunggu || isProses) && item.isUrgent && (
-                      <span className="text-xs bg-red-500 text-white px-2 py-1 rounded">
-                        URGENT
-                      </span>
-                    )}
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
 
           {/* modal proses */}
@@ -419,12 +405,6 @@ ${
                 </div>
               </div>
             </div>
-          )}
-
-          {filtered.length === 0 && !isLoading && (
-            <p className="text-center text-gray-400 text-sm mt-6">
-              Tidak ada data
-            </p>
           )}
 
           {/* MODAL SELESAI */}

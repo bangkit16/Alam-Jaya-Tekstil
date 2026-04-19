@@ -158,7 +158,19 @@ export default function StokPotongWeb({ handleLogout, session }: any) {
     if (isLoading) return <LoadingSpinner />;
 
     if (!data || data.length === 0) {
-      return <DataEmpty />;
+      return (
+        <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+          <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+            <Package size={30} />
+          </div>
+
+          <p className="font-semibold text-gray-500 mb-1">
+            Belum ada data menunggu
+          </p>
+
+          <p className="text-xs text-gray-400">Data akan muncul di sini</p>
+        </div>
+      );
     }
 
     return data.map((item: stockType) => (
@@ -191,7 +203,21 @@ export default function StokPotongWeb({ handleLogout, session }: any) {
     if (loadingProses) return <LoadingSpinner />;
 
     if (!prosesData || prosesData.length === 0) {
-      return <DataEmpty />;
+      return (
+        <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+          <div className="bg-blue-100 text-blue-500 p-4 rounded-full mb-4">
+            <Package size={30} />
+          </div>
+
+          <p className="font-semibold text-gray-500 mb-1">
+            Belum ada data proses
+          </p>
+
+          <p className="text-xs text-gray-400">
+            Data proses akan muncul di sini
+          </p>
+        </div>
+      );
     }
 
     return prosesData.map((item: prosesType) => (
@@ -215,7 +241,15 @@ export default function StokPotongWeb({ handleLogout, session }: any) {
 
     if (!stockData || stockData.length === 0) {
       return (
-        <DataEmpty />
+        <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+          <div className="bg-green-100 text-green-500 p-4 rounded-full mb-4">
+            <Package size={30} />
+          </div>
+
+          <p className="font-semibold text-gray-500 mb-1">Belum ada stok</p>
+
+          <p className="text-xs text-gray-400">Data stok akan muncul di sini</p>
+        </div>
       );
     }
 
