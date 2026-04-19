@@ -1,6 +1,5 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/axios";
-import axios from "axios";
 
 const use_mock = false;
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
@@ -63,7 +62,7 @@ const fetchKurirSelesai = async (
   }
 
   // Menambahkan query params ke axios
-  const response = await axios.get<KurirSelesaiResponse>("http://localhost:3001/kurir/selesai", {
+  const response = await api.get<KurirSelesaiResponse>("/kurir/selesai", {
     params: {
       page,
       search,

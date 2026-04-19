@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useGetPermintaanStokPotong } from "@/services/stok-potong/useGetPermintaan";
 import { usePutMenunggu } from "@/services/stok-potong/usePutMenunggu";
 import { toast } from "sonner";
+import { Package } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 type stockType = {
   idPermintaan: string;
@@ -37,7 +39,7 @@ export default function MenungguStock() {
       {/* ================= LIST ================= */}
       <div className="flex flex-col gap-3 overflow-y-auto">
         {isLoading ? (
-          <p className="text-center py-4">Loading...</p>
+          <LoadingSpinner />
         ) : data && data.length > 0 ? (
           data.map((item: stockType) => (
             <div
@@ -70,8 +72,14 @@ export default function MenungguStock() {
             </div>
           ))
         ) : (
-          <div className="text-center py-10 border-2 border-dashed border-gray-200 rounded-2xl">
-            <p className="text-gray-500 font-medium">Data Kosong</p>
+          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+            <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+              <Package size={30} />
+            </div>
+
+            <p className="font-semibold text-gray-500 mb-1">Belum ada data</p>
+
+            <p className="text-xs text-gray-400">Data akan muncul di sini</p>
           </div>
         )}
       </div>

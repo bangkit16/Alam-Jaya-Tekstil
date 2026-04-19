@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useGetSelesaiInfinite } from "@/services/potong/useGetPermintaanSelesai";
+import { Package } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function Selesai(search: { search: string }) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,7 +40,7 @@ export default function Selesai(search: { search: string }) {
     <>
       <div className="flex flex-col gap-3 overflow-y-auto px-2">
         {isLoading ? (
-          <p className="text-center py-4">Loading...</p>
+          <LoadingSpinner />
         ) : allItems.length > 0 ? (
           // 5. MAPPING menggunakan allItems
           allItems.map((item: any, index: number) => (
@@ -86,8 +88,14 @@ export default function Selesai(search: { search: string }) {
             </div>
           ))
         ) : (
-          <div className="text-center py-10 border-2 border-dashed border-gray-200 rounded-2xl">
-            <p className="text-gray-500 font-medium">Data Selesai Kosong</p>
+          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+            <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+              <Package size={30} />
+            </div>
+
+            <p className="font-semibold text-gray-500 mb-1">Belum ada data</p>
+
+            <p className="text-xs text-gray-400">Data akan muncul di sini</p>
           </div>
         )}
 

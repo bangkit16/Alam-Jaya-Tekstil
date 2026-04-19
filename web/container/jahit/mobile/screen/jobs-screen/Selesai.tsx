@@ -5,6 +5,7 @@ import {
   useGetPenjahitSelesai,
   PenjahitSelesai,
 } from "@/services/jahit/useGetPenjahitSelesai";
+import { Package } from "lucide-react";
 
 export default function Selesai() {
   const [selected, setSelected] = useState<PenjahitSelesai | null>(null);
@@ -29,8 +30,14 @@ export default function Selesai() {
       {/* ================= LIST ================= */}
       <div className="flex flex-col gap-3">
         {apiData.length === 0 ? (
-          <div className="p-8 text-center border border-dashed text-gray-400 text-xs">
-            Belum ada riwayat pekerjaan selesai.
+          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+            <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+              <Package size={30} />
+            </div>
+
+            <p className="font-semibold text-gray-500 mb-1">Belum ada Jahitan</p>
+
+            <p className="text-xs text-gray-400">Jahitan akan muncul di sini</p>
           </div>
         ) : (
           apiData.map((job) => (
@@ -56,9 +63,7 @@ export default function Selesai() {
 
               {/* DETAIL RINGKAS */}
               <ul className="text-xs text-gray-700 space-y-1">
-                <li>
-                  Kode Potongan : {job.kodeStokPotongan}
-                </li>
+                <li>Kode Potongan : {job.kodeStokPotongan}</li>
                 <li>
                   Selesai pada :{" "}
                   {new Date(job.tanggalSelesai).toLocaleString("id-ID")}

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useGetQCProses, QCProses } from "@/services/qc/useGetQCProses";
 import { useGetPengecek } from "@/services/qc/useGetPengecek";
 import { usePutQCProses } from "@/services/qc/usePutQCProses";
+import { Package } from "lucide-react";
 
 // ================= VALIDATION =================
 const schema = (jumlahSelesaiJahit: number) =>
@@ -160,7 +161,15 @@ export default function Proses({ search = "" }: { search: string }) {
       {/* ================= LIST ================= */}
       <div className="flex flex-col gap-2">
         {filteredData.length === 0 ? (
-          <p className="text-center text-gray-400 text-sm">Tidak ada data</p>
+          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+            <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+              <Package size={30} />
+            </div>
+
+            <p className="font-semibold text-gray-500 mb-1">Belum ada data</p>
+
+            <p className="text-xs text-gray-400">Data akan muncul di sini</p>
+          </div>
         ) : (
           filteredData.map((o) => (
             <div
@@ -436,15 +445,15 @@ export default function Proses({ search = "" }: { search: string }) {
                     )}
                   </div>
                 </div>
-                  <p className="text-xs text-gray-500 text-center">
-                    Total:
-                    {Number(watch("jumlahLolos") || 0) +
-                      Number(watch("jumlahPermak") || 0) +
-                      Number(watch("jumlahReject") || 0) +
-                      Number(watch("jumlahTurunSize") || 0) +
-                      Number(watch("jumlahKotor") || 0)}
-                    / {selected.jumlahSelesaiJahit}
-                  </p>
+                <p className="text-xs text-gray-500 text-center">
+                  Total:
+                  {Number(watch("jumlahLolos") || 0) +
+                    Number(watch("jumlahPermak") || 0) +
+                    Number(watch("jumlahReject") || 0) +
+                    Number(watch("jumlahTurunSize") || 0) +
+                    Number(watch("jumlahKotor") || 0)}
+                  / {selected.jumlahSelesaiJahit}
+                </p>
               </div>
 
               {/* BUTTON */}

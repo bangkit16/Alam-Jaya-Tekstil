@@ -5,6 +5,8 @@ import { useGetProses } from "@/services/potong/useGetProses";
 import { usePutProses } from "@/services/potong/usePutProses";
 import { useGetPemotong } from "@/services/potong/useGetPemotong";
 import { toast } from "sonner";
+import { Package } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 type prosesType = {
   idPermintaan: string;
@@ -167,7 +169,7 @@ export default function Proses() {
       {/* ================= LIST ================= */}
       <div className="flex flex-col gap-3 overflow-y-auto">
         {isLoading ? (
-          <p className="text-center py-4">Loading...</p>
+          <LoadingSpinner />
         ) : dataProses?.data && dataProses.data.length > 0 ? (
           dataProses.data.map((proses: prosesType, index: number) => (
             <div
@@ -227,8 +229,14 @@ export default function Proses() {
             </div>
           ))
         ) : (
-          <div className="text-center py-10 border-2 border-dashed border-gray-200 rounded-2xl">
-            <p className="text-gray-500 font-medium">Data Kosong</p>
+          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+            <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+              <Package size={30} />
+            </div>
+
+            <p className="font-semibold text-gray-500 mb-1">Belum ada data</p>
+
+            <p className="text-xs text-gray-400">Data akan muncul di sini</p>
           </div>
         )}
       </div>
@@ -344,7 +352,7 @@ export default function Proses() {
 
             <div className="flex justify-end mt-5">
               <button
-              disabled={isPending}
+                disabled={isPending}
                 type="submit"
                 className="bg-gradient-to-r from-orange-400 to-amber-500 text-white text-xs px-5 py-2 rounded-xl font-semibold shadow hover:opacity-90 active:scale-95 transition"
               >

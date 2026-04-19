@@ -6,6 +6,7 @@ import {
   SelesaiResponse,
   useGetKurirSelesaiInfinite,
 } from "@/services/kurir/useGetKurirSelesai";
+import { Package } from "lucide-react";
 
 export default function Selesai({search} : {search: string}) {
   const [selectedJob, setSelectedJob] = useState<SelesaiResponse | null>(
@@ -55,12 +56,17 @@ export default function Selesai({search} : {search: string}) {
 
   return (
     <>
-
       {/* ================= LIST ================= */}
       <div className="flex flex-col gap-3">
         {allJobs.length === 0 ? (
-          <div className="text-center py-10 border border-dashed text-gray-400 text-sm">
-            Tidak ada riwayat pengiriman selesai.
+          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+            <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+              <Package size={30} />
+            </div>
+
+            <p className="font-semibold text-gray-500 mb-1">Belum ada Order</p>
+
+            <p className="text-xs text-gray-400">Order akan muncul di sini</p>
           </div>
         ) : (
           allJobs.map((job) => (

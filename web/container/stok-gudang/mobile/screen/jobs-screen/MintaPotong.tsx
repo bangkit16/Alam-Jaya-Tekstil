@@ -14,6 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 import { usePostMintaPotong } from "@/services/stok-gudang/usePostMintaPotong";
 import { useGetKategori } from "@/services/stok-gudang/useGetKategori";
+import { Package } from "lucide-react";
 
 export default function MintaPotong({ search = "" }: any) {
   const [open, setOpen] = useState(false); // modal form
@@ -100,40 +101,64 @@ export default function MintaPotong({ search = "" }: any) {
       {/* ================= LIST ================= */}
       <div className="flex flex-col h-full gap-2">
         <div className="flex flex-col gap-2 flex-1 overflow-auto">
-          {filtered.map((item) => (
-            <div
-              key={item.idPermintaan}
-              className="bg-white border rounded-xl p-3 shadow-sm"
-            >
-              {item.isUrgent && (
-                <p className="text-[10px] text-red-500 font-bold mb-1">
-                  URGENT
-                </p>
-              )}
-
-              <div className="flex justify-between">
-                <p className="text-sm font-medium">
-                  {item.namaBarang} - {item.ukuran}
-                </p>
-                <p className="text-lg font-bold">{item.jumlahMinta}</p>
-              </div>
-
-              <div className="flex justify-between items-center mt-2">
-                <p className="text-xs text-gray-600 uppercase">
-                  STATUS : {item.status.replace(/_/g, " ")}
-                </p>
-
-                <button
-                  onClick={() => setSelectedId(item.idPermintaan)} // Trigger tracking API
-                  className="bg-gray-300 text-[10px] px-2 py-1 rounded"
-                >
-                  TRACK
-                </button>
-              </div>
+          {isLoading ? (
+            /* 1. KONDISI LOADING */
+            <div className="flex flex-col items-center justify-center py-16">
+              <div className="w-8 h-8 border-4 border-gray-200 border-t-orange-500 rounded-full animate-spin mb-2"></div>
+              <p className="text-xs text-gray-400">Memuat data...</p>
             </div>
-          ))}
-          {/* BUTTON PACKING */}
+          ) : filtered.length > 0 ? (
+            /* 2. KONDISI ADA DATA */
+            <>
+              {filtered.map((item) => (
+                <div
+                  key={item.idPermintaan}
+                  className="bg-white border rounded-xl p-3 shadow-sm"
+                >
+                  {item.isUrgent && (
+                    <p className="text-[10px] text-red-500 font-bold mb-1">
+                      URGENT
+                    </p>
+                  )}
+
+                  <div className="flex justify-between">
+                    <p className="text-sm font-medium">
+                      {item.namaBarang} - {item.ukuran}
+                    </p>
+                    <p className="text-lg font-bold">{item.jumlahMinta}</p>
+                  </div>
+
+                  <div className="flex justify-between items-center mt-2">
+                    <p className="text-xs text-gray-600 uppercase">
+                      STATUS : {item.status.replace(/_/g, " ")}
+                    </p>
+
+                    <button
+                      onClick={() => setSelectedId(item.idPermintaan)}
+                      className="bg-gray-300 text-[10px] px-2 py-1 rounded"
+                    >
+                      TRACK
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+            </>
+          ) : (
+            /* 3. KONDISI DATA KOSONG */
+            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+              <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+                <Package size={30} />
+              </div>
+
+              <p className="font-semibold text-gray-500 mb-1">Belum ada data</p>
+
+              <p className="text-xs text-gray-400">Data akan muncul di sini</p>
+            </div>
+          )}
         </div>
+
+        {/* BUTTON PACKING */}
         <div className=" flex justify-center">
           <button
             onClick={() => setOpen(true)}

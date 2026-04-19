@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronUp, PackageSearch } from "lucide-react";
+import { ChevronDown, ChevronUp, Package, PackageSearch } from "lucide-react";
 
 import {
   useGetDatabox,
@@ -137,9 +137,19 @@ export default function DataBox({ search = "" }: { search?: string }) {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-center py-3 text-xs text-gray-400 italic">
-                    Box Kosong
-                  </p>
+                  <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                    <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+                      <Package size={30} />
+                    </div>
+
+                    <p className="font-semibold text-gray-500 mb-1">
+                      Belum ada Box
+                    </p>
+
+                    <p className="text-xs text-gray-400">
+                      Data Box akan muncul di sini
+                    </p>
+                  </div>
                 )}
               </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, PackageSearch } from "lucide-react";
+import { ChevronDown, Package, PackageSearch } from "lucide-react";
 
 import {
   useGetBoxMasuk,
@@ -134,8 +134,14 @@ export default function BoxMasuk({ search = "" }: { search?: string }) {
         })}
 
         {filtered.length === 0 && (
-          <div className="text-center py-10 text-gray-400 text-xs">
-            Data tidak ditemukan
+          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+            <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+              <Package size={30} />
+            </div>
+
+            <p className="font-semibold text-gray-500 mb-1">Belum ada Box</p>
+
+            <p className="text-xs text-gray-400">Data Box akan muncul di sini</p>
           </div>
         )}
       </div>

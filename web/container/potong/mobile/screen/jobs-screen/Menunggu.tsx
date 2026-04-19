@@ -8,6 +8,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { Package } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 // Skema Validasi
 const permintaanSchema = z.object({
@@ -86,61 +88,71 @@ export default function Menunggu() {
       {/* ================= LIST ================= */}
       <div className="flex flex-col gap-3 overflow-y-auto">
         {isLoadingPermintaan ? (
-          <p className="text-center py-4">Loading...</p>
+          <LoadingSpinner />
         ) : dataPermintaan.data && dataPermintaan.data.length > 0 ? (
-          dataPermintaan.data.map((permintaan: permintaanType, index: number) => (
-            <div
-              key={`${permintaan.idPermintaan}-${index}`}
-              onClick={() => setSelectedPermintaan(permintaan)}
-              className="border border-gray-300 rounded-2xl p-3 flex justify-between items-center cursor-pointer hover:bg-gray-50"
-            >
-              {/* LEFT */}
-              <div className="flex-row w-full justify-between align-middle items-center">
-                {permintaan.isUrgent && (
-                  <p className="text-red-500 text-sm uppercase font-semibold">
-                    Urgent
-                  </p>
-                )}
+          dataPermintaan.data.map(
+            (permintaan: permintaanType, index: number) => (
+              <div
+                key={`${permintaan.idPermintaan}-${index}`}
+                onClick={() => setSelectedPermintaan(permintaan)}
+                className="border border-gray-300 rounded-2xl p-3 flex justify-between items-center cursor-pointer hover:bg-gray-50"
+              >
+                {/* LEFT */}
+                <div className="flex-row w-full justify-between align-middle items-center">
+                  {permintaan.isUrgent && (
+                    <p className="text-red-500 text-sm uppercase font-semibold">
+                      Urgent
+                    </p>
+                  )}
 
-                <p className="text-sm font-semibold text-gray-800 my-1">
-                  {permintaan.namaBarang} - {permintaan.ukuran}
-                </p>
-
-                <div className="space-y-0.5">
-                  <p className="text-xs font-medium text-gray-400 uppercase">
-                    NAMA PRODUK :
-                    <span className="font-bold text-gray-600">
-                      {permintaan.namaBarang}
-                    </span>
+                  <p className="text-sm font-semibold text-gray-800 my-1">
+                    {permintaan.namaBarang} - {permintaan.ukuran}
                   </p>
 
-                  <p className="text-xs font-medium text-gray-400 uppercase">
-                    UKURAN :
-                    <span className="font-bold text-gray-600">
-                      {permintaan.ukuran}
-                    </span>
-                  </p>
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-medium text-gray-400 uppercase">
+                      NAMA PRODUK :
+                      <span className="font-bold text-gray-600">
+                        {permintaan.namaBarang}
+                      </span>
+                    </p>
 
-                  <p className="text-xs font-medium text-gray-400 uppercase">
-                    JUMLAH DIMINTA :
-                    <span className="font-bold text-gray-600">
-                      {permintaan.jumlahMinta}
-                    </span>
+                    <p className="text-xs font-medium text-gray-400 uppercase">
+                      UKURAN :
+                      <span className="font-bold text-gray-600">
+                        {permintaan.ukuran}
+                      </span>
+                    </p>
+
+                    <p className="text-xs font-medium text-gray-400 uppercase">
+                      JUMLAH DIMINTA :
+                      <span className="font-bold text-gray-600">
+                        {permintaan.jumlahMinta}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+
+                {/* RIGHT */}
+                <div className="ml-4">
+                  <p className="text-2xl font-bold text-gray-800">
+                    {permintaan.jumlahMinta}
                   </p>
                 </div>
               </div>
-
-              {/* RIGHT */}
-              <div className="ml-4">
-                <p className="text-2xl font-bold text-gray-800">
-                  {permintaan.jumlahMinta}
-                </p>
-              </div>
-            </div>
-          ))
+            ),
+          )
         ) : (
-          <div className="text-center py-10 border-2 border-dashed border-gray-200 rounded-2xl">
-            <p className="text-gray-500 font-medium">Data Kosong</p>
+          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+            <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+              <Package size={30} />
+            </div>
+
+            <p className="font-semibold text-gray-500 mb-1">
+              Belum ada data
+            </p>
+
+            <p className="text-xs text-gray-400">Data akan muncul di sini</p>
           </div>
         )}
       </div>

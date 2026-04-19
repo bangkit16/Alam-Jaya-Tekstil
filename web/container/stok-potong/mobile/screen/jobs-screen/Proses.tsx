@@ -11,6 +11,8 @@ import { useGetPengecek } from "@/services/stok-potong/useGetPengecek";
 
 // jika pakai sonner / react-hot-toast
 import { toast } from "sonner";
+import { Package } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 /* ===============================
    ZOD SCHEMA
@@ -112,8 +114,6 @@ export default function Proses() {
 
   const selectedPengecek = watch("pengecek");
 
-  console.log("plis", data);
-
   const handleClose = () => {
     setSelectedPermintaan(null);
     reset();
@@ -148,19 +148,21 @@ export default function Proses() {
           LIST DATA
       ================================= */}
       <div className="flex flex-col flex-1 overflow-y-auto gap-3">
-        {data && data.length > 0 ? (
-          data?.map((item: ProsesType) => (
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : data && data.length > 0 ? (
+          data.map((item: ProsesType) => (
             <div
-            key={item.idStokPotong}
-            onClick={() => setSelectedPermintaan(item)}
-            className="border border-gray-300 rounded-2xl p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50"
+              key={item.idStokPotong}
+              onClick={() => setSelectedPermintaan(item)}
+              className="border border-gray-300 rounded-2xl p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50"
             >
               <div>
-              {item.isUrgent && (
-                <p className="text-xs text-red-500 font-semibold mb-2">
-                  URGENT
-                </p>
-              )}
+                {item.isUrgent && (
+                  <p className="text-xs text-red-500 font-semibold mb-2">
+                    URGENT
+                  </p>
+                )}
                 <p className="text-sm font-semibold text-gray-800">
                   {item.namaBarang} - {item.ukuran}
                 </p>
@@ -175,7 +177,15 @@ export default function Proses() {
             </div>
           ))
         ) : (
-          <p className="text-center py-4">Loading...</p>
+          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+            <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+              <Package size={30} />
+            </div>
+
+            <p className="font-semibold text-gray-500 mb-1">Belum ada data</p>
+
+            <p className="text-xs text-gray-400">Data akan muncul di sini</p>
+          </div>
         )}
       </div>
 

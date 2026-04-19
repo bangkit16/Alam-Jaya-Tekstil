@@ -6,6 +6,7 @@ import {
 } from "@/services/kurir/useGetKurirMenunggu";
 import { useGetListKurir } from "@/services/kurir/useGetListKurir";
 import { usePutAmbilJob } from "@/services/kurir/usePutAmbilJob";
+import { Package } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -74,7 +75,7 @@ export default function Menunggu() {
             {/* DETAIL */}
             <ul className="text-xs text-gray-700 space-y-1">
               <li>
-                • Kode Potong: {" "}
+                • Kode Potong:{" "}
                 <span className="font-semibold">
                   {job.kodeStokPotongan}
                 </span>{" "}
@@ -92,8 +93,14 @@ export default function Menunggu() {
         ))}
 
         {jobs?.length === 0 && (
-          <div className="text-center py-10 text-gray-500 text-sm italic">
-            Tidak ada antrean pengiriman.
+          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+            <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+              <Package size={30} />
+            </div>
+
+            <p className="font-semibold text-gray-500 mb-1">Belum ada order</p>
+
+            <p className="text-xs text-gray-400">Order akan muncul di sini</p>
           </div>
         )}
       </div>

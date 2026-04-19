@@ -10,6 +10,7 @@ import { useGetPenanggungJawabBox } from "@/services/stok-gudang/useGetPenanggun
 // 1. Import hook mutation
 import { usePutMintaPotong } from "@/services/stok-gudang/usePutMintaPotong";
 import BarcodeGenerator from "@/components/BarcodeGenerator";
+import { Package } from "lucide-react";
 
 export default function PermintaanResi({ search = "" }: { search?: string }) {
   const [selected, setSelected] = useState<PermintaanBarang | null>(null);
@@ -194,9 +195,19 @@ export default function PermintaanResi({ search = "" }: { search?: string }) {
               ))}
 
               {databoxData?.length === 0 && (
-                <p className="text-center text-[10px] text-gray-400 py-4">
-                  Box tidak tersedia
-                </p>
+                <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                  <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+                    <Package size={30} />
+                  </div>
+
+                  <p className="font-semibold text-gray-500 mb-1">
+                    Belum ada Permintaan
+                  </p>
+
+                  <p className="text-xs text-gray-400">
+                    Data Permintaan akan muncul di sini
+                  </p>
+                </div>
               )}
             </div>
 
