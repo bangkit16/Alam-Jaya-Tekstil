@@ -48,7 +48,7 @@ export default function Jobs({ setScreen }: any) {
         <div className="flex-1 overflow-auto">
           {filterStatus === "menunggu" && <Menunggu />}
           {filterStatus === "proses" && <Proses />}
-          {filterStatus === "selesai" && <Selesai />}
+          {filterStatus === "selesai" && <Selesai search={search}/>}
         </div>
 
         {/* BACK */}

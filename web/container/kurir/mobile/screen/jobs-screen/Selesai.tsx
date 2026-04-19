@@ -7,11 +7,11 @@ import {
   useGetKurirSelesaiInfinite,
 } from "@/services/kurir/useGetKurirSelesai";
 
-export default function Selesai() {
+export default function Selesai({search} : {search: string}) {
   const [selectedJob, setSelectedJob] = useState<SelesaiResponse | null>(
     null,
   );
-  const [search, setSearch] = useState("");
+  // const [search, setSearch] = useState("");
 
   // Ref untuk elemen sensor di bawah list
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
