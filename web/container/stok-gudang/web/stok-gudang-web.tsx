@@ -31,15 +31,19 @@ type TabType = "boxMasuk" | "dataBox" | "permintaanResi" | "mintaPotong";
 export default function StokGudangWeb({ handleLogout }: any) {
   const [activeTab, setActiveTab] = useState<TabType>("boxMasuk");
 
-  const [data, setData] = useState<any[]>([
-    { id: 1, nama: "Hoodie A", qty: 20, status: "dataBox" },
-    { id: 2, nama: "Kaos B", qty: 10, status: "boxMasuk" },
-  ]);
+  //
+  const { data: boxMasuk } = useGetBoxMasuk();
+  const { data: dataBox } = useGetDatabox();
 
-  const filtered = data.filter((d) => d.status === activeTab);
+  // const [data, setData] = useState<any[]>([
+  //   { id: 1, nama: "Hoodie A", qty: 20, status: "dataBox" },
+  //   { id: 2, nama: "Kaos B", qty: 10, status: "boxMasuk" },
+  // ]);
 
-  const count = (status: TabType) =>
-    data.filter((d) => d.status === status).length;
+  // const filtered = data.filter((d) => d.status === activeTab);
+
+  // const count = (status: TabType) =>
+  //   data.filter((d) => d.status === status).length;
 
   const menus = [
     { key: "boxMasuk", label: "Box Masuk", icon: <Archive /> },
@@ -59,27 +63,33 @@ export default function StokGudangWeb({ handleLogout }: any) {
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* SIDEBAR */}
-      <div className="w-64 bg-white border-r p-5 hidden md:flex flex-col">
-        <h1 className="text-lg font-semibold mb-6">Stok Gudang</h1>
+      <div className="w-72 bg-white border-r px-6 py-6 hidden md:flex flex-col">
+        <h1 className="text-xl font-bold mb-8 tracking-wide">📦 Stok Gudang</h1>
 
-        {menus.map((menu) => (
+        <div className="flex flex-col gap-2">
+          {menus.map((menu) => (
+            <button
+              key={menu.key}
+              onClick={() => setActiveTab(menu.key as TabType)}
+              className={`flex items-center gap-3 text-left px-4 py-3 rounded-xl transition-all duration-200 ${
+                activeTab === menu.key
+                  ? "bg-gradient-to-r from-orange-400 to-amber-500 text-white shadow-md"
+                  : "hover:bg-gray-100 text-gray-700"
+              }`}
+            >
+              {menu.icon}
+              {menu.label}
+            </button>
+          ))}
+        </div>
+        <div className="mt-auto pt-6 border-t">
           <button
-            key={menu.key}
-            onClick={() => setActiveTab(menu.key as TabType)}
-            className={`flex items-center gap-2 text-left px-4 py-2 rounded-xl transition ${
-              activeTab === menu.key
-                ? "bg-gradient-to-r from-orange-400 to-amber-500 text-white"
-                : "hover:bg-gray-100"
-            }`}
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 text-red-500 hover:bg-red-50 py-2 rounded-xl transition"
           >
-            {menu.icon}
-            {menu.label}
+            Logout
           </button>
-        ))}
-
-        <button onClick={handleLogout} className="mt-auto text-red-500 text-xs">
-          Logout
-        </button>
+        </div>
       </div>
 
       {/* MAIN */}
@@ -90,20 +100,19 @@ export default function StokGudangWeb({ handleLogout }: any) {
         <div className="grid grid-cols-4 gap-4 mb-6">
           <Stat
             title="Box Masuk"
-            value={count("boxMasuk")}
+            value={boxMasuk?.length || 0}
             icon={<Archive />}
           />
-          <Stat title="Data Box" value={count("dataBox")} icon={<Package />} />
+
           <Stat
-            title="Permintaan Resi"
-            value={count("permintaanResi")}
-            icon={<ClipboardList />}
+            title="Data Box"
+            value={dataBox?.length || 0}
+            icon={<Package />}
           />
-          <Stat
-            title="Minta Potong"
-            value={count("mintaPotong")}
-            icon={<CheckCircle />}
-          />
+
+          <Stat title="Permintaan Resi" value={0} icon={<ClipboardList />} />
+
+          <Stat title="Minta Potong" value={0} icon={<CheckCircle />} />
         </div>
 
         {/* LIST */}
@@ -120,22 +129,10 @@ export default function StokGudangWeb({ handleLogout }: any) {
           ) : (
             <>
               <div className="space-y-3">
-                {filtered.map((item) => (
-                  <div
-                    key={item.id}
-                    className="bg-white border rounded-xl p-4 flex justify-between items-center"
-                  >
-                    <p>{item.nama}</p>
-                    <b>{item.qty}</b>
-                  </div>
-                ))}
+                <div className="text-center text-gray-400 text-sm mt-6">
+                  Belum ada fitur
+                </div>
               </div>
-
-              {filtered.length === 0 && (
-                <p className="text-center text-gray-400 text-sm mt-6">
-                  Tidak ada data
-                </p>
-              )}
             </>
           )}
         </div>
