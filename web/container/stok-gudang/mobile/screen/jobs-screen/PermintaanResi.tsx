@@ -11,6 +11,7 @@ import { useGetPenanggungJawabBox } from "@/services/stok-gudang/useGetPenanggun
 import { usePutMintaPotong } from "@/services/stok-gudang/usePutMintaPotong";
 import BarcodeGenerator from "@/components/BarcodeGenerator";
 import { Package } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function PermintaanResi({ search = "" }: { search?: string }) {
   const [selected, setSelected] = useState<PermintaanBarang | null>(null);
@@ -30,7 +31,7 @@ export default function PermintaanResi({ search = "" }: { search?: string }) {
 
   // Handle Loading & Error State
   if (isLoading || isLoadingBox || isLoadingPenanggungJawabBox)
-    return <div className="p-4 text-center text-xs">Memuat data...</div>;
+    return <LoadingSpinner />;
 
   if (isError)
     return (

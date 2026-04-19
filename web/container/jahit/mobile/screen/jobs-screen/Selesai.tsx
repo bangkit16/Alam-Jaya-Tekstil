@@ -6,6 +6,7 @@ import {
   PenjahitSelesai,
 } from "@/services/jahit/useGetPenjahitSelesai";
 import { Package } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function Selesai() {
   const [selected, setSelected] = useState<PenjahitSelesai | null>(null);
@@ -17,26 +18,21 @@ export default function Selesai() {
     setSelected(null);
   };
 
-  if (isLoading) {
-    return (
-      <div className="p-4 text-center text-xs text-gray-500 italic">
-        Memuat riwayat...
-      </div>
-    );
-  }
 
   return (
     <>
       {/* ================= LIST ================= */}
       <div className="flex flex-col gap-3">
-        {apiData.length === 0 ? (
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : apiData.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
               <Package size={30} />
             </div>
-
-            <p className="font-semibold text-gray-500 mb-1">Belum ada Jahitan</p>
-
+            <p className="font-semibold text-gray-500 mb-1">
+              Belum ada Jahitan
+            </p>
             <p className="text-xs text-gray-400">Jahitan akan muncul di sini</p>
           </div>
         ) : (
@@ -44,13 +40,14 @@ export default function Selesai() {
             <div
               key={job.idProsesStokPotong}
               onClick={() => setSelected(job)}
-              className={` border border-gray-300 rounded-sm p-3 cursor-pointer hover:bg-gray-50 transition-colors`}
+              className="border border-gray-300 rounded-sm p-3 cursor-pointer hover:bg-gray-50 transition-colors"
             >
               {job.isUrgent && (
                 <div className="flex justify-between items-center mb-1">
                   <p className="text-sm font-bold text-red-600">URGENT</p>
                 </div>
               )}
+
               {/* HEADER */}
               <div className="flex justify-between items-center mb-2">
                 <p className="text-sm font-medium text-gray-800">
@@ -70,7 +67,7 @@ export default function Selesai() {
                 </li>
                 {job.catatan && (
                   <li className="text-gray-500 italic">
-                    • Catatan: {job.catatan}{" "}
+                    • Catatan: {job.catatan}
                   </li>
                 )}
               </ul>

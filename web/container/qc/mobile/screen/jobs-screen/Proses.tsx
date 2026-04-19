@@ -10,6 +10,7 @@ import { useGetQCProses, QCProses } from "@/services/qc/useGetQCProses";
 import { useGetPengecek } from "@/services/qc/useGetPengecek";
 import { usePutQCProses } from "@/services/qc/usePutQCProses";
 import { Package } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 // ================= VALIDATION =================
 const schema = (jumlahSelesaiJahit: number) =>
@@ -142,9 +143,7 @@ export default function Proses({ search = "" }: { search: string }) {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center p-10">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
-      </div>
+      <LoadingSpinner />
     );
   }
 

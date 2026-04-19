@@ -8,6 +8,7 @@ import {
 import { usePutSelesaiJob } from "@/services/kurir/usePutSelesaiJob";
 import { toast } from "sonner";
 import { Package } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function Proses() {
   const [selectedJob, setSelectedJob] = useState<KurirProses | null>(null);
@@ -29,65 +30,60 @@ export default function Proses() {
     });
   };
 
-  if (isLoading)
-    return (
-      <div className="p-5 text-xs text-gray-500 italic text-center">
-        Memuat data proses...
-      </div>
-    );
 
   return (
     <>
       {/* ================= LIST ================= */}
       <div className="flex flex-col gap-3">
-        {data?.map((job) => (
-          <div
-            key={job.idProsesStokPotong}
-            onClick={() => setSelectedJob(job)}
-            className={`relative border rounded-sm p-3 cursor-pointer transition-colors `}
-          >
-            {/* LABEL URGENT */}
-
-            {/* HEADER */}
-            {job.isUrgent && (
-              <span className=" text-red-500 text-sm font-bold ">URGENT</span>
-            )}
-            <div className="flex justify-between items-center mb-2">
-              <p
-                className={`text-sm font-medium ${job.isUrgent ? "text-gray-900" : "text-gray-800"}`}
-              >
-                {job.namaBarang} - {job.ukuran}
-              </p>
-              <p
-                className={`text-lg font-bold ${job.isUrgent ? "text-gray-700" : "text-gray-900"}`}
-              >
-                {job.jumlahLolos}
-              </p>
-            </div>
-
-            {/* DETAIL */}
-            <ul
-              className={`text-xs space-y-1 ${job.isUrgent ? "text-gray-800" : "text-gray-700"}`}
+        {isLoading ? (
+          /* 1. TAMPILAN LOADING */
+          <LoadingSpinner />
+        ) : data && data.length > 0 ? (
+          /* 2. TAMPILAN JIKA ADA DATA */
+          data.map((job) => (
+            <div
+              key={job.idProsesStokPotong}
+              onClick={() => setSelectedJob(job)}
+              className="relative border rounded-sm p-3 cursor-pointer transition-colors hover:bg-gray-50"
             >
-              <li>Kode Stok Potongan: {job.kodeStokPotongan}</li>
-              <li>Dikirim Dari: {job.dikirimDari}</li>
-              <li>Dikirim Ke: {job.dikirimKe}</li>
-              <li>
-                Tanggal Berangkat :{" "}
-                {new Date(job.tanggalBerangkat).toLocaleDateString("id-ID")}
-              </li>
-            </ul>
-          </div>
-        ))}
+              {/* HEADER */}
+              {job.isUrgent && (
+                <span className="text-red-500 text-sm font-bold">URGENT</span>
+              )}
+              <div className="flex justify-between items-center mb-2">
+                <p
+                  className={`text-sm font-medium ${job.isUrgent ? "text-gray-900" : "text-gray-800"}`}
+                >
+                  {job.namaBarang} - {job.ukuran}
+                </p>
+                <p
+                  className={`text-lg font-bold ${job.isUrgent ? "text-gray-700" : "text-gray-900"}`}
+                >
+                  {job.jumlahLolos}
+                </p>
+              </div>
 
-        {data?.length === 0 && (
+              {/* DETAIL */}
+              <ul
+                className={`text-xs space-y-1 ${job.isUrgent ? "text-gray-800" : "text-gray-700"}`}
+              >
+                <li>Kode Stok Potongan: {job.kodeStokPotongan}</li>
+                <li>Dikirim Dari: {job.dikirimDari}</li>
+                <li>Dikirim Ke: {job.dikirimKe}</li>
+                <li>
+                  Tanggal Berangkat :{" "}
+                  {new Date(job.tanggalBerangkat).toLocaleDateString("id-ID")}
+                </li>
+              </ul>
+            </div>
+          ))
+        ) : (
+          /* 3. TAMPILAN JIKA DATA KOSONG */
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
               <Package size={30} />
             </div>
-
             <p className="font-semibold text-gray-500 mb-1">Belum ada order</p>
-
             <p className="text-xs text-gray-400">Order akan muncul di sini</p>
           </div>
         )}

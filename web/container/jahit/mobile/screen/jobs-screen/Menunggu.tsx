@@ -8,6 +8,7 @@ import {
 import { usePutMulaiJahit } from "@/services/jahit/usePutMulaiJahit";
 import { toast } from "sonner";
 import { Package } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function Menunggu() {
   const [selected, setSelected] = useState<PenjahitMenunggu | null>(null);
@@ -44,14 +45,6 @@ export default function Menunggu() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="p-4 text-center text-xs text-gray-500 italic">
-        Memuat daftar jahitan...
-      </div>
-    );
-  }
-
   if (isError) {
     return (
       <div className="p-4 text-center border border-red-200 bg-red-50 rounded-sm">
@@ -70,14 +63,16 @@ export default function Menunggu() {
     <>
       {/* ================= LIST ================= */}
       <div className="flex flex-col gap-3">
-        {apiData.length === 0 ? (
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : apiData.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
               <Package size={30} />
             </div>
-
-            <p className="font-semibold text-gray-500 mb-1">Belum ada Jahitan</p>
-
+            <p className="font-semibold text-gray-500 mb-1">
+              Belum ada Jahitan
+            </p>
             <p className="text-xs text-gray-400">Jahitan akan muncul di sini</p>
           </div>
         ) : (
@@ -85,7 +80,7 @@ export default function Menunggu() {
             <div
               key={job.idProsesStokPotong}
               onClick={() => setSelected(job)}
-              className={`border rounded-sm p-3 cursor-pointer hover:bg-gray-50 transition-colors`}
+              className="border rounded-sm p-3 cursor-pointer hover:bg-gray-50 transition-colors"
             >
               {/* HEADER */}
               <div className="flex justify-between items-center mb-2">
@@ -99,7 +94,6 @@ export default function Menunggu() {
                     {job.namaBarang} - {job.ukuran}
                   </p>
                 </div>
-
                 <p className="text-lg font-bold text-gray-900">{job.jumlah}</p>
               </div>
 

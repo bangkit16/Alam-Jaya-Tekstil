@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useGetPenanggungJawabBox } from "@/services/qc/useGetPenanggungJawabBox";
 import { useGetQCMasukBox } from "@/services/qc/useGetQCBoxMasuk";
 import { usePostPackingBox } from "@/services/qc/usePostPackingBox";
@@ -57,22 +58,19 @@ export default function MasukBox({ search = "" }: { search: string }) {
     );
   };
 
-  if (loadingItems)
-    return <p className="text-center text-xs p-5">Loading data box...</p>;
-
   return (
     <>
       {/* ================= LIST ================= */}
       <div className="flex flex-col gap-3 h-full">
         <div className="flex flex-col gap-2 flex-1 overflow-auto">
-          {filteredData.length === 0 ? (
+          {loadingItems ? (
+            <LoadingSpinner />
+          ) : filteredData.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-gray-400">
               <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
                 <Package size={30} />
               </div>
-
               <p className="font-semibold text-gray-500 mb-1">Belum ada data</p>
-
               <p className="text-xs text-gray-400">Data akan muncul di sini</p>
             </div>
           ) : (

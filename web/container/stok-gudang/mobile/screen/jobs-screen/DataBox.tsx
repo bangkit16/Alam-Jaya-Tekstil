@@ -9,6 +9,7 @@ import {
 } from "@/services/stok-gudang/useGetDataBox";
 
 import BarcodeGenerator from "@/components/BarcodeGenerator";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function DataBox({ search = "" }: { search?: string }) {
   const [selected, setSelected] = useState<IDataBox | null>(null);
@@ -25,9 +26,7 @@ export default function DataBox({ search = "" }: { search?: string }) {
 
   if (isLoading)
     return (
-      <div className="p-10 text-center text-xs text-gray-500">
-        Memuat data box...
-      </div>
+      <LoadingSpinner />
     );
 
   if (isError)

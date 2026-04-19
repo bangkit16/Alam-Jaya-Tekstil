@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useGetQCSelesai, QCSelesaiBox } from "@/services/qc/useGetQCSelesai";
 import BarcodeGenerator from "@/components/BarcodeGenerator";
 import { Package } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function Selesai({ search = "" }: { search: string }) {
   const [selected, setSelected] = useState<QCSelesaiBox | null>(null);
@@ -18,8 +19,7 @@ export default function Selesai({ search = "" }: { search: string }) {
       box.kodeBox?.toLowerCase().includes(search.toLowerCase()),
   );
 
-  if (isLoading)
-    return <p className="text-center text-gray-400 text-sm p-5">Loading...</p>;
+  if (isLoading) return <LoadingSpinner />;
 
   return (
     <>
@@ -33,7 +33,9 @@ export default function Selesai({ search = "" }: { search: string }) {
 
             <p className="font-semibold text-gray-500 mb-1">Belum ada Box</p>
 
-            <p className="text-xs text-gray-400">Data Box akan muncul di sini</p>
+            <p className="text-xs text-gray-400">
+              Data Box akan muncul di sini
+            </p>
           </div>
         ) : (
           data.map((box) => (
