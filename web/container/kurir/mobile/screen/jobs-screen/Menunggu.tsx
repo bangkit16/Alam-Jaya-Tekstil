@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import {
   KurirMenunggu,
   useGetKurirMenunggu,
@@ -42,64 +43,61 @@ export default function Menunggu() {
     );
   };
 
-  if (loadingJobs)
-    return <div className="p-5 text-xs text-gray-500 text-center">Memuat antrean...</div>;
 
   return (
     <>
       {/* ================= LIST ================= */}
       <div className="flex flex-col gap-3">
-        {jobs?.map((job) => (
-          <div
-            key={job.idProsesStokPotong}
-            onClick={() => setSelectedJob(job)}
-            className={`border rounded-sm p-3 cursor-pointer hover:bg-gray-50 transition-colors `}
-          >
-            {/* HEADER */}
-            {job.isUrgent && (
-              <span className="text-sm text-red-500  uppercase font-bold">
-                Urgent
-              </span>
-            )}
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <p className="text-sm font-medium text-gray-800">
-                  {job.namaBarang} - {job.ukuran}
+        {loadingJobs ? (
+          <LoadingSpinner />
+        ) : jobs && jobs.length > 0 ? (
+          jobs.map((job) => (
+            <div
+              key={job.idProsesStokPotong}
+              onClick={() => setSelectedJob(job)}
+              className="border rounded-sm p-3 cursor-pointer hover:bg-gray-50 transition-colors"
+            >
+              {/* HEADER */}
+              {job.isUrgent && (
+                <span className="text-sm text-red-500 uppercase font-bold">
+                  Urgent
+                </span>
+              )}
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <p className="text-sm font-medium text-gray-800">
+                    {job.namaBarang} - {job.ukuran}
+                  </p>
+                </div>
+                <p className="text-lg font-bold text-gray-900">
+                  {job.jumlahLolos}
                 </p>
               </div>
-              <p className="text-lg font-bold text-gray-900">
-                {job.jumlahLolos}
-              </p>
+
+              {/* DETAIL */}
+              <ul className="text-xs text-gray-700 space-y-1">
+                <li>
+                  • Kode Potong:{" "}
+                  <span className="font-semibold">{job.kodeStokPotongan}</span>
+                </li>
+                <li>
+                  • Dikirim Dari:{" "}
+                  <span className="font-semibold">{job.dikirimDari}</span>
+                </li>
+                <li>
+                  • Dikirim Ke:{" "}
+                  <span className="font-semibold">{job.dikirimKe}</span>
+                </li>
+              </ul>
             </div>
-
-            {/* DETAIL */}
-            <ul className="text-xs text-gray-700 space-y-1">
-              <li>
-                • Kode Potong:{" "}
-                <span className="font-semibold">
-                  {job.kodeStokPotongan}
-                </span>{" "}
-              </li>
-              <li>
-                • Dikirim Dari:{" "}
-                <span className="font-semibold">{job.dikirimDari}</span>
-              </li>
-              <li>
-                • Dikirim Ke:{" "}
-                <span className="font-semibold">{job.dikirimKe}</span>
-              </li>
-            </ul>
-          </div>
-        ))}
-
-        {jobs?.length === 0 && (
+          ))
+        ) : (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
               <Package size={30} />
             </div>
 
             <p className="font-semibold text-gray-500 mb-1">Belum ada order</p>
-
             <p className="text-xs text-gray-400">Order akan muncul di sini</p>
           </div>
         )}

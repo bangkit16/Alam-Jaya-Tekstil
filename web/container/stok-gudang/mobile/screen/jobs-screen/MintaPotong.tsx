@@ -15,6 +15,7 @@ import z from "zod";
 import { usePostMintaPotong } from "@/services/stok-gudang/usePostMintaPotong";
 import { useGetKategori } from "@/services/stok-gudang/useGetKategori";
 import { Package } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function MintaPotong({ search = "" }: any) {
   const [open, setOpen] = useState(false); // modal form
@@ -91,8 +92,7 @@ export default function MintaPotong({ search = "" }: any) {
       d.namaBarang.toLowerCase().includes(search.toLowerCase()),
     ) || [];
 
-  if (isLoading)
-    return <div className="p-4 text-center text-xs">Memuat data...</div>;
+  if (isLoading) return <LoadingSpinner />;
 
   return (
     <>
@@ -142,7 +142,6 @@ export default function MintaPotong({ search = "" }: any) {
                   </div>
                 </div>
               ))}
-
             </>
           ) : (
             /* 3. KONDISI DATA KOSONG */

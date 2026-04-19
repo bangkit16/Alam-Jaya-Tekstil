@@ -1,12 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useGetQCMenunggu } from '@/services/qc/useGetQCMenunggu';
-import { usePutMulaiQC } from '@/services/qc/usePutMulaiQC';
-import { toast } from 'sonner';
-import { Package } from 'lucide-react';
+import { useState } from "react";
+import { useGetQCMenunggu } from "@/services/qc/useGetQCMenunggu";
+import { usePutMulaiQC } from "@/services/qc/usePutMulaiQC";
+import { toast } from "sonner";
+import { Package } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
-export default function Menunggu({ search = '' }: any) {
+export default function Menunggu({ search = "" }: any) {
   const [selected, setSelected] = useState<any>(null);
 
   // ================= API =================
@@ -15,14 +16,16 @@ export default function Menunggu({ search = '' }: any) {
   const { mutate: prosesQC, isPending } = usePutMulaiQC();
 
   // ================= FILTER =================
-  const data = orders.filter((o: any) => `${o.namaBarang} ${o.ukuran}`.toLowerCase().includes(search.toLowerCase()));
+  const data = orders.filter((o: any) =>
+    `${o.namaBarang} ${o.ukuran}`.toLowerCase().includes(search.toLowerCase()),
+  );
 
   return (
     <>
       {/* ================= LIST ================= */}
       <div className="flex flex-col gap-3">
         {isLoading ? (
-          <p className="text-center text-gray-400 text-sm">Loading...</p>
+          <LoadingSpinner />
         ) : isError ? (
           <p className="text-center text-red-400 text-sm">
             Gagal mengambil data

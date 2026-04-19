@@ -11,6 +11,7 @@ import {
 import BarcodeGenerator from "@/components/BarcodeGenerator";
 import { useGetPenerimaBox } from "@/services/stok-gudang/useGetPenerimaBox";
 import { usePutBoxMasuk } from "@/services/stok-gudang/usePutBoxMasuk";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function BoxMasuk({ search = "" }: { search?: string }) {
   const [selected, setSelected] = useState<IBoxMasuk | null>(null);
@@ -28,12 +29,7 @@ export default function BoxMasuk({ search = "" }: { search?: string }) {
         d.kodeBox.toLowerCase().includes(search.toLowerCase()),
     ) || [];
 
-  if (isLoading)
-    return (
-      <div className="p-4 text-center text-xs text-gray-500">
-        Memuat data box masuk...
-      </div>
-    );
+  if (isLoading) return <LoadingSpinner />;
 
   if (isError)
     return (
@@ -141,7 +137,9 @@ export default function BoxMasuk({ search = "" }: { search?: string }) {
 
             <p className="font-semibold text-gray-500 mb-1">Belum ada Box</p>
 
-            <p className="text-xs text-gray-400">Data Box akan muncul di sini</p>
+            <p className="text-xs text-gray-400">
+              Data Box akan muncul di sini
+            </p>
           </div>
         )}
       </div>

@@ -12,6 +12,7 @@ import { usePutDikerjakan } from "@/services/jahit/usePutDikerjakan";
 import { usePutJeda } from "@/services/jahit/usePutJeda";
 import { usePutSelesaiJahit } from "@/services/jahit/usePutSelesaiJahit";
 import { Package } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 const schema = z.object({
   jumlahSelesaiJahit: z
@@ -74,20 +75,20 @@ export default function Proses() {
     handleClose();
   };
 
-  if (isLoading)
-    return (
-      <div className="p-4 text-center text-xs text-gray-500">Memuat...</div>
-    );
 
   return (
     <>
       <div className="flex flex-col gap-3">
-        {apiData && apiData.length > 0 ? (
+        {isLoading ? (
+          /* 1. TAMPILAN LOADING */
+          <LoadingSpinner />
+        ) : apiData && apiData.length > 0 ? (
+          /* 2. TAMPILAN JIKA ADA DATA */
           apiData.map((job) => (
             <div
               key={job.idProsesStokPotong}
               onClick={() => setSelected(job)}
-              className={`border border-gray-300 rounded-sm p-3 cursor-pointer hover:bg-gray-50`}
+              className="border border-gray-300 rounded-sm p-3 cursor-pointer hover:bg-gray-50"
             >
               {job.isUrgent && (
                 <span className="text-[10px] text-red-600 font-bold block mb-1">
@@ -106,7 +107,7 @@ export default function Proses() {
                 <li>Kode Stok Potongan: {job.kodeStokPotongan}</li>
                 <li>
                   Tanggal Mulai Jahit:{" "}
-                  {new Date(job.tanggalMulaiJahit).toLocaleTimeString("id-ID", {
+                  {new Date(job.tanggalMulaiJahit).toLocaleDateString("id-ID", {
                     day: "numeric",
                     month: "short",
                     year: "numeric",
@@ -128,14 +129,14 @@ export default function Proses() {
             </div>
           ))
         ) : (
-          /* Tampilan saat data kosong */
+          /* 3. TAMPILAN JIKA DATA KOSONG */
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
               <Package size={30} />
             </div>
-
-            <p className="font-semibold text-gray-500 mb-1">Belum ada Jahitan</p>
-
+            <p className="font-semibold text-gray-500 mb-1">
+              Belum ada Jahitan
+            </p>
             <p className="text-xs text-gray-400">Jahitan akan muncul di sini</p>
           </div>
         )}

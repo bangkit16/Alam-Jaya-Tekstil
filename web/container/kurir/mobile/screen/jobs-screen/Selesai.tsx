@@ -7,6 +7,7 @@ import {
   useGetKurirSelesaiInfinite,
 } from "@/services/kurir/useGetKurirSelesai";
 import { Package } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function Selesai({search} : {search: string}) {
   const [selectedJob, setSelectedJob] = useState<SelesaiResponse | null>(
@@ -48,9 +49,7 @@ export default function Selesai({search} : {search: string}) {
 
   if (isLoading) {
     return (
-      <div className="p-4 text-center text-sm text-gray-500">
-        Memuat data...
-      </div>
+      <LoadingSpinner />
     );
   }
 
