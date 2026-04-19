@@ -6,6 +6,7 @@ import {
   StatusStokPotong,
 } from "../generated/prisma/enums.js";
 import { getPagination, wrapPagination } from "../utils/pagination.js";
+import { Prisma } from "../generated/prisma/browser.js";
 // import { UkuranProduk } from "../generated/prisma/enums";
 
 export default class PotongController {
@@ -14,8 +15,16 @@ export default class PotongController {
       // 1. Ambil parameter pagination
       const { prisma: pg, page, limit } = getPagination(req);
 
+      const search = req.query.search as string;
+
       // 2. Definisi filter 'where' agar konsisten antara query data dan count
-      const whereCondition = { status: StatusPermintaan.MENUNGGU_POTONG };
+      const whereCondition: Prisma.PermintaanWhereInput = {
+        status: StatusPermintaan.MENUNGGU_POTONG,
+        namaBarang: {
+          contains: search,
+          mode: "insensitive",
+        },
+      };
 
       // 3. Eksekusi query data dan count secara paralel menggunakan Promise.all
       const [permintaan, total] = await Promise.all([
@@ -111,10 +120,20 @@ export default class PotongController {
       // 1. Ambil parameter pagination
       const { prisma: pg, page, limit } = getPagination(req);
 
+      const search = req.query.search as string;
+
+      const whereCondition: Prisma.PermintaanWhereInput = {
+        namaBarang: {
+          contains: search,
+          mode: "insensitive",
+        },
+        status: "PROSES_POTONG",
+      };
+
       // 2. Gunakan Promise.all untuk eksekusi query secara paralel
       const [permintaan, total] = await Promise.all([
         prisma.permintaan.findMany({
-          where: { status: "PROSES_POTONG" },
+          where: whereCondition,
           ...pg, // Spread skip & take
           select: {
             id: true,
@@ -128,7 +147,7 @@ export default class PotongController {
           },
         }),
         prisma.permintaan.count({
-          where: { status: "PROSES_POTONG" },
+          where: whereCondition,
         }),
       ]);
 
@@ -255,12 +274,22 @@ export default class PotongController {
     try {
       // 2. Jalankan query data dan count secara paralel dengan Promise.all
       const { prisma: pg, page, limit } = getPagination(req);
-      // const search = req.query.search as string;
+
+      const search = req.query.search as string;
+
+      const whereCondition: Prisma.StokPotongWhereInput = {
+        permintaan: {
+          namaBarang: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      };
 
       const [result, total] = await Promise.all([
         prisma.stokPotong.findMany({
           ...pg, // Menyisipkan skip dan take untuk Prisma
-        
+          where: whereCondition,
           include: {
             permintaan: true,
             pemotong: {
@@ -270,7 +299,9 @@ export default class PotongController {
             },
           },
         }),
-        prisma.stokPotong.count(), // Menghitung total data untuk meta
+        prisma.stokPotong.count({
+          where: whereCondition,
+        }), // Menghitung total data untuk meta
       ]);
 
       // 3. Transformasi data (Logika mapping tetap dipertahankan)
