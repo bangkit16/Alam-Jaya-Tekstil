@@ -17,6 +17,10 @@ import { toast } from "sonner";
 type TabType = "menunggu" | "proses" | "selesai";
 
 export default function PotongWeb({ handleLogout }: any) {
+  const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 3;
+
   const [activeTab, setActiveTab] = useState<TabType>("menunggu");
   const [selectedProses, setSelectedProses] = useState<any>(null);
 
@@ -38,8 +42,7 @@ export default function PotongWeb({ handleLogout }: any) {
 
   const { data: dataProses, isLoading: isLoadingProses } = useGetProses();
 
-  const { data: dataSelesai, isLoading: isLoadingSelesai } =
-    useGetSelesai();
+  const { data: dataSelesai, isLoading: isLoadingSelesai } = useGetSelesai();
 
   const { mutate: mutatePermintaan } = usePutPermintaan();
   const { mutate: mutateProses } = usePutProses();
@@ -114,6 +117,28 @@ export default function PotongWeb({ handleLogout }: any) {
     return [];
   };
 
+  //
+  // 🔥 FILTER (KHUSUS SELESAI)
+  const filteredData =
+    activeTab === "selesai"
+      ? getData().filter((item: any) =>
+          `${item.namaBarang} ${item.ukuran} ${item.kodeKain}`
+            .toLowerCase()
+            .includes(search.toLowerCase()),
+        )
+      : getData();
+
+  // 🔥 PAGINATION
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+  const paginatedData =
+    activeTab === "selesai"
+      ? filteredData.slice(
+          (currentPage - 1) * itemsPerPage,
+          currentPage * itemsPerPage,
+        )
+      : filteredData;
+
   const isLoading =
     (activeTab === "menunggu" && isLoadingPermintaan) ||
     (activeTab === "proses" && isLoadingProses) ||
@@ -181,7 +206,7 @@ export default function PotongWeb({ handleLogout }: any) {
 
         <div className="bg-white/60 backdrop-blur-xl rounded-2xl p-6 shadow-md border border-white/40">
           {/* HEADER */}
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-4">
             <h3 className="font-semibold capitalize text-lg">
               Data {activeTab}
             </h3>
@@ -190,6 +215,18 @@ export default function PotongWeb({ handleLogout }: any) {
               {getData().length} item
             </span>
           </div>
+
+          {activeTab === "selesai" && (
+            <input
+              placeholder="Search nama / ukuran / kode kain..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full md:w-72 bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
+          )}
 
           {isLoading ? (
             <p className="text-center text-gray-500">Loading...</p>
@@ -205,7 +242,7 @@ export default function PotongWeb({ handleLogout }: any) {
             </div>
           ) : (
             <div className="space-y-3">
-              {getData().map((item: any) => {
+              {paginatedData.map((item: any) => {
                 const isOpen = selectedMenunggu === item.idPermintaan;
 
                 return (
@@ -215,7 +252,7 @@ export default function PotongWeb({ handleLogout }: any) {
                       activeTab === "menunggu" &&
                       setSelectedMenunggu(isOpen ? null : item.idPermintaan)
                     }
-                    className="bg-white/70 backdrop-blur-md border border-white/40 rounded-2xl p-4 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                    className="group bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                   >
                     {/* ================= SELESAI ================= */}
                     {activeTab === "selesai" ? (
@@ -276,21 +313,27 @@ export default function PotongWeb({ handleLogout }: any) {
                         {/* 🔥 MENUNGGU (FIX SESUAI UI) */}
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="text-sm font-semibold text-gray-800">
-                              {item.namaBarang} - {item.ukuran}
+                            <p className="text-sm font-semibold text-gray-800 group-hover:text-orange-500 transition">
+                              {item.namaBarang}
                             </p>
 
-                            {/* 🔥 INFO RINGKAS (SEBELUM KLIK) */}
-                            <div className="text-[11px] text-gray-400 mt-1 space-y-0.5 uppercase">
-                              <p>NAMA PRODUK : {item.namaBarang}</p>
-                              <p>UKURAN : {item.ukuran}</p>
-                              <p>JUMLAH DIMINTA : {item.jumlahMinta}</p>
+                            <div className="flex gap-2 mt-1">
+                              <span className="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full">
+                                {item.ukuran}
+                              </span>
+
+                              <span className="text-[10px] bg-yellow-100 text-yellow-600 px-2 py-0.5 rounded-full">
+                                Menunggu
+                              </span>
                             </div>
                           </div>
 
-                          <p className="text-2xl font-bold text-gray-800">
-                            {item.jumlahMinta}
-                          </p>
+                          <div className="text-right">
+                            <p className="text-xl font-bold text-gray-800">
+                              {item.jumlahMinta}
+                            </p>
+                            <p className="text-[10px] text-gray-400">Qty</p>
+                          </div>
                         </div>
 
                         {/* 🔥 EXPAND (SETELAH KLIK) */}
@@ -335,6 +378,39 @@ export default function PotongWeb({ handleLogout }: any) {
                   </div>
                 );
               })}
+            </div>
+          )}
+          {activeTab === "selesai" && totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-6">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className="px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm"
+              >
+                Prev
+              </button>
+
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`px-3 py-1 rounded-lg text-sm ${
+                    currentPage === i + 1
+                      ? "bg-orange-500 text-white"
+                      : "bg-gray-100 hover:bg-gray-200"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                className="px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm"
+              >
+                Next
+              </button>
             </div>
           )}
         </div>

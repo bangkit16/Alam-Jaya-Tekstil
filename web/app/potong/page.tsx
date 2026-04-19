@@ -5,7 +5,7 @@ import { useGetPermintaan } from "@/services/potong/useGetPermintaan";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 
-import PotongWeb from "@/container/potong/web/potong-web";
+import PotongWeb from "@/container/potong/web/PotongWeb";
 import PotongMobile from "@/container/potong/mobile/potong-mobile";
 import { api } from "@/lib/axios";
 import useIsMobile from "@/hooks/useIsMobile";

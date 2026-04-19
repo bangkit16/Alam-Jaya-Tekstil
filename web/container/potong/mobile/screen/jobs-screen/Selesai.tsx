@@ -100,7 +100,8 @@ export default function Selesai() {
             ? "Memuat lebih banyak..."
             : hasNextPage
               ? "Scroll untuk lihat lainnya"
-              : "Semua data sudah muncul"}
+              : ""
+              }
         </div>
       </div>
 
