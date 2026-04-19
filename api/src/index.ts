@@ -19,6 +19,7 @@ const __dirname = path.dirname(__filename);
 // ==========================
 // ROUTES
 // ==========================
+import superAdminRoutes from "./routes/superAdminRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import potongRoutes from "./routes/potongRoutes.js";
 import stokPotongRoutes from "./routes/stokPotongRoutes.js";
@@ -53,6 +54,7 @@ app.use(cookieParser());
 const allowedOrigins = [
   "https://web-alam.vercel.app",
   "http://localhost:3000",
+  "http://localhost:3001",
   "https://api-alam.vercel.app",
 ];
 
@@ -269,6 +271,7 @@ app.post("/create/permintaan", async (req: Request, res: Response) => {
 // ==========================
 // ROUTES
 // ==========================
+app.use("/admin", superAdminRoutes);
 app.use("/auth", authRoutes);
 app.use("/potong", potongRoutes);
 app.use("/stokpotong", stokPotongRoutes);

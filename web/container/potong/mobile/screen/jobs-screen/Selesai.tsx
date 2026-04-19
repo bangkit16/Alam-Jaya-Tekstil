@@ -3,11 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useGetSelesaiInfinite } from "@/services/potong/useGetPermintaanSelesai";
 
-export default function Selesai() {
+export default function Selesai(search: { search: string }) {
   const [searchTerm, setSearchTerm] = useState("");
   // 1. Panggil hook dengan search term
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useGetSelesaiInfinite(searchTerm);
+    useGetSelesaiInfinite(search.search);
 
   // 2. ELEMENT REF untuk trigger scroll
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -100,8 +100,7 @@ export default function Selesai() {
             ? "Memuat lebih banyak..."
             : hasNextPage
               ? "Scroll untuk lihat lainnya"
-              : ""
-              }
+              : ""}
         </div>
       </div>
 

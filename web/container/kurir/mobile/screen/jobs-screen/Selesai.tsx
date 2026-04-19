@@ -1,61 +1,74 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
-  useGetKurirSelesai,
   KurirSelesaiResponse,
-} from "@/services/kurir/useGetKurirSelesai"; // Sesuaikan path
+  SelesaiResponse,
+  useGetKurirSelesaiInfinite,
+} from "@/services/kurir/useGetKurirSelesai";
 
 export default function Selesai() {
-  const [selectedJob, setSelectedJob] = useState<KurirSelesaiResponse | null>(
+  const [selectedJob, setSelectedJob] = useState<SelesaiResponse | null>(
     null,
   );
+  const [search, setSearch] = useState("");
 
-  // Menggunakan Hook TanStack Query
-  const { data: jobs = [], isLoading, isError, refetch } = useGetKurirSelesai();
+  // Ref untuk elemen sensor di bawah list
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-  const handleClose = () => {
-    setSelectedJob(null);
-  };
+  const {
+    data,
+    isLoading,
+    isError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useGetKurirSelesaiInfinite(search);
+
+  // Flatting data
+  const allJobs = data?.pages.flatMap((page) => page.data) ?? [];
+
+  // Implementasi Intersection Observer sesuai contoh Anda
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    if (loadMoreRef.current) observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const handleClose = () => setSelectedJob(null);
 
   if (isLoading) {
     return (
       <div className="p-4 text-center text-sm text-gray-500">
-        Memuat data pengiriman...
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="p-4 text-center">
-        <p className="text-sm text-red-500 mb-2">Gagal memuat data.</p>
-        <button
-          onClick={() => refetch()}
-          className="text-xs bg-gray-100 px-3 py-1 rounded-sm border"
-        >
-          Coba Lagi
-        </button>
+        Memuat data...
       </div>
     );
   }
 
   return (
     <>
+
       {/* ================= LIST ================= */}
       <div className="flex flex-col gap-3">
-        {jobs.length === 0 ? (
+        {allJobs.length === 0 ? (
           <div className="text-center py-10 border border-dashed text-gray-400 text-sm">
             Tidak ada riwayat pengiriman selesai.
           </div>
         ) : (
-          jobs.map((job) => (
+          allJobs.map((job) => (
             <div
               key={job.idProsesStokPotong}
               onClick={() => setSelectedJob(job)}
               className="border border-gray-300 rounded-sm p-3 cursor-pointer hover:bg-gray-50 transition-colors"
             >
-              {/* HEADER */}
               {job.isUrgent && (
                 <p className="text-xs text-red-500 font-semibold mb-2">
                   URGENT
@@ -72,27 +85,37 @@ export default function Selesai() {
                 </div>
                 <p className="text-lg font-bold text-gray-900">{job.jumlah}</p>
               </div>
-
-              {/* DETAIL RINGKAS */}
               <ul className="text-xs text-gray-600 space-y-1 border-t pt-2 mt-2">
                 <li className="flex justify-between">
-                  <span className="text-gray-400">Dari:</span>
+                  <span>Dari:</span>{" "}
                   <span className="font-medium">{job.dikirimDari}</span>
                 </li>
                 <li className="flex justify-between">
-                  <span className="text-gray-400">Tujuan:</span>
+                  <span>Tujuan:</span>{" "}
                   <span className="font-medium">{job.dikirimKe}</span>
-                </li>
-                <li className="flex justify-between">
-                  <span className="text-gray-400">Selesai:</span>
-                  <span>
-                    {new Date(job.tanggalSampai).toLocaleDateString("id-ID")}
-                  </span>
                 </li>
               </ul>
             </div>
           ))
         )}
+
+        {/* ================= SENSOR / LOAD MORE REF ================= */}
+        <div ref={loadMoreRef} className="py-6 flex justify-center">
+          {isFetchingNextPage ? (
+            <div className="flex items-center gap-2 text-xs text-gray-400">
+              <div className="w-4 h-4 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
+              Memuat data...
+            </div>
+          ) : hasNextPage ? (
+            <span className="text-[10px] text-gray-300 italic">
+              Scroll ke bawah untuk memuat lagi
+            </span>
+          ) : allJobs.length > 0 ? (
+            <span className="text-[10px] text-gray-300">
+              Semua riwayat telah ditampilkan
+            </span>
+          ) : null}
+        </div>
       </div>
 
       {/* ================= MODAL DETAIL ================= */}
@@ -105,7 +128,6 @@ export default function Selesai() {
             className="bg-white p-5 w-full max-w-sm shadow-2xl rounded-sm"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* MODAL HEADER */}
             <div className="flex justify-between items-center mb-4 pb-2 border-b">
               <h3 className="font-bold text-gray-800">Detail Pengiriman</h3>
               <button
@@ -115,13 +137,7 @@ export default function Selesai() {
                 ✕
               </button>
             </div>
-
             <div className="space-y-3">
-              {selectedJob.isUrgent && (
-                <p className="text-xs text-red-500 font-semibold mb-2">
-                  URGENT
-                </p>
-              )}
               <div>
                 <label className="text-[10px] text-gray-400 uppercase font-bold">
                   Produk
@@ -130,7 +146,6 @@ export default function Selesai() {
                   {selectedJob.namaBarang}
                 </p>
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-[10px] text-gray-400 uppercase font-bold">
@@ -149,40 +164,12 @@ export default function Selesai() {
                   </p>
                 </div>
               </div>
-
               <hr />
-
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-500">Dari:</span>
-                  <span className="font-medium text-right">
-                    {selectedJob.dikirimDari}
-                  </span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-500">Ke:</span>
-                  <span className="font-medium text-right">
-                    {selectedJob.dikirimKe}
-                  </span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-500">Waktu Sampai:</span>
-                  <span className="font-medium text-right">
-                    {new Date(selectedJob.tanggalSampai).toLocaleString(
-                      "id-ID",
-                      {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      },
-                    )}
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-4 pt-4 border-t">
-                <div className="bg-gray-50 p-2 text-[10px] font-mono text-gray-400 break-all">
-                  ID: {selectedJob.idProsesStokPotong}
-                </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-500">Waktu Sampai:</span>
+                <span className="font-medium">
+                  {new Date(selectedJob.tanggalSampai).toLocaleString("id-ID")}
+                </span>
               </div>
             </div>
           </div>

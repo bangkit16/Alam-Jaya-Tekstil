@@ -8,6 +8,7 @@ import {
 } from "../generated/prisma/enums.js";
 import z from "zod";
 import { Validator } from "../lib/validator.js";
+import { getPagination, wrapPagination } from "../utils/pagination.js";
 
 export default class KurirController {
   public static async getDataMenunggu(req: Request, res: Response) {
@@ -502,62 +503,76 @@ export default class KurirController {
 
   public static async getDataSelesai(req: Request, res: Response) {
     try {
-      const dataSelesai = await prisma.prosesStokPotong.findMany({
-        where: {
-          status: {
-            in: [
-              StatusProses.SELESAI_PENGIRIMAN,
-              StatusProses.SELESAI_PENGIRIMAN_KE_QC,
-            ],
-          },
+      // 1. Ambil parameter pagination
+      const { prisma: pg, page, limit } = getPagination(req);
+
+      // Filter yang digunakan bersama untuk findMany dan count
+      const whereCondition = {
+        status: {
+          in: [
+            StatusProses.SELESAI_PENGIRIMAN,
+            StatusProses.SELESAI_PENGIRIMAN_KE_QC,
+          ],
         },
-        select: {
-          id: true,
-          tanggalSampai: true,
-          tanggalBerangkat: true,
-          tanggalSampaiKeQC: true,
-          tanggalBerangkatKeQC: true,
-          status: true,
-          jumlahSelesai: true,
-          kurir: {
-            select: {
-              nama: true,
+      };
+
+      // 2. Eksekusi query data dan total secara paralel
+      const [dataSelesai, total] = await Promise.all([
+        prisma.prosesStokPotong.findMany({
+          where: whereCondition,
+          ...pg, // Spread skip & take
+          select: {
+            id: true,
+            tanggalSampai: true,
+            tanggalBerangkat: true,
+            tanggalSampaiKeQC: true,
+            tanggalBerangkatKeQC: true,
+            status: true,
+            jumlahSelesai: true,
+            kurir: {
+              select: {
+                nama: true,
+              },
             },
-          },
-          kurirQC: {
-            select: {
-              nama: true,
+            kurirQC: {
+              select: {
+                nama: true,
+              },
             },
-          },
-          penjahit: {
-            select: {
-              nama: true,
+            penjahit: {
+              select: {
+                nama: true,
+              },
             },
-          },
-          stokPotong: {
-            select: {
-              kodeStokPotongan: true,
-              jumlahLolos: true,
-              permintaan: {
-                select: {
-                  id: true,
-                  namaBarang: true,
-                  ukuran: true,
-                  isUrgent: true,
+            stokPotong: {
+              select: {
+                kodeStokPotongan: true,
+                jumlahLolos: true,
+                permintaan: {
+                  select: {
+                    id: true,
+                    namaBarang: true,
+                    ukuran: true,
+                    isUrgent: true,
+                  },
                 },
               },
             },
           },
-        },
-      });
+        }),
+        prisma.prosesStokPotong.count({
+          where: whereCondition,
+        }),
+      ]);
 
-      const data = dataSelesai.flatMap((item) => {
+      // 3. Transformasi data (flatMap) tetap dipertahankan sesuai logika asli
+      const mappedData = dataSelesai.flatMap((item) => {
         const baris: any[] = [];
 
         // 1. Cek Histori Pengiriman ke Penjahit
         if (item.tanggalSampai) {
           baris.push({
-            idProsesStokPotong: `${item.id}`, // ID unik untuk FE
+            idProsesStokPotong: `${item.id}`,
             namaBarang: item.stokPotong.permintaan.namaBarang,
             dikirimDari: "Stok Potong",
             dikirimKe: `Penjahit (${item.penjahit?.nama})`,
@@ -589,7 +604,11 @@ export default class KurirController {
         return baris;
       });
 
-      return res.json(data);
+      // 4. Return response dengan format data & meta
+      return res.status(200).json({
+        data: mappedData,
+        meta: wrapPagination(total, page, limit),
+      });
     } catch (error) {
       console.error("Error fetching data selesai:", error);
       return res.status(500).json({ error: "Internal server error" });

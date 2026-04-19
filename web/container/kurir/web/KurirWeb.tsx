@@ -12,6 +12,7 @@ import { useGetKurirProses } from "@/services/kurir/useGetKurirProses";
 import {
   useGetKurirSelesai,
   KurirSelesaiResponse,
+  SelesaiResponse,
 } from "@/services/kurir/useGetKurirSelesai";
 
 import { useGetListKurir } from "@/services/kurir/useGetListKurir";
@@ -51,7 +52,7 @@ export default function KurirWeb({ handleLogout }: any) {
 
   // 🔥 DETAIL SELESAI
   const [selectedSelesai, setSelectedSelesai] =
-    useState<KurirSelesaiResponse | null>(null);
+    useState<SelesaiResponse | null>(null);
 
   const handleClose = () => {
     setSelectedJob(null);
@@ -88,17 +89,19 @@ export default function KurirWeb({ handleLogout }: any) {
 
   const countMenunggu = dataMenunggu?.length || 0;
   const countProses = dataProses?.length || 0;
-  const countSelesai = dataSelesai?.length || 0;
+  const countSelesai = dataSelesai?.data.length || 0;
 
   // 🔥 FILTER SELESAI
   const filteredSelesai =
     activeTab === "selesai"
-      ? (dataSelesai || []).filter((item: any) =>
+      ? (dataSelesai?.data || []).filter((item: any) =>
           `${item.namaBarang} ${item.dikirimKe} ${item.dikirimDari}`
             .toLowerCase()
             .includes(searchSelesai.toLowerCase()),
         )
-      : dataSelesai || [];
+      : dataSelesai?.data || [];
+
+  console.log(filteredSelesai)
 
   // 🔥 PAGINATION SELESAI
   const totalPagesSelesai = Math.ceil(
@@ -153,7 +156,7 @@ export default function KurirWeb({ handleLogout }: any) {
         {/* LIST */}
         <div
           key={activeTab === "selesai" ? currentPageSelesai : activeTab}
-          className="bg-gray-50 p-4 rounded-xl"
+          className="bg-gray-50 p-4 rounded-xl space-y-3"
         >
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-4">
             {activeTab === "selesai" && (
@@ -188,7 +191,7 @@ export default function KurirWeb({ handleLogout }: any) {
                 onClick={() =>
                   activeTab === "selesai" && setSelectedSelesai(job)
                 }
-                className="bg-white/70 backdrop-blur-md border border-white/40 rounded-2xl p-4 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                className="bg-white/70 backdrop-blur-md border-2 border-gray-200 rounded-2xl p-4 s  transition-all duration-300 cursor-pointer"
               >
                 {/* HEADER */}
                 <div className="flex justify-between mb-2">

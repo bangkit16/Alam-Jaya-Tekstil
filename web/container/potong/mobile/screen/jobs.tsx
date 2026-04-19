@@ -10,7 +10,7 @@ type statusType = "menunggu" | "proses" | "selesai";
 
 export default function Jobs({ setScreen }: any) {
   const [filterStatus, setFilterStatus] = useState<statusType>("menunggu");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState<string>("");
 
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-200 via-gray-300 to-gray-400 flex justify-center items-center p-4">
@@ -53,7 +53,7 @@ export default function Jobs({ setScreen }: any) {
         <div className="flex-1 overflow-auto">
           {filterStatus === "menunggu" && <Menunggu />}
           {filterStatus === "proses" && <Proses />}
-          {filterStatus === "selesai" && <Selesai />}
+          {filterStatus === "selesai" && <Selesai search={search} />}
         </div>
 
         {/* BACK */}
