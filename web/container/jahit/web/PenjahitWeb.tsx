@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Package, ClipboardList, CheckCircle } from "lucide-react";
+import { Package, ClipboardList, CheckCircle, LogOut } from "lucide-react";
 
 // 🔥 API
 import { useGetPenjahitMenunggu } from "@/services/jahit/useGetPenjahitMenunggu";
@@ -16,6 +16,24 @@ import { usePutSelesaiJahit } from "@/services/jahit/usePutSelesaiJahit";
 import { useQueryClient } from "@tanstack/react-query";
 
 type TabType = "menunggu" | "proses" | "selesai";
+
+const menuList = [
+  {
+    key: "menunggu",
+    label: "Menunggu",
+    icon: ClipboardList,
+  },
+  {
+    key: "proses",
+    label: "Proses",
+    icon: Package,
+  },
+  {
+    key: "selesai",
+    label: "Selesai",
+    icon: CheckCircle,
+  },
+];
 
 export default function PenjahitWeb({ handleLogout }: any) {
   //
@@ -148,29 +166,48 @@ export default function PenjahitWeb({ handleLogout }: any) {
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-gray-100 to-orange-50">
       {/* SIDEBAR */}
-      <div className="w-64 bg-white border-r p-5 hidden md:flex flex-col">
-        <h1 className="text-lg font-semibold mb-6">Penjahit Panel</h1>
+      <div className="w-64 bg-white/80 backdrop-blur-xl border-r border-gray-100 p-5 hidden md:flex flex-col shadow-lg">
+        {/* HEADER */}
+        <div className="mb-8">
+          <h1 className="text-lg font-semibold text-gray-800">
+            Penjahit Panel
+          </h1>
+          <p className="text-xs text-gray-400 mt-1">Produksi jahit</p>
+        </div>
 
-        {["menunggu", "proses", "selesai"].map((menu) => (
+        {/* MENU */}
+        <div className="flex flex-col gap-2">
+          {menuList.map((menu) => {
+            const Icon = menu.icon;
+
+            return (
+              <button
+                key={menu.key}
+                onClick={() => setActiveTab(menu.key as TabType)}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all
+          ${
+            activeTab === menu.key
+              ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md"
+              : "text-gray-600 hover:bg-gray-100"
+          }`}
+              >
+                <Icon size={18} />
+                <span className="font-medium capitalize">{menu.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* LOGOUT */}
+        <div className="mt-auto pt-6 border-t border-gray-100">
           <button
-            key={menu}
-            onClick={() => setActiveTab(menu as TabType)}
-            className={`mb-2 px-4 py-2 rounded-xl text-left capitalize ${
-              activeTab === menu
-                ? "bg-orange-400 text-white"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 transition"
           >
-            {menu}
+            <LogOut size={18} />
+            <span className="font-medium">Logout</span>
           </button>
-        ))}
-
-        <button
-          onClick={handleLogout}
-          className="mt-auto bg-red-50 text-red-500 py-2 rounded-xl"
-        >
-          Logout
-        </button>
+        </div>
       </div>
 
       {/* MAIN */}

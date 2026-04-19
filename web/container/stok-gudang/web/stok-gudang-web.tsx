@@ -9,6 +9,7 @@ import {
   ChevronDown,
   PackageSearch,
   X,
+  LogOut,
 } from "lucide-react";
 
 import {
@@ -55,49 +56,54 @@ export default function StokGudangWeb({ handleLogout }: any) {
 
   const { data: permintaanPotong } = useGetPermintaanPotong();
 
-  const menus = [
-    { key: "boxMasuk", label: "Box Masuk", icon: <Archive /> },
-    { key: "dataBox", label: "Data Box", icon: <Package /> },
-    {
-      key: "permintaanResi",
-      label: "Permintaan Resi",
-      icon: <ClipboardList />,
-    },
-    {
-      key: "mintaPotong",
-      label: "Minta Potong",
-      icon: <CheckCircle />,
-    },
+  const menuList = [
+    { key: "boxMasuk", label: "Box Masuk", icon: Archive },
+    { key: "dataBox", label: "Data Box", icon: Package },
+    { key: "permintaanResi", label: "Permintaan Resi", icon: ClipboardList },
+    { key: "mintaPotong", label: "Minta Potong", icon: CheckCircle },
   ];
 
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* SIDEBAR */}
-      <div className="w-72 bg-white border-r px-6 py-6 hidden md:flex flex-col">
-        <h1 className="text-xl font-bold mb-8 tracking-wide">📦 Stok Gudang</h1>
-
-        <div className="flex flex-col gap-2">
-          {menus.map((menu) => (
-            <button
-              key={menu.key}
-              onClick={() => setActiveTab(menu.key as TabType)}
-              className={`flex items-center gap-3 text-left px-4 py-3 rounded-xl transition-all duration-200 ${
-                activeTab === menu.key
-                  ? "bg-gradient-to-r from-orange-400 to-amber-500 text-white shadow-md"
-                  : "hover:bg-gray-100 text-gray-700"
-              }`}
-            >
-              {menu.icon}
-              {menu.label}
-            </button>
-          ))}
+      <div className="w-72 bg-white/80 backdrop-blur-xl border-r border-gray-100 p-6 hidden md:flex flex-col shadow-lg">
+        {/* HEADER */}
+        <div className="mb-8">
+          <h1 className="text-lg font-semibold text-gray-800">Stok Gudang</h1>
+          <p className="text-xs text-gray-400 mt-1">Manajemen gudang</p>
         </div>
-        <div className="mt-auto pt-6 border-t">
+
+        {/* MENU */}
+        <div className="flex flex-col gap-2">
+          {menuList.map((menu) => {
+            const Icon = menu.icon;
+
+            return (
+              <button
+                key={menu.key}
+                onClick={() => setActiveTab(menu.key as TabType)}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all
+          ${
+            activeTab === menu.key
+              ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md"
+              : "text-gray-600 hover:bg-gray-100"
+          }`}
+              >
+                <Icon size={18} />
+                <span className="font-medium">{menu.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* LOGOUT */}
+        <div className="mt-auto pt-6 border-t border-gray-100">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 text-red-500 hover:bg-red-50 py-2 rounded-xl transition"
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 transition"
           >
-            Logout
+            <LogOut size={18} />
+            <span className="font-medium">Logout</span>
           </button>
         </div>
       </div>
@@ -132,7 +138,7 @@ export default function StokGudangWeb({ handleLogout }: any) {
         {/* LIST */}
         <div className="bg-gray-50 rounded-2xl p-4">
           <h3 className="font-semibold mb-4">
-            {menus.find((m) => m.key === activeTab)?.label}
+            {menuList.find((m) => m.key === activeTab)?.label}
           </h3>
 
           {/* 🔥 KHUSUS BOX MASUK */}

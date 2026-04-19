@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Package, ClipboardList, CheckCircle } from "lucide-react";
+import { Package, ClipboardList, CheckCircle, LogOut } from "lucide-react";
 
 // 🔥 MENUNGGU
 import { useGetPermintaanStokPotong } from "@/services/stok-potong/useGetPermintaan";
@@ -44,6 +44,25 @@ type pengecekType = {
   id: string;
   nama: string;
 };
+
+//
+const menuList = [
+  {
+    key: "menunggu",
+    label: "Menunggu",
+    icon: ClipboardList,
+  },
+  {
+    key: "proses",
+    label: "Proses",
+    icon: Package,
+  },
+  {
+    key: "stok",
+    label: "Stok",
+    icon: CheckCircle,
+  },
+];
 
 export default function StokPotongWeb({ handleLogout, session }: any) {
   //
@@ -270,29 +289,46 @@ export default function StokPotongWeb({ handleLogout, session }: any) {
     <>
       <div className="flex min-h-screen bg-gradient-to-br from-gray-100 to-orange-50">
         {/* SIDEBAR */}
-        <div className="w-64 bg-white/70 backdrop-blur-xl border-r border-white/40 p-5 hidden md:flex flex-col shadow-lg">
-          <h1 className="text-lg font-semibold mb-6">Stok Potong</h1>
+        <div className="w-64 bg-white/80 backdrop-blur-xl border-r border-gray-100 p-5 hidden md:flex flex-col shadow-lg">
+          {/* HEADER */}
+          <div className="mb-8">
+            <h1 className="text-lg font-semibold text-gray-800">Stok Potong</h1>
+            <p className="text-xs text-gray-400 mt-1">Dashboard produksi</p>
+          </div>
 
-          {["menunggu", "proses", "stok"].map((menu) => (
+          {/* MENU */}
+          <div className="flex flex-col gap-2">
+            {menuList.map((menu) => {
+              const Icon = menu.icon;
+
+              return (
+                <button
+                  key={menu.key}
+                  onClick={() => setActiveTab(menu.key as TabType)}
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all
+          ${
+            activeTab === menu.key
+              ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md"
+              : "text-gray-600 hover:bg-gray-100"
+          }`}
+                >
+                  <Icon size={18} />
+                  <span className="font-medium">{menu.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* LOGOUT */}
+          <div className="mt-auto pt-6 border-t border-gray-100">
             <button
-              key={menu}
-              onClick={() => setActiveTab(menu as TabType)}
-              className={`w-full text-left px-4 py-2 rounded-xl ${
-                activeTab === menu
-                  ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg scale-[1.02]"
-                  : "text-gray-600"
-              }`}
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 transition"
             >
-              {menu}
+              <LogOut size={18} />
+              <span className="font-medium">Logout</span>
             </button>
-          ))}
-
-          <button
-            onClick={handleLogout}
-            className="mt-auto text-red-500 text-xs"
-          >
-            Logout
-          </button>
+          </div>
         </div>
 
         {/* MAIN */}
