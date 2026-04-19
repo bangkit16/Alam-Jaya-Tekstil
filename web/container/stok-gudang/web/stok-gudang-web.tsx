@@ -325,7 +325,7 @@ function BoxMasukWeb() {
               }}
               className="w-full bg-orange-500 text-white py-2 rounded-xl"
             >
-              ACC BOX
+              ACC BOX .
             </button>
           </div>
         </div>
