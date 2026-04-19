@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Package, ClipboardList, Archive, CheckCircle } from "lucide-react";
+import {
+  Package,
+  ClipboardList,
+  Archive,
+  CheckCircle,
+  LogOut,
+} from "lucide-react";
 
 // 🔥 IMPORT API
 import { useGetQCMenunggu } from "@/services/qc/useGetQCMenunggu";
@@ -15,6 +21,29 @@ import { useGetQCSelesai } from "@/services/qc/useGetQCSelesai";
 import BarcodeGenerator from "@/components/BarcodeGenerator";
 
 type TabType = "menunggu" | "proses" | "masuk_box" | "selesai";
+
+const menuList = [
+  {
+    key: "menunggu",
+    label: "Menunggu",
+    icon: Package,
+  },
+  {
+    key: "proses",
+    label: "Proses",
+    icon: ClipboardList,
+  },
+  {
+    key: "masuk_box",
+    label: "Masuk Box",
+    icon: Archive,
+  },
+  {
+    key: "selesai",
+    label: "Selesai",
+    icon: CheckCircle,
+  },
+];
 
 export default function QCWeb({ handleLogout }: any) {
   const [selected, setSelected] = useState<any | null>(null);
@@ -106,31 +135,46 @@ export default function QCWeb({ handleLogout }: any) {
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* SIDEBAR */}
-      <div className="w-64 bg-white border-r p-5 hidden md:flex flex-col">
-        <h1 className="text-lg font-semibold mb-6">QC Panel</h1>
-
-        <div className="space-y-2">
-          {["menunggu", "proses", "masuk_box", "selesai"].map((menu) => (
-            <button
-              key={menu}
-              onClick={() => setActiveTab(menu as TabType)}
-              className={`w-full text-left px-4 py-2 rounded-xl capitalize ${
-                activeTab === menu
-                  ? "bg-gradient-to-r from-orange-400 to-amber-500 text-white"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              {menu.replace("_", " ")}
-            </button>
-          ))}
+      <div className="w-64 bg-white/80 backdrop-blur-xl border-r border-gray-100 p-5 hidden md:flex flex-col shadow-lg">
+        {/* HEADER */}
+        <div className="mb-8">
+          <h1 className="text-lg font-semibold text-gray-800">QC Panel</h1>
+          <p className="text-xs text-gray-400 mt-1">Quality Control</p>
         </div>
 
-        <button
-          onClick={handleLogout}
-          className="mt-auto bg-red-50 text-red-500 text-xs py-2 rounded-xl"
-        >
-          Logout
-        </button>
+        {/* MENU */}
+        <div className="flex flex-col gap-2">
+          {menuList.map((menu) => {
+            const Icon = menu.icon;
+
+            return (
+              <button
+                key={menu.key}
+                onClick={() => setActiveTab(menu.key as TabType)}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all
+          ${
+            activeTab === menu.key
+              ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md"
+              : "text-gray-600 hover:bg-gray-100"
+          }`}
+              >
+                <Icon size={18} />
+                <span className="font-medium">{menu.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* LOGOUT */}
+        <div className="mt-auto pt-6 border-t border-gray-100">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 transition"
+          >
+            <LogOut size={18} />
+            <span className="font-medium">Logout</span>
+          </button>
+        </div>
       </div>
 
       {/* MAIN */}

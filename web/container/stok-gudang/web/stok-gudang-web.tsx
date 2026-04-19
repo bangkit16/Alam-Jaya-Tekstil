@@ -9,6 +9,7 @@ import {
   ChevronDown,
   PackageSearch,
   X,
+  LogOut,
 } from "lucide-react";
 
 import {
@@ -26,6 +27,24 @@ import {
   DataBox as IDataBox,
 } from "@/services/stok-gudang/useGetDataBox";
 
+//
+import {
+  useGetPermintaan,
+  PermintaanBarang,
+} from "@/services/stok-gudang/useGetPermintaan";
+
+//
+import {
+  useGetPermintaanPotong,
+  PermintaanPotong,
+} from "@/services/stok-gudang/useGetPermintaanPotong";
+
+import { useGetTracking } from "@/services/stok-gudang/useGetTracking";
+import { usePostMintaPotong } from "@/services/stok-gudang/usePostMintaPotong";
+import { useGetKategori } from "@/services/stok-gudang/useGetKategori";
+
+import { useForm } from "react-hook-form";
+
 type TabType = "boxMasuk" | "dataBox" | "permintaanResi" | "mintaPotong";
 
 export default function StokGudangWeb({ handleLogout }: any) {
@@ -35,59 +54,56 @@ export default function StokGudangWeb({ handleLogout }: any) {
   const { data: boxMasuk } = useGetBoxMasuk();
   const { data: dataBox } = useGetDatabox();
 
-  // const [data, setData] = useState<any[]>([
-  //   { id: 1, nama: "Hoodie A", qty: 20, status: "dataBox" },
-  //   { id: 2, nama: "Kaos B", qty: 10, status: "boxMasuk" },
-  // ]);
+  const { data: permintaanPotong } = useGetPermintaanPotong();
 
-  // const filtered = data.filter((d) => d.status === activeTab);
-
-  // const count = (status: TabType) =>
-  //   data.filter((d) => d.status === status).length;
-
-  const menus = [
-    { key: "boxMasuk", label: "Box Masuk", icon: <Archive /> },
-    { key: "dataBox", label: "Data Box", icon: <Package /> },
-    {
-      key: "permintaanResi",
-      label: "Permintaan Resi",
-      icon: <ClipboardList />,
-    },
-    {
-      key: "mintaPotong",
-      label: "Minta Potong",
-      icon: <CheckCircle />,
-    },
+  const menuList = [
+    { key: "boxMasuk", label: "Box Masuk", icon: Archive },
+    { key: "dataBox", label: "Data Box", icon: Package },
+    { key: "permintaanResi", label: "Permintaan Resi", icon: ClipboardList },
+    { key: "mintaPotong", label: "Minta Potong", icon: CheckCircle },
   ];
 
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* SIDEBAR */}
-      <div className="w-72 bg-white border-r px-6 py-6 hidden md:flex flex-col">
-        <h1 className="text-xl font-bold mb-8 tracking-wide">📦 Stok Gudang</h1>
-
-        <div className="flex flex-col gap-2">
-          {menus.map((menu) => (
-            <button
-              key={menu.key}
-              onClick={() => setActiveTab(menu.key as TabType)}
-              className={`flex items-center gap-3 text-left px-4 py-3 rounded-xl transition-all duration-200 ${
-                activeTab === menu.key
-                  ? "bg-gradient-to-r from-orange-400 to-amber-500 text-white shadow-md"
-                  : "hover:bg-gray-100 text-gray-700"
-              }`}
-            >
-              {menu.icon}
-              {menu.label}
-            </button>
-          ))}
+      <div className="w-72 bg-white/80 backdrop-blur-xl border-r border-gray-100 p-6 hidden md:flex flex-col shadow-lg">
+        {/* HEADER */}
+        <div className="mb-8">
+          <h1 className="text-lg font-semibold text-gray-800">Stok Gudang</h1>
+          <p className="text-xs text-gray-400 mt-1">Manajemen gudang</p>
         </div>
-        <div className="mt-auto pt-6 border-t">
+
+        {/* MENU */}
+        <div className="flex flex-col gap-2">
+          {menuList.map((menu) => {
+            const Icon = menu.icon;
+
+            return (
+              <button
+                key={menu.key}
+                onClick={() => setActiveTab(menu.key as TabType)}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all
+          ${
+            activeTab === menu.key
+              ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md"
+              : "text-gray-600 hover:bg-gray-100"
+          }`}
+              >
+                <Icon size={18} />
+                <span className="font-medium">{menu.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* LOGOUT */}
+        <div className="mt-auto pt-6 border-t border-gray-100">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 text-red-500 hover:bg-red-50 py-2 rounded-xl transition"
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 transition"
           >
-            Logout
+            <LogOut size={18} />
+            <span className="font-medium">Logout</span>
           </button>
         </div>
       </div>
@@ -112,13 +128,17 @@ export default function StokGudangWeb({ handleLogout }: any) {
 
           <Stat title="Permintaan Resi" value={0} icon={<ClipboardList />} />
 
-          <Stat title="Minta Potong" value={0} icon={<CheckCircle />} />
+          <Stat
+            title="Minta Potong"
+            value={permintaanPotong?.length || 0}
+            icon={<CheckCircle />}
+          />
         </div>
 
         {/* LIST */}
         <div className="bg-gray-50 rounded-2xl p-4">
           <h3 className="font-semibold mb-4">
-            {menus.find((m) => m.key === activeTab)?.label}
+            {menuList.find((m) => m.key === activeTab)?.label}
           </h3>
 
           {/* 🔥 KHUSUS BOX MASUK */}
@@ -126,6 +146,10 @@ export default function StokGudangWeb({ handleLogout }: any) {
             <BoxMasukWeb />
           ) : activeTab === "dataBox" ? (
             <DataBoxWeb />
+          ) : activeTab === "permintaanResi" ? (
+            <PermintaanResiWeb />
+          ) : activeTab === "mintaPotong" ? (
+            <MintaPotongWeb />
           ) : (
             <>
               <div className="space-y-3">
@@ -317,6 +341,7 @@ function BoxMasukWeb() {
   );
 }
 
+//
 function DataBoxWeb() {
   const [selected, setSelected] = useState<IDataBox | null>(null);
   const [openCollapse, setOpenCollapse] = useState<string | null>(null);
@@ -470,6 +495,249 @@ function DataBoxWeb() {
             <button
               onClick={() => setSelected(null)}
               className="w-full bg-gray-100 py-2 rounded-xl"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+//
+function MintaPotongWeb() {
+  const [open, setOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const { data, isLoading } = useGetPermintaanPotong();
+  const { data: kategori } = useGetKategori();
+  const { data: tracking, isLoading: isTracking } = useGetTracking(
+    selectedId || "",
+  );
+
+  const mutation = usePostMintaPotong();
+
+  const { register, handleSubmit, reset } = useForm();
+
+  const onSubmit = (form: any) => {
+    mutation.mutate(
+      {
+        namaBarang: form.nama,
+        kategori: form.kategori,
+        ukuran: form.ukuran,
+        isUrgent: form.isUrgent || false,
+        jumlahMinta: Number(form.jumlah),
+      },
+      {
+        onSuccess: () => {
+          setOpen(false);
+          reset();
+        },
+      },
+    );
+  };
+
+  if (isLoading) return <p className="text-center">Loading...</p>;
+
+  return (
+    <>
+      {/* LIST */}
+      <div className="space-y-3">
+        {data?.map((item: PermintaanPotong) => (
+          <div
+            key={item.idPermintaan}
+            className="bg-white border rounded-xl p-4"
+          >
+            {item.isUrgent && (
+              <p className="text-xs text-red-500 font-bold">URGENT</p>
+            )}
+
+            <div className="flex justify-between">
+              <p>
+                {item.namaBarang} - {item.ukuran}
+              </p>
+              <b>{item.jumlahMinta}</b>
+            </div>
+
+            <div className="flex justify-between mt-2">
+              <p className="text-xs text-gray-500">
+                {item.status.replace(/_/g, " ")}
+              </p>
+
+              <button
+                onClick={() => setSelectedId(item.idPermintaan)}
+                className="text-xs bg-gray-200 px-2 py-1 rounded"
+              >
+                TRACK
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {/* BUTTON */}
+        <button
+          onClick={() => setOpen(true)}
+          className="w-full bg-orange-500 text-white py-2 rounded-xl"
+        >
+          MINTA POTONG
+        </button>
+      </div>
+
+      {/* MODAL FORM */}
+      {open && (
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="bg-white p-5 rounded-xl w-[400px]"
+          >
+            <h3 className="mb-3 font-bold">Permintaan</h3>
+
+            <input
+              {...register("nama")}
+              placeholder="Nama"
+              className="w-full border p-2 mb-2"
+            />
+
+            <input
+              {...register("jumlah")}
+              placeholder="Jumlah"
+              type="number"
+              className="w-full border p-2 mb-2"
+            />
+
+            <select {...register("ukuran")} className="w-full border p-2 mb-2">
+              <option value="">Ukuran</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+            </select>
+
+            <select
+              {...register("kategori")}
+              className="w-full border p-2 mb-2"
+            >
+              <option value="">Kategori</option>
+              {kategori?.map((k: any) => (
+                <option key={k.id} value={k.slug}>
+                  {k.namaKategori}
+                </option>
+              ))}
+            </select>
+
+            <label className="text-xs">
+              <input type="checkbox" {...register("isUrgent")} /> Urgent
+            </label>
+
+            <div className="flex justify-end gap-2 mt-3">
+              <button type="button" onClick={() => setOpen(false)}>
+                Batal
+              </button>
+              <button
+                type="submit"
+                className="bg-blue-500 text-white px-3 py-1 rounded"
+              >
+                {mutation.isPending ? "MENGIRIM..." : "KIRIM"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* MODAL TRACKING */}
+      {selectedId && (
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
+          <div className="bg-white p-5 rounded-xl w-[400px] max-h-[80vh] overflow-auto">
+            <h3 className="font-bold mb-3">Tracking</h3>
+
+            {isTracking ? (
+              <p>Loading...</p>
+            ) : (
+              <>
+                <p>{tracking?.namaBarang}</p>
+
+                {tracking?.logPermintaan?.map((log: any, i: number) => (
+                  <div key={i} className="border p-2 mt-2 text-xs">
+                    <p>{log.status}</p>
+                    <p>{log.keterangan}</p>
+                  </div>
+                ))}
+              </>
+            )}
+
+            <button
+              onClick={() => setSelectedId(null)}
+              className="mt-3 w-full bg-gray-100 py-2"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+//
+function PermintaanResiWeb() {
+  const { data, isLoading, isError } = useGetPermintaan();
+  const [selected, setSelected] = useState<PermintaanBarang | null>(null);
+
+  if (isLoading) return <p className="text-center">Loading...</p>;
+  if (isError) return <p className="text-center text-red-500">Error</p>;
+
+  return (
+    <>
+      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {data?.map((item) => (
+          <div
+            key={item.idPermintaan}
+            onClick={() => setSelected(item)}
+            className="bg-white border rounded-xl p-4 cursor-pointer hover:border-blue-400"
+          >
+            {item.isUrgent && (
+              <p className="text-xs text-red-500 font-bold mb-1">URGENT</p>
+            )}
+
+            <div className="flex justify-between">
+              <p className="font-medium">
+                {item.namaBarang} - {item.ukuran}
+              </p>
+              <b>{item.jumlahMinta}</b>
+            </div>
+
+            <div className="text-xs text-gray-500 mt-2">
+              <p>Kategori: {item.kategori}</p>
+              <p>Dari: {item.jenisPermintaan}</p>
+            </div>
+          </div>
+        ))}
+
+        {data?.length === 0 && (
+          <p className="text-center text-gray-400 col-span-full">
+            Tidak ada permintaan
+          </p>
+        )}
+      </div>
+
+      {/* MODAL SIMPLE */}
+      {selected && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="bg-white p-5 rounded-xl w-[400px]">
+            <h3 className="font-bold mb-2">{selected.namaBarang}</h3>
+
+            <div className="text-sm text-gray-600">
+              {selected.isUrgent && (
+                <p className="text-red-500 font-bold">URGENT</p>
+              )}
+              <p>Kategori: {selected.kategori}</p>
+              <p>Ukuran: {selected.ukuran}</p>
+              <p>Jumlah: {selected.jumlahMinta}</p>
+            </div>
+
+            <button
+              onClick={() => setSelected(null)}
+              className="mt-4 w-full bg-gray-100 py-2 rounded"
             >
               Tutup
             </button>
