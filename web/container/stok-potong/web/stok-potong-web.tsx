@@ -17,6 +17,8 @@ import { useGetStock } from "@/services/stok-potong/useGetStock";
 import { useGetPenjahit } from "@/services/stok-potong/useGetPenjahit";
 import { usePutStock } from "@/services/stok-potong/usePutStock";
 import { useQueryClient } from "@tanstack/react-query";
+import DataEmpty from "@/components/DataEmpty";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 type TabType = "menunggu" | "proses" | "stok";
 
@@ -153,14 +155,10 @@ export default function StokPotongWeb({ handleLogout, session }: any) {
 
   // ================= MENUNGGU =================
   const renderMenunggu = () => {
-    if (isLoading) return <p className="text-center py-4">Loading...</p>;
+    if (isLoading) return <LoadingSpinner />;
 
     if (!data || data.length === 0) {
-      return (
-        <div className="text-center py-10 border-2 border-dashed border-gray-200 rounded-2xl">
-          <p className="text-gray-500 font-medium">Data Kosong</p>
-        </div>
-      );
+      return <DataEmpty />;
     }
 
     return data.map((item: stockType) => (
@@ -190,10 +188,10 @@ export default function StokPotongWeb({ handleLogout, session }: any) {
 
   // ================= PROSES =================
   const renderProses = () => {
-    if (loadingProses) return <p className="text-center py-4">Loading...</p>;
+    if (loadingProses) return <LoadingSpinner />;
 
     if (!prosesData || prosesData.length === 0) {
-      return <p className="text-center text-gray-400 py-6">Data kosong</p>;
+      return <DataEmpty />;
     }
 
     return prosesData.map((item: prosesType) => (
@@ -213,13 +211,11 @@ export default function StokPotongWeb({ handleLogout, session }: any) {
 
   // ================= STOK =================
   const renderStok = () => {
-    if (loadingStock) return <p className="text-center py-4">Loading...</p>;
+    if (loadingStock) return <LoadingSpinner />;
 
     if (!stockData || stockData.length === 0) {
       return (
-        <div className="text-center py-10 border-2 border-dashed border-gray-200 rounded-2xl">
-          <p className="text-gray-500 font-medium">Data Kosong</p>
-        </div>
+        <DataEmpty />
       );
     }
 
