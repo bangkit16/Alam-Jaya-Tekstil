@@ -26,9 +26,9 @@ export type APIResponse = {
 
 // --- 2. FETCHER FUNCTIONS ---
 // Kita pisahkan logic fetch agar reusable
-const fetchProses = async (page: number): Promise<APIResponse> => {
+const fetchProses = async (page: number , limit : number = 8): Promise<APIResponse> => {
   const response = await api.get("/potong/proses", {
-    params: { page , limit : 4},
+    params: { page , limit},
   });
   return response.data;
 };
@@ -39,7 +39,7 @@ const fetchProses = async (page: number): Promise<APIResponse> => {
  * Hook untuk Web (Pagination)
  * @param page Halaman yang sedang aktif
  */
-export const useGetProses = (page: number = 1) => {
+export const useGetProses = (page: number = 1 , limit: number = 4) => {
   return useQuery<APIResponse>({
     queryKey: ["potong","proses", page], // Key unik berdasarkan halaman
     queryFn: () => fetchProses(page),

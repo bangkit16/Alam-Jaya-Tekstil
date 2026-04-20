@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useGetProses } from "@/services/potong/useGetProses";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useGetProsesInfinite } from "@/services/potong/useGetProses";
 import { usePutProses } from "@/services/potong/usePutProses";
 import { useGetPemotong } from "@/services/potong/useGetPemotong";
 import { toast } from "sonner";
@@ -23,9 +23,44 @@ type prosesType = {
 export default function Proses() {
   const [selectedProses, setSelectedProses] = useState<prosesType | null>(null);
 
-  const { data: dataProses, isLoading } = useGetProses();
+  // ✅ GANTI KE INFINITE QUERY
+  const {
+    data: dataProses,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useGetProsesInfinite();
+
   const { mutate: mutateProses, isPending } = usePutProses();
-  const { data: pemotongData  } = useGetPemotong();
+  const { data: pemotongData } = useGetPemotong();
+
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  // ✅ flatten semua page jadi 1 array
+  const prosesList = useMemo(() => {
+    return dataProses?.pages.flatMap((page) => page.data) || [];
+  }, [dataProses]);
+
+  // ✅ observer infinite scroll
+  useEffect(() => {
+    if (!loadMoreRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+
+        if (first.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 1 },
+    );
+
+    observer.observe(loadMoreRef.current);
+
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   const [form, setForm] = useState({
     kode_potongan: "",
@@ -33,30 +68,38 @@ export default function Proses() {
     pengecek: "",
   });
 
-  // ✅ SIMPAN ID (UUID)
   const [pemotongList, setPemotongList] = useState<string[]>([]);
+
+  const [errors, setErrors] = useState({
+    kode_potongan: false,
+    jumlah_lolos: false,
+    pemotong: false,
+  });
 
   const handleSelectProses = (proses: prosesType) => {
     setSelectedProses(proses);
+
     setForm({
       kode_potongan: proses.kodeKain || "",
       jumlah_lolos: "",
       pengecek: "",
     });
+
     setPemotongList([]);
   };
 
   const handleCloseModal = () => {
     setSelectedProses(null);
+
     setForm({
       kode_potongan: "",
       jumlah_lolos: "",
       pengecek: "",
     });
+
     setPemotongList([]);
   };
 
-  // ✅ helper ambil nama dari id
   const getNamaPemotong = (id: string) => {
     const found = pemotongData?.find((p: any) => p.id === id);
     return found?.nama || id;
@@ -70,7 +113,6 @@ export default function Proses() {
     const kodeKain = form.kode_potongan.trim();
     const jumlahLolos = form.jumlah_lolos.trim();
 
-    // reset error
     const newErrors = {
       kode_potongan: false,
       jumlah_lolos: false,
@@ -90,12 +132,6 @@ export default function Proses() {
       toast.error("Jumlah hasil wajib diisi");
       isValid = false;
     }
-
-    // if (Number(jumlahLolos) > selectedProses?.jumlahMinta) {
-    //   newErrors.jumlah_lolos = true;
-    //   toast.error("Jumlah Lolos tidak boleh diatas jumlah diminta");
-    //   isValid = false;
-    // }
 
     if (pemotongList.length === 0) {
       newErrors.pemotong = true;
@@ -133,12 +169,10 @@ export default function Proses() {
     }
 
     const payload = {
-      kodeKain: kodeKain,
-      jumlahHasil: jumlahHasil,
+      kodeKain,
+      jumlahHasil,
       idPemotong: pemotongList,
     };
-
-    console.log("PAYLOAD FINAL:", payload);
 
     mutateProses(
       {
@@ -150,19 +184,12 @@ export default function Proses() {
           toast.success("Berhasil dipindah ke selesai");
           handleCloseModal();
         },
-        onError: (err: any) => {
-          console.log("ERROR DETAIL:", err?.response?.data);
+        onError: () => {
           toast.error("Gagal menyimpan");
         },
       },
     );
   };
-
-  const [errors, setErrors] = useState({
-    kode_potongan: false,
-    jumlah_lolos: false,
-    pemotong: false,
-  });
 
   return (
     <>
@@ -170,64 +197,71 @@ export default function Proses() {
       <div className="flex flex-col gap-3 overflow-y-auto">
         {isLoading ? (
           <LoadingSpinner />
-        ) : dataProses?.data && dataProses.data.length > 0 ? (
-          dataProses.data.map((proses: prosesType, index: number) => (
-            <div
-              key={`${proses.idPermintaan}-${index}`}
-              onClick={() => handleSelectProses(proses)}
-              className="border border-gray-300 rounded-2xl p-3 flex justify-between items-center cursor-pointer hover:bg-gray-50"
-            >
-              <div className="flex-row w-full justify-between align-middle items-center">
-                {proses.isUrgent && (
-                  <p className="text-red-500 text-sm uppercase font-semibold">
-                    Urgent
-                  </p>
-                )}
-
-                <p className="text-sm font-semibold text-gray-800 my-1">
-                  {proses.namaBarang} - {proses.ukuran}
-                </p>
-
-                <div className="space-y-0.5">
-                  <p className="text-xs font-medium text-gray-400 uppercase">
-                    NAMA PRODUK :
-                    <span className="font-bold text-gray-600">
-                      {proses.namaBarang}
-                    </span>
-                  </p>
-
-                  <p className="text-xs font-medium text-gray-400 uppercase">
-                    UKURAN :
-                    <span className="font-bold text-gray-600">
-                      {proses.ukuran}
-                    </span>
-                  </p>
-
-                  <p className="text-xs font-medium text-gray-400 uppercase">
-                    JUMLAH DIMINTA :
-                    <span className="font-bold text-gray-600">
-                      {proses.jumlahMinta}
-                    </span>
-                  </p>
-
-                  {proses.kodeKain && (
-                    <p className="text-xs font-medium text-gray-400 uppercase">
-                      KODE PRODUK :
-                      <span className="font-bold text-gray-600">
-                        {proses.kodeKain}
-                      </span>
+        ) : prosesList.length > 0 ? (
+          <>
+            {prosesList.map((proses: prosesType, index: number) => (
+              <div
+                key={`${proses.idPermintaan}-${index}`}
+                onClick={() => handleSelectProses(proses)}
+                className="border border-gray-300 rounded-2xl p-3 flex justify-between items-center cursor-pointer hover:bg-gray-50"
+              >
+                <div className="flex-row w-full justify-between align-middle items-center">
+                  {proses.isUrgent && (
+                    <p className="text-red-500 text-sm uppercase font-semibold">
+                      Urgent
                     </p>
                   )}
+
+                  <p className="text-sm font-semibold text-gray-800 my-1">
+                    {proses.namaBarang} - {proses.ukuran}
+                  </p>
+
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-medium text-gray-400 uppercase">
+                      NAMA PRODUK :
+                      <span className="font-bold text-gray-600">
+                        {proses.namaBarang}
+                      </span>
+                    </p>
+
+                    <p className="text-xs font-medium text-gray-400 uppercase">
+                      UKURAN :
+                      <span className="font-bold text-gray-600">
+                        {proses.ukuran}
+                      </span>
+                    </p>
+
+                    <p className="text-xs font-medium text-gray-400 uppercase">
+                      JUMLAH DIMINTA :
+                      <span className="font-bold text-gray-600">
+                        {proses.jumlahMinta}
+                      </span>
+                    </p>
+
+                    {proses.kodeKain && (
+                      <p className="text-xs font-medium text-gray-400 uppercase">
+                        KODE PRODUK :
+                        <span className="font-bold text-gray-600">
+                          {proses.kodeKain}
+                        </span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="ml-4">
+                  <p className="text-2xl font-bold text-gray-800">
+                    {proses.jumlahMinta}
+                  </p>
                 </div>
               </div>
+            ))}
 
-              <div className="ml-4">
-                <p className="text-2xl font-bold text-gray-800">
-                  {proses.jumlahMinta}
-                </p>
-              </div>
+            {/* sentinel */}
+            <div ref={loadMoreRef} className="py-4 flex justify-center">
+              {isFetchingNextPage && <LoadingSpinner />}
             </div>
-          ))
+          </>
         ) : (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
@@ -269,18 +303,19 @@ export default function Proses() {
                 value={form.kode_potongan}
                 onChange={(e) => {
                   setForm({ ...form, kode_potongan: e.target.value });
-                  setErrors((prev) => ({ ...prev, kode_potongan: false }));
+                  setErrors((prev) => ({
+                    ...prev,
+                    kode_potongan: false,
+                  }));
                 }}
                 placeholder="Kode Kain"
-                className={`w-full rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 
-    ${
-      errors.kode_potongan
-        ? "bg-red-50 border border-red-500 focus:ring-red-400"
-        : "bg-gray-100 focus:ring-orange-400"
-    }`}
+                className={`w-full rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 ${
+                  errors.kode_potongan
+                    ? "bg-red-50 border border-red-500 focus:ring-red-400"
+                    : "bg-gray-100 focus:ring-orange-400"
+                }`}
               />
 
-              {/* PEMOTONG */}
               <div className="space-y-2">
                 <div className="flex flex-wrap gap-2">
                   {pemotongList.map((id, i) => (
@@ -289,6 +324,7 @@ export default function Proses() {
                       className="flex items-center gap-2 bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs"
                     >
                       {getNamaPemotong(id)}
+
                       <button
                         type="button"
                         onClick={() =>
@@ -326,6 +362,7 @@ export default function Proses() {
                   className="w-full bg-gray-100 rounded-xl px-3 py-2 text-sm outline-none"
                 >
                   <option value="">Pilih Pemotong</option>
+
                   {pemotongData?.map((p: any) => (
                     <option key={p.id} value={p.id}>
                       {p.nama}
@@ -338,15 +375,17 @@ export default function Proses() {
                 value={form.jumlah_lolos}
                 onChange={(e) => {
                   setForm({ ...form, jumlah_lolos: e.target.value });
-                  setErrors((prev) => ({ ...prev, jumlah_lolos: false }));
+                  setErrors((prev) => ({
+                    ...prev,
+                    jumlah_lolos: false,
+                  }));
                 }}
                 placeholder="Jumlah hasil"
-                className={`w-full rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 
-    ${
-      errors.jumlah_lolos
-        ? "bg-red-50 border border-red-500 focus:ring-red-400"
-        : "bg-gray-100 focus:ring-orange-400"
-    }`}
+                className={`w-full rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 ${
+                  errors.jumlah_lolos
+                    ? "bg-red-50 border border-red-500 focus:ring-red-400"
+                    : "bg-gray-100 focus:ring-orange-400"
+                }`}
               />
             </div>
 
