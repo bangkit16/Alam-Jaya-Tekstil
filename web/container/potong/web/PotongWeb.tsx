@@ -50,7 +50,7 @@ export default function PotongWeb({ handleLogout }: PotongWebProps) {
       </div>
 
       {/* MAIN */}
-      <div className="flex-1 p-6 overflow-hidden flex flex-col">
+      <div className="flex-1 p-6 flex flex-col">
         {/* SCREEN */}
         {activeTab === "menunggu" && <Menunggu />}
 

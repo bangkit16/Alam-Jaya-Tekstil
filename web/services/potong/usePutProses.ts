@@ -36,8 +36,8 @@ export const usePutProses = () => {
 
     onSuccess: () => {
       // ✅ REFRESH DATA YANG TERKAIT
-      queryClient.invalidateQueries({ queryKey: ["proses"] });
-      queryClient.invalidateQueries({ queryKey: ["selesai"] });
+      queryClient.invalidateQueries({ queryKey: ["potong" ,"proses"] });
+      queryClient.invalidateQueries({ queryKey: ["potong","selesai"] });
       queryClient.invalidateQueries({ queryKey: ["stok-potong-menunggu"] });
 
       console.log("Data berhasil dipindah ke selesai");

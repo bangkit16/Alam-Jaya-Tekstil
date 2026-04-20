@@ -6,14 +6,18 @@ import { toast } from "sonner";
 
 import { useGetPermintaan } from "@/services/potong/useGetPermintaan";
 import { usePutPermintaan } from "@/services/potong/usePutPermintaan";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import Pagination from "@/components/Pagination";
 
 export default function Menunggu() {
   const [selectedMenunggu, setSelectedMenunggu] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
-  const { data: dataPermintaan, isLoading } = useGetPermintaan();
+  const { data: dataPermintaan, isLoading } = useGetPermintaan(page);
   const { mutate: mutatePermintaan } = usePutPermintaan();
 
   const data = dataPermintaan?.data || [];
+  const meta = dataPermintaan?.meta || [];
 
   const handlePermintaan = (item: any) => {
     mutatePermintaan(
@@ -68,7 +72,7 @@ export default function Menunggu() {
         </div>
 
         {isLoading ? (
-          <p className="text-center text-gray-500">Loading...</p>
+          <LoadingSpinner />
         ) : data.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
@@ -92,22 +96,30 @@ export default function Menunggu() {
                   onClick={() =>
                     setSelectedMenunggu(isOpen ? null : item.idPermintaan)
                   }
-                  className="group bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                  className={`group bg-white border transition-all duration-300 ease-in-out rounded-2xl p-4 cursor-pointer ${
+                    isOpen ? "border-orange-400 shadow-lg" : "border-gray-300"
+                  }`}
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="text-sm font-semibold text-gray-800 group-hover:text-orange-500 transition">
-                        {item.namaBarang}
+                      {item.isUrgent && (
+                        <p className="text-sm font-semibold text-red-500 mb-2">
+                          URGENT
+                        </p>
+                      )}
+                      <p className="text-base font-semibold text-gray-800 group-hover:text-orange-500 transition">
+                        {item.namaBarang} - {item.ukuran}
                       </p>
 
-                      <div className="flex gap-2 mt-1">
-                        <span className="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full">
-                          {item.ukuran}
-                        </span>
-
-                        <span className="text-[10px] bg-yellow-100 text-yellow-600 px-2 py-0.5 rounded-full">
-                          Menunggu
-                        </span>
+                      <div className="flex gap-2 mt-2">
+                        <p className="text-sm text-gray-600">
+                          Tanggal Masuk Permintaan :{" "}
+                          <span className="font-bold">
+                            {new Date(
+                              item.tanggalMasukPermintaan,
+                            ).toLocaleString("id-ID")}
+                          </span>
+                        </p>
                       </div>
                     </div>
 
@@ -115,14 +127,20 @@ export default function Menunggu() {
                       <p className="text-xl font-bold text-gray-800">
                         {item.jumlahMinta}
                       </p>
-
-                      <p className="text-[10px] text-gray-400">Qty</p>
+                      <p className="text-[10px] text-gray-400">Jumlah Minta</p>
                     </div>
                   </div>
 
-                  {isOpen && (
-                    <>
-                      <div className="h-px bg-gray-200 my-3" />
+                  {/* --- WRAPPER ANIMASI --- */}
+                  <div
+                    className={`grid transition-all duration-300 ease-in-out ${
+                      isOpen
+                        ? "grid-rows-[1fr] opacity-100 mt-3"
+                        : "grid-rows-[0fr] opacity-0 mt-0"
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="h-px bg-gray-200 mb-3" />
 
                       <div className="text-sm text-gray-600 space-y-1">
                         <p>Jumlah diminta : {item.jumlahMinta}</p>
@@ -139,7 +157,7 @@ export default function Menunggu() {
                             e.stopPropagation();
                             handlePermintaan(item);
                           }}
-                          className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2 rounded-xl text-sm font-semibold"
+                          className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2 rounded-xl text-sm font-semibold active:scale-95 transition"
                         >
                           PROSES
                         </button>
@@ -149,17 +167,21 @@ export default function Menunggu() {
                             e.stopPropagation();
                             setSelectedMenunggu(null);
                           }}
-                          className="flex-1 bg-gray-200 text-gray-600 py-2 rounded-xl text-sm font-semibold"
+                          className="flex-1 bg-gray-200 text-gray-600 py-2 rounded-xl text-sm font-semibold active:scale-95 transition"
                         >
                           TIDAK
                         </button>
                       </div>
-                    </>
-                  )}
+                    </div>
+                  </div>
+                  {/* --- END WRAPPER ANIMASI --- */}
                 </div>
               );
             })}
           </div>
+        )}
+        {meta && meta.totalPages > 1 && (
+          <Pagination meta={meta} onPageChange={setPage} />
         )}
       </div>
     </>
