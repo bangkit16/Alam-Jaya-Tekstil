@@ -5,6 +5,7 @@ import { CheckCircle } from "lucide-react";
 import { useGetKurirSelesai } from "@/services/kurir/useGetKurirSelesai";
 import Pagination from "@/components/Pagination";
 import useDebounce from "@/hooks/useDebounce";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function Selesai() {
   const [page, setPage] = useState(1);
@@ -24,7 +25,7 @@ export default function Selesai() {
 
   console.log(dataSelesai);
 
-  if (isLoading) return <p className="text-center py-4">Loading...</p>;
+  if (isLoading) return <LoadingSpinner />;
 
   return (
     <>

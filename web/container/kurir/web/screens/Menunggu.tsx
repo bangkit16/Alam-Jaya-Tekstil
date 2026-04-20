@@ -3,21 +3,32 @@
 import { useState } from "react";
 import { ClipboardList } from "lucide-react";
 
-import { useGetKurirMenunggu } from "@/services/kurir/useGetKurirMenunggu";
+import {
+  KurirMenunggu,
+  useGetKurirMenunggu,
+} from "@/services/kurir/useGetKurirMenunggu";
 import { useGetListKurir } from "@/services/kurir/useGetListKurir";
 import { usePutAmbilJob } from "@/services/kurir/usePutAmbilJob";
+import Pagination from "@/components/Pagination";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { toast } from "sonner";
 
 export default function Menunggu() {
-  const { data, isLoading } = useGetKurirMenunggu();
+  const [page, setPage] = useState(1);
+
+  const { data: dataMenunggu, isLoading } = useGetKurirMenunggu(page);
   const { data: listKurir } = useGetListKurir();
   const mutation = usePutAmbilJob();
 
   const [selected, setSelected] = useState<any>(null);
   const [kurirId, setKurirId] = useState("");
 
-  const count = data?.length || 0;
+  const count = dataMenunggu?.data.length || 0;
 
-  if (isLoading) return <p className="text-center py-4">Loading...</p>;
+  const data = dataMenunggu?.data || [];
+  const meta = dataMenunggu?.meta;
+
+  if (isLoading) return <LoadingSpinner />;
 
   return (
     <>
@@ -49,19 +60,24 @@ export default function Menunggu() {
           </div>
         ) : (
           <div className="space-y-3">
-            {(data || []).map((item: any) => (
+            {(data || []).map((item: KurirMenunggu) => (
               <div
                 key={item.idProsesStokPotong}
                 className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:bg-gray-50 transition"
               >
                 {/* HEADER ITEM */}
+                {item.isUrgent && (
+                  <span className="text-sm text-red-500  font-bold">
+                    URGENT
+                  </span>
+                )}
                 <div className="flex justify-between items-center mb-2">
                   <p className="text-sm font-semibold text-gray-800">
-                    {item.namaBarang}
+                    {item.namaBarang} - {item.ukuran}
                   </p>
 
-                  <span className="text-xs bg-yellow-100 text-yellow-600 px-3 py-1 rounded-full font-medium">
-                    Menunggu
+                  <span className="text-sm bg-yellow-100 text-yellow-600 px-3 py-1 rounded-full font-medium">
+                    {item.jumlahLolos}
                   </span>
                 </div>
 
@@ -69,22 +85,44 @@ export default function Menunggu() {
                 <div className="h-px bg-gray-200 mb-2" />
 
                 {/* DETAIL */}
-                <div className="text-xs text-gray-500 space-y-1">
-                  <p>Jumlah : {item.jumlah}</p>
-                </div>
+                <div className="flex justify-between">
+                  <div className="text-xs text-gray-500 space-y-1">
+                    <p>
+                      Dikirim Dari :{" "}
+                      <span className="text-gray-700 font-bold">
+                        {item.dikirimDari}
+                      </span>
+                    </p>
+                    <p>
+                      Dikirim Ke :{" "}
+                      <span className="text-gray-700 font-bold">
+                        {item.dikirimKe}
+                      </span>
+                    </p>
+                    <p>
+                      Kode Stok Potongan :{" "}
+                      <span className="text-gray-700 font-bold">
+                        {item.kodeStokPotongan}
+                      </span>
+                    </p>
+                  </div>
 
-                {/* BUTTON */}
-                <div className="text-right mt-3">
-                  <button
-                    onClick={() => setSelected(item)}
-                    className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1.5 text-xs rounded-lg font-semibold hover:scale-105 active:scale-95 transition"
-                  >
-                    Ambil
-                  </button>
+                  {/* BUTTON */}
+                  <div className="text-right mt-auto">
+                    <button
+                      onClick={() => setSelected(item)}
+                      className=" mt-auto  bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1.5 text-xs rounded-lg font-semibold hover:scale-105 active:scale-95 transition"
+                    >
+                      Ambil
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
+        )}
+        {meta && meta.totalPages > 1 && (
+          <Pagination meta={meta} onPageChange={setPage} />
         )}
       </div>
 
@@ -125,13 +163,19 @@ export default function Menunggu() {
               onClick={() => {
                 if (!kurirId) return;
 
-                mutation.mutate({
-                  idProsesStokPotong: selected.idProsesStokPotong,
-                  idKurir: kurirId,
-                });
-
-                setSelected(null);
-                setKurirId("");
+                mutation.mutate(
+                  {
+                    idProsesStokPotong: selected.idProsesStokPotong,
+                    idKurir: kurirId,
+                  },
+                  {
+                    onSuccess: (data) => {
+                      toast.success(data.message);
+                      setSelected(null);
+                      setKurirId("");
+                    },
+                  },
+                );
               }}
               disabled={!kurirId}
               className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2.5 rounded-xl font-semibold disabled:opacity-50"

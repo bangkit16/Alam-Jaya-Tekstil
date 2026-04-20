@@ -1,14 +1,26 @@
 "use client";
 
 import { Truck } from "lucide-react";
-import { useGetKurirProses } from "@/services/kurir/useGetKurirProses";
+import {
+  KurirProses,
+  useGetKurirProses,
+} from "@/services/kurir/useGetKurirProses";
+import Pagination from "@/components/Pagination";
+import { useState } from "react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function Proses() {
-  const { data, isLoading } = useGetKurirProses();
+  const [page, setPage] = useState(1);
+  const { data: dataProses, isLoading } = useGetKurirProses(page);
 
-  const count = data?.length || 0;
+  const [selected, setSelected] = useState<KurirProses | null>(null);
 
-  if (isLoading) return <p className="text-center py-4">Loading...</p>;
+  const count = dataProses?.data.length || 0;
+
+  const data: KurirProses[] = dataProses?.data || [];
+  const meta = dataProses?.meta;
+
+  if (isLoading) return <LoadingSpinner />;
 
   return (
     <>
@@ -40,34 +52,76 @@ export default function Proses() {
           </div>
         ) : (
           <div className="space-y-3">
-            {(data || []).map((item: any) => (
+            {(data || []).map((item: KurirProses) => (
               <div
                 key={item.idProsesStokPotong}
                 className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:bg-gray-50 transition"
               >
                 {/* HEADER ITEM */}
+                {item.isUrgent && (
+                  <span className="text-sm text-red-500  font-bold">
+                    URGENT
+                  </span>
+                )}
                 <div className="flex justify-between items-center mb-2">
                   <p className="text-sm font-semibold text-gray-800">
                     {item.namaBarang}
                   </p>
 
-                  <span className="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded-full font-medium">
-                    Proses
-                  </span>
+                  <p className="text-sm bg-yellow-100 text-yellow-600 px-3 py-1 rounded-full font-medium">
+                    {item.jumlahLolos}
+                  </p>
                 </div>
 
                 {/* DIVIDER */}
                 <div className="h-px bg-gray-200 mb-2" />
 
-                {/* DETAIL */}
-                <div className="text-xs text-gray-500 space-y-1">
-                  <p>Jumlah : {item.jumlah}</p>
+                <div className="flex justify-between">
+                  <div className="text-xs text-gray-500 space-y-1">
+                    <p>
+                      Dikirim Dari :{" "}
+                      <span className="text-gray-700 font-bold">
+                        {item.dikirimDari}
+                      </span>
+                    </p>
+                    <p>
+                      Dikirim Ke :{" "}
+                      <span className="text-gray-700 font-bold">
+                        {item.dikirimKe}
+                      </span>
+                    </p>
+                    <p>
+                      Kode Stok Potongan :{" "}
+                      <span className="text-gray-700 font-bold">
+                        {item.kodeStokPotongan}
+                      </span>
+                    </p>
+                    <p>
+                      Tanggal Berangkat :{" "}
+                      <span className="text-gray-700 font-bold">
+                        {new Date(item.tanggalBerangkat).toLocaleString(
+                          "id-ID",
+                        )}
+                      </span>
+                    </p>
+                  </div>
 
-                  {item.namaKurir && <p>Kurir : {item.namaKurir}</p>}
+                  {/* BUTTON */}
+                  <div className="text-right mt-auto">
+                    <button
+                      onClick={() => setSelected(item)}
+                      className=" mt-auto  bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1.5 text-xs rounded-lg font-semibold hover:scale-105 active:scale-95 transition"
+                    >
+                      Selesai
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
+        )}
+        {meta && meta.totalPages > 1 && (
+          <Pagination meta={meta} onPageChange={setPage} />
         )}
       </div>
     </>
