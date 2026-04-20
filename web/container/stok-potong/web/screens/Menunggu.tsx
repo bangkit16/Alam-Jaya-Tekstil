@@ -12,6 +12,7 @@ import { useGetProses } from "@/services/stok-potong/useGetProses";
 import { useGetStock } from "@/services/stok-potong/useGetStock";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import Pagination from "@/components/Pagination";
+import { toast } from "sonner";
 
 export default function Menunggu() {
   const [page, setPage] = useState(1);
@@ -70,6 +71,11 @@ export default function Menunggu() {
                 className="bg-white border border-gray-100 rounded-xl p-4 flex justify-between items-center shadow-sm cursor-pointer hover:bg-gray-50 transition"
               >
                 <div>
+                  {item.isUrgent && (
+                    <span className="text-sm text-red-600  font-bold">
+                      URGENT
+                    </span>
+                  )}
                   <p className="text-sm font-medium text-gray-800">
                     {item.namaBarang} - {item.ukuran}
                   </p>
@@ -112,6 +118,9 @@ export default function Menunggu() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* HEADER */}
+            {selectedItem.isUrgent && (
+              <span className="text-sm text-red-600  font-bold">URGENT</span>
+            )}
             <div className="flex justify-between items-center mb-3">
               <p className="text-sm font-medium text-gray-800">
                 {selectedItem.namaBarang} - {selectedItem.ukuran}
@@ -139,7 +148,8 @@ export default function Menunggu() {
                 disabled={isPending}
                 onClick={() => {
                   mutate(selectedItem.idStokPotong, {
-                    onSuccess: () => {
+                    onSuccess: (data) => {
+                      toast.success(data.message);
                       setSelectedItem(null);
                       refetch();
                     },

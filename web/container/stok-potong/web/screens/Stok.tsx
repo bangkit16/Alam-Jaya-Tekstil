@@ -85,6 +85,11 @@ export default function Stok() {
             }`}
                 >
                   {/* HEADER */}
+                  {item.isUrgent && (
+                    <span className="text-sm text-red-600  font-bold">
+                      URGENT
+                    </span>
+                  )}
                   <div className="flex justify-between items-center mb-2">
                     <p className="text-sm font-semibold text-gray-800">
                       {item.namaBarang} - {item.ukuran}
@@ -145,8 +150,15 @@ export default function Stok() {
             className="bg-white/90 backdrop-blur-xl p-6 rounded-2xl w-full max-w-sm shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
+            {selected.isUrgent && (
+              <span className="text-sm text-red-600  font-bold">URGENT</span>
+            )}
             <p className="font-semibold mb-4 text-gray-800">
               {selected.namaBarang}
+            </p>
+
+            <p className="font-semibold mb-2 text-sm text-gray-600">
+              Pilih Penjahit
             </p>
 
             <select

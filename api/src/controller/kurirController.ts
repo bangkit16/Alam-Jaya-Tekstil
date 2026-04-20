@@ -17,7 +17,7 @@ export default class KurirController {
       // 1. Ambil parameter dari Request dan siapkan argumen untuk Prisma
       const { prisma: pg, page, limit } = getPagination(req);
 
-      const search = req.query.search as string;
+      const search = (req.query.search as string)?.trim() || "";
 
       // Variabel filter agar konsisten antara query data dan count
       const whereCondition: Prisma.ProsesStokPotongWhereInput = {
@@ -27,20 +27,29 @@ export default class KurirController {
             StatusProses.MENUNGGU_PENGIRIMAN_KE_QC,
           ],
         },
-        kurir: {
-          nama: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-        stokPotong: {
-          permintaan: {
-            namaBarang: {
-              contains: search,
-              mode: "insensitive",
+
+        ...(search && {
+          OR: [
+            {
+              kurir: {
+                nama: {
+                  contains: search,
+                  mode: "insensitive",
+                },
+              },
             },
-          },
-        },
+            {
+              stokPotong: {
+                permintaan: {
+                  namaBarang: {
+                    contains: search,
+                    mode: "insensitive",
+                  },
+                },
+              },
+            },
+          ],
+        }),
       };
 
       // 2. Jalankan kueri data dan hitung total secara paralel menggunakan Promise.all
@@ -87,7 +96,7 @@ export default class KurirController {
         dikirimDari:
           item.status == StatusProses.MENUNGGU_PENGIRIMAN
             ? "Stok Potong"
-            : item.penjahit?.nama,
+            : item.penjahit?.nama ,
         dikirimKe:
           item.status == StatusProses.MENUNGGU_PENGIRIMAN_KE_QC
             ? "QC"
@@ -295,9 +304,9 @@ export default class KurirController {
       // 1. Ambil parameter pagination dari helper
       const { prisma: pg, page, limit } = getPagination(req);
 
-      const search = req.query.search as string;
+      const search = (req.query.search as string)?.trim() || "";
 
-      // Filter yang konsisten untuk data dan count
+      // Variabel filter agar konsisten antara query data dan count
       const whereCondition: Prisma.ProsesStokPotongWhereInput = {
         status: {
           in: [
@@ -305,20 +314,29 @@ export default class KurirController {
             StatusProses.PROSES_PENGIRIMAN_KE_QC,
           ],
         },
-        kurir: {
-          nama: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-        stokPotong: {
-          permintaan: {
-            namaBarang: {
-              contains: search,
-              mode: "insensitive",
+
+        ...(search && {
+          OR: [
+            {
+              kurir: {
+                nama: {
+                  contains: search,
+                  mode: "insensitive",
+                },
+              },
             },
-          },
-        },
+            {
+              stokPotong: {
+                permintaan: {
+                  namaBarang: {
+                    contains: search,
+                    mode: "insensitive",
+                  },
+                },
+              },
+            },
+          ],
+        }),
       };
 
       // 2. Gunakan Promise.all untuk eksekusi paralel (findMany & count)
