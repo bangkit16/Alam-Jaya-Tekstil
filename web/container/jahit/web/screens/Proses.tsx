@@ -5,13 +5,21 @@ import { Package } from "lucide-react";
 import { useGetPenjahitProses } from "@/services/jahit/useGetPenjahitProses";
 import { usePutJeda } from "@/services/jahit/usePutJeda";
 import { usePutDikerjakan } from "@/services/jahit/usePutDikerjakan";
+import { usePutSelesaiJahit } from "@/services/jahit/usePutSelesaiJahit";
 
 export default function Proses() {
   const { data = [] } = useGetPenjahitProses();
   const mutationJeda = usePutJeda();
   const mutationDikerjakan = usePutDikerjakan();
+  const mutationSelesai = usePutSelesaiJahit();
 
   const [selected, setSelected] = useState<any>(null);
+
+  // 🔥 FORM
+  const [form, setForm] = useState({
+    jumlahSelesai: 0,
+    catatan: "",
+  });
 
   return (
     <>
@@ -24,7 +32,10 @@ export default function Proses() {
             {data.map((item: any) => (
               <div
                 key={item.idProsesStokPotong}
-                onClick={() => setSelected(item)}
+                onClick={() => {
+                  setSelected(item);
+                  setForm({ jumlahSelesai: 0, catatan: "" }); // reset form
+                }}
                 className="border border-gray-200 rounded-xl p-4 cursor-pointer hover:bg-gray-50 transition"
               >
                 {/* HEADER */}
@@ -81,30 +92,75 @@ export default function Proses() {
 
           {/* DETAIL */}
           <div className="text-sm text-gray-600 space-y-2 mb-4">
-            <p>Kode: {selected.kodeStokPotongan}</p>
+            <p>Kode Stok Potongan: {selected.kodeStokPotongan}</p>
 
             <p>
-              Tanggal Mulai:{" "}
+              Tanggal Mulai Jahit:{" "}
               {new Date(selected.tanggalMulaiJahit).toLocaleString("id-ID")}
             </p>
 
             <p>
               Status:{" "}
-              <span className="font-bold text-orange-500">
-                {selected.status}
-              </span>
+              <span className="font-bold text-blue-600">{selected.status}</span>
             </p>
           </div>
 
-          {/* BUTTON */}
-          <div className="space-y-2">
+          {/* INPUT */}
+          <div className="space-y-3 mb-4">
+            <input
+              type="number"
+              placeholder="Jumlah selesai"
+              value={form.jumlahSelesai}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  jumlahSelesai: Number(e.target.value),
+                }))
+              }
+              className="w-full bg-gray-100 px-3 py-2 rounded-xl text-sm"
+            />
+
+            <input
+              type="text"
+              placeholder="Catatan (optional)"
+              value={form.catatan}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  catatan: e.target.value,
+                }))
+              }
+              className="w-full bg-gray-100 px-3 py-2 rounded-xl text-sm"
+            />
+          </div>
+
+          {/* 🔥 KONFIRMASI SELESAI */}
+          <button
+            onClick={() => {
+              mutationSelesai.mutate({
+                id: selected.idProsesStokPotong,
+                jumlahSelesaiJahit: form.jumlahSelesai,
+                catatan: form.catatan,
+              });
+
+              setSelected(null);
+            }}
+            disabled={form.jumlahSelesai <= 0}
+            className="w-full bg-orange-500 text-white py-3 rounded-xl font-semibold mb-3 disabled:bg-gray-300"
+          >
+            KONFIRMASI SELESAI
+          </button>
+
+          {/* BUTTON BAWAH */}
+          <div className="flex gap-2">
+            {/* JEDA / LANJUT */}
             {selected.status === "DIKERJAKAN" ? (
               <button
                 onClick={() => {
                   mutationJeda.mutate(selected.idProsesStokPotong);
                   setSelected(null);
                 }}
-                className="w-full bg-yellow-500 text-white py-2 rounded-xl font-semibold"
+                className="flex-1 bg-orange-400 text-white py-2 rounded-xl font-semibold"
               >
                 JEDA
               </button>
@@ -114,17 +170,18 @@ export default function Proses() {
                   mutationDikerjakan.mutate(selected.idProsesStokPotong);
                   setSelected(null);
                 }}
-                className="w-full bg-orange-500 text-white py-2 rounded-xl font-semibold"
+                className="flex-1 bg-orange-400 text-white py-2 rounded-xl font-semibold"
               >
-                LANJUT KERJAKAN
+                LANJUT
               </button>
             )}
 
+            {/* BATAL */}
             <button
               onClick={() => setSelected(null)}
-              className="w-full bg-gray-200 text-gray-600 py-2 rounded-xl font-semibold"
+              className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-xl font-semibold"
             >
-              KEMBALI
+              BATAL
             </button>
           </div>
         </Modal>
