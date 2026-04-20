@@ -28,7 +28,7 @@ export default function StokPotongWeb({ handleLogout }: any) {
   const { data: prosesData } = useGetProses();
   const { data: stokData } = useGetStock();
 
-  const countMenunggu = menungguData?.length || 0;
+  const countMenunggu = menungguData?.data.length || 0;
   const countProses = prosesData?.length || 0;
   const countStok = stokData?.length || 0;
 

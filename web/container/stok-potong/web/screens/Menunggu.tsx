@@ -10,9 +10,16 @@ import { usePutMenunggu } from "@/services/stok-potong/usePutMenunggu";
 
 import { useGetProses } from "@/services/stok-potong/useGetProses";
 import { useGetStock } from "@/services/stok-potong/useGetStock";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import Pagination from "@/components/Pagination";
 
 export default function Menunggu() {
-  const { data, isLoading, refetch } = useGetPermintaanStokPotong();
+  const [page, setPage] = useState(1);
+  const {
+    data: menungguData,
+    isLoading,
+    refetch,
+  } = useGetPermintaanStokPotong(page);
   const { mutate, isPending } = usePutMenunggu();
 
   const [selectedItem, setSelectedItem] = useState<any>(null);
@@ -20,18 +27,14 @@ export default function Menunggu() {
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString("id-ID");
 
-  const count = data?.length || 0;
+  const count = menungguData?.data.length || 0;
+
+  const data = menungguData?.data || [];
+  const meta = menungguData?.meta;
 
   //
-  const { data: menungguData } = useGetPermintaanStokPotong();
-  const { data: prosesData } = useGetProses();
-  const { data: stokData } = useGetStock();
 
-  const countMenunggu = menungguData?.length || 0;
-  const countProses = prosesData?.length || 0;
-  const countStok = stokData?.length || 0;
-
-  if (isLoading) return <p className="text-center py-4">Loading...</p>;
+  if (isLoading) return <LoadingSpinner />;
 
   return (
     <>
@@ -89,6 +92,10 @@ export default function Menunggu() {
               </div>
             ))}
           </div>
+        )}
+        {/* PAGINATION */}
+        {meta && meta.totalPages > 1 && (
+          <Pagination meta={meta} onPageChange={setPage} />
         )}
       </div>
 

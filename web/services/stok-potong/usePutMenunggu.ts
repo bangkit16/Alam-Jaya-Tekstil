@@ -13,10 +13,10 @@ export const usePutMenunggu = () => {
     onSuccess: () => {
       // 🔥 refresh data menunggu
       queryClient.invalidateQueries({
-        queryKey: ["stok-potong-menunggu"],
+        queryKey: ["stokpotong", "menunggu"],
       });
       queryClient.invalidateQueries({
-        queryKey: ["stok-potong-proses"],
+        queryKey: ["stokpotong", "proses"],
       });
     },
   });
