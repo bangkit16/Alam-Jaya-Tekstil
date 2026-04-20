@@ -26,7 +26,7 @@ export default function KurirWeb({ handleLogout }: any) {
   // summary
   const { data: menunggu } = useGetKurirMenunggu();
   const { data: proses } = useGetKurirProses();
-  const { data: selesai } = useGetKurirSelesai();
+  const { data: selesai } = useGetKurirSelesai(1, "");
 
   const countMenunggu = menunggu?.length || 0;
   const countProses = proses?.length || 0;

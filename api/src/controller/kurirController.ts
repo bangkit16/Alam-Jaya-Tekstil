@@ -576,76 +576,75 @@ export default class KurirController {
 
   public static async getDataSelesai(req: Request, res: Response) {
     try {
-      // 1. Ambil parameter pagination
-      const { prisma: pg, page, limit } = getPagination(req);
+      const { page, limit } = getPagination(req);
+      const search = (req.query.search as string) || "";
 
-      // Filter yang digunakan bersama untuk findMany dan count
-      const whereCondition = {
+      const whereCondition: Prisma.ProsesStokPotongWhereInput = {
         status: {
           in: [
             StatusProses.SELESAI_PENGIRIMAN,
             StatusProses.SELESAI_PENGIRIMAN_KE_QC,
           ],
         },
-      };
-
-      // 2. Eksekusi query data dan total secara paralel
-      const [dataSelesai, total] = await Promise.all([
-        prisma.prosesStokPotong.findMany({
-          where: whereCondition,
-          ...pg, // Spread skip & take
-          select: {
-            id: true,
-            tanggalSampai: true,
-            tanggalBerangkat: true,
-            tanggalSampaiKeQC: true,
-            tanggalBerangkatKeQC: true,
-            status: true,
-            jumlahSelesai: true,
+        OR: [
+          {
             kurir: {
-              select: {
-                nama: true,
+              nama: {
+                contains: search,
+                mode: "insensitive",
               },
             },
-            kurirQC: {
-              select: {
-                nama: true,
-              },
-            },
-            penjahit: {
-              select: {
-                nama: true,
-              },
-            },
+          },
+          {
             stokPotong: {
-              select: {
-                kodeStokPotongan: true,
-                jumlahLolos: true,
-                permintaan: {
-                  select: {
-                    id: true,
-                    namaBarang: true,
-                    ukuran: true,
-                    isUrgent: true,
-                  },
+              permintaan: {
+                namaBarang: {
+                  contains: search,
+                  mode: "insensitive",
                 },
               },
             },
           },
-        }),
-        prisma.prosesStokPotong.count({
-          where: whereCondition,
-        }),
-      ]);
+        ],
+      };
 
-      // 3. Transformasi data (flatMap) tetap dipertahankan sesuai logika asli
-      const mappedData = dataSelesai.flatMap((item) => {
-        const baris: any[] = [];
+      // ambil semua dulu
+      const rows = await prisma.prosesStokPotong.findMany({
+        where: whereCondition,
+        select: {
+          id: true,
+          tanggalSampai: true,
+          tanggalBerangkat: true,
+          tanggalSampaiKeQC: true,
+          tanggalBerangkatKeQC: true,
+          status: true,
+          jumlahSelesai: true,
 
-        // 1. Cek Histori Pengiriman ke Penjahit
+          kurir: { select: { nama: true } },
+          kurirQC: { select: { nama: true } },
+          penjahit: { select: { nama: true } },
+
+          stokPotong: {
+            select: {
+              jumlahLolos: true,
+              permintaan: {
+                select: {
+                  namaBarang: true,
+                  isUrgent: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // bikin histori rows
+      const mappedData = rows.flatMap((item) => {
+        const result: any[] = [];
+
         if (item.tanggalSampai) {
-          baris.push({
-            idProsesStokPotong: `${item.id}`,
+          result.push({
+            idProsesStokPotong: item.id,
             namaBarang: item.stokPotong.permintaan.namaBarang,
             dikirimDari: "Stok Potong",
             dikirimKe: `Penjahit (${item.penjahit?.nama})`,
@@ -658,10 +657,9 @@ export default class KurirController {
           });
         }
 
-        // 2. Cek Histori Pengiriman ke QC
         if (item.tanggalSampaiKeQC) {
-          baris.push({
-            idProsesStokPotong: `${item.id}`,
+          result.push({
+            idProsesStokPotong: item.id,
             namaBarang: item.stokPotong.permintaan.namaBarang,
             dikirimDari: `Penjahit (${item.penjahit?.nama})`,
             dikirimKe: "QC",
@@ -674,17 +672,26 @@ export default class KurirController {
           });
         }
 
-        return baris;
+        return result;
       });
 
-      // 4. Return response dengan format data & meta
+      // pagination setelah flatmap
+      const total = mappedData.length;
+
+      const start = (page - 1) * limit;
+      const end = start + limit;
+
+      const paginated = mappedData.slice(start, end);
+
       return res.status(200).json({
-        data: mappedData,
+        data: paginated,
         meta: wrapPagination(total, page, limit),
       });
     } catch (error) {
-      console.error("Error fetching data selesai:", error);
-      return res.status(500).json({ error: "Internal server error" });
+      console.error(error);
+      return res.status(500).json({
+        error: "Internal server error",
+      });
     }
   }
 

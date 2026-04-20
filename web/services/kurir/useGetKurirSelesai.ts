@@ -32,7 +32,8 @@ export type KurirSelesaiResponse = {
 // Fetcher Function - Sekarang menerima page dan search
 const fetchKurirSelesai = async (
   page: number = 1,
-  search: string = "",
+  search: string ,
+  limit : number = 8
 ): Promise<KurirSelesaiResponse> => {
   if (use_mock) {
     await delay(800);
@@ -66,20 +67,20 @@ const fetchKurirSelesai = async (
     params: {
       page,
       search,
-      limit: 10, // Opsional: tambahkan jika ingin limit statis
+      limit, 
     },
   });
   return response.data;
 };
 
 // Exported Hook - Mendukung Query Params
-export const useGetKurirSelesai = (page: number = 1, search: string = "") => {
+export const useGetKurirSelesai = (page: number = 1, search: string , limit : number = 3) => {
   return useQuery<KurirSelesaiResponse, Error>({
     // Kembalikan SelesaiResponse agar meta bisa diakses
     queryKey: ["kurir", "selesai", page, search], // Tambahkan page & search ke key
-    queryFn: () => fetchKurirSelesai(page, search),
-    placeholderData: (previousData) => previousData,
-    retry: 1,
+    queryFn: () => fetchKurirSelesai(page, search , limit),
+    // placeholderData: (previousData) => previousData,
+    // retry: 1,
   });
 };
 
