@@ -3,37 +3,26 @@
 import { useState } from "react";
 import { CheckCircle } from "lucide-react";
 import { useGetKurirSelesai } from "@/services/kurir/useGetKurirSelesai";
+import Pagination from "@/components/Pagination";
+import useDebounce from "@/hooks/useDebounce";
 
 export default function Selesai() {
-  const { data, isLoading } = useGetKurirSelesai();
-
+  const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<any>(null);
   const [search, setSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
 
-  const itemsPerPage = 5;
+  const debouncedSearch = useDebounce(search, 500);
+
+  const { data: dataSelesai, isLoading } = useGetKurirSelesai(
+    page,
+    debouncedSearch,
+  );
 
   // 🔥 AMANIN DATA
-  const list = Array.isArray(data?.data) ? data.data : [];
+  const data = dataSelesai?.data || [];
+  const meta = dataSelesai?.meta;
 
-  // 🔥 FILTER (FIX BUG DI SINI)
-  const filtered = list.filter((item: any) => {
-    const keyword = search.toLowerCase();
-
-    return (
-      (item.namaBarang || "").toLowerCase().includes(keyword) ||
-      (item.dikirimKe || "").toLowerCase().includes(keyword) ||
-      (item.dikirimDari || "").toLowerCase().includes(keyword)
-    );
-  });
-
-  // 🔥 PAGINATION
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
-
-  const paginated = filtered.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
+  console.log(dataSelesai);
 
   if (isLoading) return <p className="text-center py-4">Loading...</p>;
 
@@ -52,18 +41,17 @@ export default function Selesai() {
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
-              setCurrentPage(1);
             }}
             className="w-full md:w-72 bg-gray-100 border border-gray-200 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
           />
 
           <span className="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-600">
-            {filtered.length} item
+            {data.length} item
           </span>
         </div>
 
         {/* CONTENT */}
-        {paginated.length === 0 ? (
+        {data.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <div className="bg-green-100 text-green-500 p-4 rounded-full mb-4">
               <CheckCircle size={28} />
@@ -81,9 +69,9 @@ export default function Selesai() {
           </div>
         ) : (
           <div className="space-y-3">
-            {paginated.map((item: any) => (
+            {data.map((item: any, index: number) => (
               <div
-                key={item.idProsesStokPotong}
+                key={item.idProsesStokPotong + index}
                 onClick={() => setSelected(item)}
                 className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:bg-gray-50 transition cursor-pointer"
               >
@@ -129,39 +117,8 @@ export default function Selesai() {
           </div>
         )}
 
-        {/* PAGINATION */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-6">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              className="px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm"
-            >
-              Prev
-            </button>
-
-            {Array.from({ length: totalPages }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrentPage(i + 1)}
-                className={`px-3 py-1 rounded-lg text-sm ${
-                  currentPage === i + 1
-                    ? "bg-orange-500 text-white"
-                    : "bg-gray-100 hover:bg-gray-200"
-                }`}
-              >
-                {i + 1}
-              </button>
-            ))}
-
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              className="px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm"
-            >
-              Next
-            </button>
-          </div>
+        {meta && meta.totalPages > 1 && (
+          <Pagination meta={meta} onPageChange={setPage} />
         )}
       </div>
 

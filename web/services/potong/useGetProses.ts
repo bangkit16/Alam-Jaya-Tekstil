@@ -42,7 +42,7 @@ const fetchProses = async (page: number , limit : number = 8): Promise<APIRespon
 export const useGetProses = (page: number = 1 , limit: number = 4) => {
   return useQuery<APIResponse>({
     queryKey: ["potong","proses", page], // Key unik berdasarkan halaman
-    queryFn: () => fetchProses(page),
+    queryFn: () => fetchProses(page , limit),
     placeholderData: (previousData) => previousData, // UI tidak kedip saat ganti page
     staleTime: 1000 * 60 * 5, // Data dianggap segar selama 5 menit
   });
