@@ -29,8 +29,8 @@ export default function StokPotongWeb({ handleLogout }: any) {
   const { data: stokData } = useGetStock();
 
   const countMenunggu = menungguData?.data.length || 0;
-  const countProses = prosesData?.length || 0;
-  const countStok = stokData?.length || 0;
+  const countProses = prosesData?.data.length || 0;
+  const countStok = stokData?.data.length || 0;
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-gray-100 to-orange-50">

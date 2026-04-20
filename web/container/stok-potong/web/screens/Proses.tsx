@@ -6,9 +6,12 @@ import { Package } from "lucide-react";
 import { useGetProses } from "@/services/stok-potong/useGetProses";
 import { usePutProses } from "@/services/stok-potong/usePutProses";
 import { useGetPengecek } from "@/services/stok-potong/useGetPengecek";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import Pagination from "@/components/Pagination";
 
 export default function Proses() {
-  const { data, isLoading } = useGetProses();
+  const [page, setPage] = useState(1);
+  const { data: dataProses, isLoading } = useGetProses(page);
   const { data: pengecekList } = useGetPengecek();
   const { mutate, isPending } = usePutProses();
 
@@ -21,9 +24,12 @@ export default function Proses() {
     catatan: "",
   });
 
+  const data = dataProses?.data || [];
+  const meta = dataProses?.meta;
+
   const count = data?.length || 0;
 
-  if (isLoading) return <p className="text-center py-4">Loading...</p>;
+  if (isLoading) return <LoadingSpinner />;
 
   return (
     <>
@@ -88,6 +94,9 @@ export default function Proses() {
                 </div>
               ))}
             </div>
+          )}
+          {meta && meta.totalPages > 1 && (
+            <Pagination meta={meta} onPageChange={setPage} />
           )}
         </div>
       </div>

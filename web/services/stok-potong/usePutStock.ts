@@ -12,7 +12,7 @@ export const usePutStock = () => {
     onSuccess: () => {
       // 🔥 refresh data stock
       queryClient.invalidateQueries({
-        queryKey: ["stok-potong-stock"],
+        queryKey: ["stokpotong", "stok" , "infinite"],
       });
     },
   });

@@ -9,10 +9,10 @@ export const usePutProses = () => {
     },
     onSuccess : () => {
       queryClient.invalidateQueries({
-        queryKey: ["stok-potong-stock"],
+        queryKey: ["stokpotong" ,"stok" , "infinite"],
       });
       queryClient.invalidateQueries({
-        queryKey: ["stok-potong-proses"],
+        queryKey: ["stokpotong" ,"proses" , "infinite"],
       });
     },
   });

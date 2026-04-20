@@ -85,7 +85,10 @@ const MOCK_DATA: MenungguType[] = [
 ];
 
 // 🚀 FETCHER FUNCTION
-const fetcher = async (page = 1): Promise<PaginatedResponse> => {
+const fetcher = async (
+  page: number = 1,
+  limit: number = 8,
+): Promise<PaginatedResponse> => {
   if (use_mock) {
     await delay(1000); // Simulasi loading network
 
@@ -108,7 +111,7 @@ const fetcher = async (page = 1): Promise<PaginatedResponse> => {
   }
 
   // JIKA REAL API
-  const response = await api.get(`/stokpotong/menunggu`, { params: { page , limit:2 } });
+  const response = await api.get(`/stokpotong/menunggu`, { params: { page , limit } });
 
   const result = response.data?.data || [];
   const meta = response.data?.meta;
@@ -123,10 +126,10 @@ const fetcher = async (page = 1): Promise<PaginatedResponse> => {
 };
 
 // 🎣 HOOKS
-export const useGetPermintaanStokPotong = (page: number = 1) => {
+export const useGetPermintaanStokPotong = (page: number = 1 , limit: number = 5) => {
   return useQuery({
-    queryKey: ["stokpotong" , "menunggu" , page],
-    queryFn: () => fetcher(page),
+    queryKey: ["stokpotong", "menunggu", page],
+    queryFn: () => fetcher(page , limit),
   });
 };
 

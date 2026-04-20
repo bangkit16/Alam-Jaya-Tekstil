@@ -379,6 +379,9 @@ export default class StokPotongController {
               },
             },
           },
+          orderBy: {
+            status: "desc", // SELESAI akan muncul sebelum WAITING
+          },
         }),
         prisma.stokPotong.count({
           where: whereCondition,

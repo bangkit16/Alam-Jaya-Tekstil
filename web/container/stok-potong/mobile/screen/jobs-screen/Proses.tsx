@@ -1,22 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react"; // Tambah useRef
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
-import { useGetProses, ProsesType } from "@/services/stok-potong/useGetProses";
+import {
+  useGetProsesInfinite,
+  ProsesType,
+} from "@/services/stok-potong/useGetProses";
 import { usePutProses } from "@/services/stok-potong/usePutProses";
 import { useGetPengecek } from "@/services/stok-potong/useGetPengecek";
 
-// jika pakai sonner / react-hot-toast
 import { toast } from "sonner";
 import { Package } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 
-/* ===============================
-   ZOD SCHEMA
-================================= */
+// ... (Zod Schema tetap sama)
 const prosesSchema = (jumlahHasil: number) =>
   z
     .object({
@@ -24,61 +24,78 @@ const prosesSchema = (jumlahHasil: number) =>
         .array(z.string())
         .min(1, "Pilih minimal 1 pengecek")
         .max(2, "Maksimal 2 pengecek"),
-
       kode_potongan: z.string().min(1, "Kode potongan wajib diisi"),
-
       jumlah_lolos: z
         .any()
         .refine((val) => val !== "", "Jumlah Lolos wajib diisi")
         .transform((val) => Number(val))
         .refine((val) => !isNaN(val), "Harus berupa angka")
         .refine((val) => val >= 0, "Minimal jumlah adalah 0"),
-
       jumlah_reject: z
         .any()
         .refine((val) => val !== "", "Jumlah Reject wajib diisi")
         .transform((val) => Number(val))
         .refine((val) => !isNaN(val), "Harus berupa angka")
         .refine((val) => val >= 0, "Minimal jumlah adalah 0"),
-
       catatan: z.string().optional(),
     })
     .superRefine((data, ctx) => {
       const total = data.jumlah_lolos + data.jumlah_reject;
-
-      if (total > jumlahHasil) {
+      if (total > jumlahHasil)
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["jumlah_lolos"],
-          message: `Total melebihi jumlah hasil (${jumlahHasil})`,
+          message: `Total melebihi (${jumlahHasil})`,
         });
-      }
-
-      if (total < jumlahHasil) {
+      if (total < jumlahHasil)
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["jumlah_reject"],
-          message: `Total kurang dari jumlah hasil (${jumlahHasil})`,
+          message: `Total kurang (${jumlahHasil})`,
         });
-      }
     });
 
 type ProsesFormValues = z.infer<ReturnType<typeof prosesSchema>>;
-
-type pengecekType = {
-  id: string;
-  nama: string;
-};
+type pengecekType = { id: string; nama: string };
 
 export default function Proses() {
-  const { data, isLoading } = useGetProses();
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useGetProsesInfinite();
   const { data: pengecekList } = useGetPengecek();
   const { mutate, isPending } = usePutProses();
 
   const [selectedPermintaan, setSelectedPermintaan] =
     useState<ProsesType | null>(null);
 
+  // 1. Ref untuk sensor scroll
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  const allProsesData = data?.pages.flatMap((page) => page.data) || [];
   const jumlahHasil = selectedPermintaan?.jumlahHasil || 0;
+
+  // 2. Logic Intersection Observer untuk Infinite Scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const {
     register,
@@ -91,7 +108,7 @@ export default function Proses() {
     resolver: zodResolver(prosesSchema(jumlahHasil)),
     defaultValues: {
       pengecek: [],
-      kode_potongan: selectedPermintaan?.kodeKain || "",
+      kode_potongan: "",
       jumlah_lolos: 0,
       jumlah_reject: 0,
       catatan: "",
@@ -110,10 +127,7 @@ export default function Proses() {
     }
   }, [selectedPermintaan, reset]);
 
-  if (isPending) return <p className="text-center">Loading...</p>;
-
   const selectedPengecek = watch("pengecek");
-
   const handleClose = () => {
     setSelectedPermintaan(null);
     reset();
@@ -121,7 +135,6 @@ export default function Proses() {
 
   const onSubmit: SubmitHandler<ProsesFormValues> = (values) => {
     if (!selectedPermintaan) return;
-
     mutate(
       {
         id: selectedPermintaan.idStokPotong,
@@ -134,9 +147,10 @@ export default function Proses() {
         },
       },
       {
-        onSuccess: (data: any) => {
-          toast.success("Berhasil dipindah ke selesai");
+        onSuccess: () => {
+          toast.success("Berhasil");
           handleClose();
+          refetch();
         },
       },
     );
@@ -144,54 +158,55 @@ export default function Proses() {
 
   return (
     <>
-      {/* ===============================
-          LIST DATA
-      ================================= */}
-      <div className="flex flex-col flex-1 overflow-y-auto gap-3">
+      <div className="flex flex-col flex-1 overflow-y-auto gap-3 pb-5">
         {isLoading ? (
           <LoadingSpinner />
-        ) : data && data.length > 0 ? (
-          data.map((item: ProsesType) => (
-            <div
-              key={item.idStokPotong}
-              onClick={() => setSelectedPermintaan(item)}
-              className="border border-gray-300 rounded-2xl p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50"
-            >
-              <div>
-                {item.isUrgent && (
-                  <p className="text-xs text-red-500 font-semibold mb-2">
-                    URGENT
+        ) : allProsesData.length > 0 ? (
+          <>
+            {allProsesData.map((item: ProsesType) => (
+              <div
+                key={item.idStokPotong}
+                onClick={() => setSelectedPermintaan(item)}
+                className="border border-gray-300 rounded-2xl p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition"
+              >
+                <div>
+                  {item.isUrgent && (
+                    <p className="text-xs text-red-500 font-semibold mb-2">
+                      URGENT
+                    </p>
+                  )}
+                  <p className="text-sm font-semibold text-gray-800">
+                    {item.namaBarang} - {item.ukuran}
                   </p>
-                )}
-                <p className="text-sm font-semibold text-gray-800">
-                  {item.namaBarang} - {item.ukuran}
-                </p>
-                <p className="text-xs text-gray-500 ">
-                  Kode Kain : {item.kodeKain}
+                  <p className="text-xs text-gray-500 ">
+                    Kode Kain : {item.kodeKain}
+                  </p>
+                </div>
+                <p className="text-2xl font-bold text-gray-800">
+                  {item.jumlahHasil}
                 </p>
               </div>
+            ))}
 
-              <p className="text-2xl font-bold text-gray-800">
-                {item.jumlahHasil}
-              </p>
+            {/* 3. Sensor Element (loadMoreRef) */}
+            <div
+              ref={loadMoreRef}
+              className="h-10 flex items-center justify-center"
+            >
+              {isFetchingNextPage && <LoadingSpinner />}
             </div>
-          ))
+          </>
         ) : (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
               <Package size={30} />
             </div>
-
             <p className="font-semibold text-gray-500 mb-1">Belum ada data</p>
-
-            <p className="text-xs text-gray-400">Data akan muncul di sini</p>
           </div>
         )}
       </div>
 
-      {/* ===============================
-          MODAL
-      ================================= */}
+      {/* MODAL (Tetap Sama) */}
       {selectedPermintaan && (
         <div
           className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4"
@@ -203,9 +218,11 @@ export default function Proses() {
             className="bg-white w-full max-w-sm rounded-xl p-4 shadow-xl"
           >
             {/* Header */}
+
             {selectedPermintaan.isUrgent && (
               <p className="text-xs text-red-500 font-semibold mb-2">URGENT</p>
             )}
+
             <div className="flex justify-between mb-4">
               <p className="text-sm font-semibold">
                 {selectedPermintaan.namaBarang} - {selectedPermintaan.ukuran}
@@ -215,6 +232,7 @@ export default function Proses() {
                 {selectedPermintaan.jumlahHasil}
               </p>
             </div>
+
             <div className="flex justify-between mb-2">
               <p className="text-xs font-">
                 Kode Kain : {selectedPermintaan.kodeKain}
@@ -223,10 +241,14 @@ export default function Proses() {
 
             <div className="space-y-3">
               {/* ===============================
+
                   PENGECEK MULTI SELECT
+
               ================================= */}
+
               <div className="space-y-2">
                 {/* Badge */}
+
                 <div className="flex flex-wrap gap-2">
                   {selectedPengecek.map((id) => {
                     const nama =
@@ -245,7 +267,9 @@ export default function Proses() {
                           onClick={() =>
                             setValue(
                               "pengecek",
+
                               selectedPengecek.filter((item) => item !== id),
+
                               { shouldValidate: true },
                             )
                           }
@@ -259,19 +283,23 @@ export default function Proses() {
                 </div>
 
                 {/* Select */}
+
                 <select
                   value=""
                   onChange={(e) => {
                     const val = e.target.value;
+
                     if (!val) return;
 
                     if (selectedPengecek.includes(val)) {
                       toast.error("Sudah dipilih");
+
                       return;
                     }
 
                     if (selectedPengecek.length >= 2) {
                       toast.error("Maksimal 2 pengecek");
+
                       return;
                     }
 
@@ -300,7 +328,11 @@ export default function Proses() {
               </div>
 
               {/* KODE POTONGAN */}
+
               <div>
+                <label className="text-xs font-semibold text-gray-600">
+                  Kode Potongan
+                </label>
                 <input
                   {...register("kode_potongan")}
                   placeholder="Kode Potongan"
@@ -317,42 +349,55 @@ export default function Proses() {
               </div>
 
               {/* JUMLAH LOLOS */}
-              <div>
-                <input
-                  type="number"
-                  {...register("jumlah_lolos")}
-                  placeholder="Jumlah Lolos"
-                  className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${
-                    errors.jumlah_lolos ? "border border-red-500" : ""
-                  }`}
-                />
+              <div className="flex space-x-3">
+                <div>
+                  <label className="text-xs font-semibold text-gray-600">
+                    Jumlah Lolos
+                  </label>
+                  <input
+                    type="number"
+                    {...register("jumlah_lolos")}
+                    placeholder="Jumlah Lolos"
+                    className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${
+                      errors.jumlah_lolos ? "border border-red-500" : ""
+                    }`}
+                  />
 
-                {errors.jumlah_lolos && (
-                  <p className="text-[10px] text-red-500 mt-1">
-                    {errors.jumlah_lolos.message}
-                  </p>
-                )}
-              </div>
+                  {errors.jumlah_lolos && (
+                    <p className="text-[10px] text-red-500 mt-1">
+                      {errors.jumlah_lolos.message}
+                    </p>
+                  )}
+                </div>
 
-              {/* JUMLAH REJECT */}
-              <div>
-                <input
-                  type="number"
-                  {...register("jumlah_reject")}
-                  placeholder="Jumlah Reject"
-                  className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${
-                    errors.jumlah_reject ? "border border-red-500" : ""
-                  }`}
-                />
+                {/* JUMLAH REJECT */}
 
-                {errors.jumlah_reject && (
-                  <p className="text-[10px] text-red-500 mt-1">
-                    {errors.jumlah_reject.message}
-                  </p>
-                )}
+                <div>
+                  <label className="text-xs font-semibold text-gray-600">
+                    Jumlah Reject
+                  </label>
+                  <input
+                    type="number"
+                    {...register("jumlah_reject")}
+                    placeholder="Jumlah Reject"
+                    className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${
+                      errors.jumlah_reject ? "border border-red-500" : ""
+                    }`}
+                  />
+
+                  {errors.jumlah_reject && (
+                    <p className="text-[10px] text-red-500 mt-1">
+                      {errors.jumlah_reject.message}
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* CATATAN */}
+
+              <label className="text-xs font-semibold text-gray-600">
+                Catatan
+              </label>
               <input
                 {...register("catatan")}
                 placeholder="Catatan (Opsional)"
@@ -361,6 +406,7 @@ export default function Proses() {
             </div>
 
             {/* BUTTON */}
+
             <div className="flex justify-end mt-6">
               <button
                 type="submit"
