@@ -6,56 +6,26 @@ import {
   Archive,
   CheckCircle,
   ClipboardList,
-  ChevronDown,
-  PackageSearch,
-  X,
   LogOut,
 } from "lucide-react";
 
-import {
-  useGetBoxMasuk,
-  BoxMasuk as IBoxMasuk,
-} from "@/services/stok-gudang/useGetBoxMasuk";
+import { useGetBoxMasuk } from "@/services/stok-gudang/useGetBoxMasuk";
+import { useGetDatabox } from "@/services/stok-gudang/useGetDataBox";
+import { useGetPermintaanPotong } from "@/services/stok-gudang/useGetPermintaanPotong";
 
-import { useGetPenerimaBox } from "@/services/stok-gudang/useGetPenerimaBox";
-import { usePutBoxMasuk } from "@/services/stok-gudang/usePutBoxMasuk";
-
-import BarcodeGenerator from "@/components/BarcodeGenerator";
-
-import {
-  useGetDatabox,
-  DataBox as IDataBox,
-} from "@/services/stok-gudang/useGetDataBox";
-
-//
-import {
-  useGetPermintaan,
-  PermintaanBarang,
-} from "@/services/stok-gudang/useGetPermintaan";
-
-//
-import {
-  useGetPermintaanPotong,
-  PermintaanPotong,
-} from "@/services/stok-gudang/useGetPermintaanPotong";
-
-import { useGetTracking } from "@/services/stok-gudang/useGetTracking";
-import { usePostMintaPotong } from "@/services/stok-gudang/usePostMintaPotong";
-import { useGetKategori } from "@/services/stok-gudang/useGetKategori";
-
-import { useForm } from "react-hook-form";
-
-import { useQueryClient } from "@tanstack/react-query";
+// 🔥 IMPORT SCREEN
+import BoxMasuk from "./screens/BoxMasuk";
+import DataBox from "./screens/DataBox";
+import PermintaanResi from "./screens/PermintaanResi";
+import MintaPotong from "./screens/MintaPotong";
 
 type TabType = "boxMasuk" | "dataBox" | "permintaanResi" | "mintaPotong";
 
 export default function StokGudangWeb({ handleLogout }: any) {
   const [activeTab, setActiveTab] = useState<TabType>("boxMasuk");
 
-  //
   const { data: boxMasuk } = useGetBoxMasuk();
   const { data: dataBox } = useGetDatabox();
-
   const { data: permintaanPotong } = useGetPermintaanPotong();
 
   const menuList = [
@@ -68,46 +38,39 @@ export default function StokGudangWeb({ handleLogout }: any) {
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* SIDEBAR */}
-      <div className="w-72 bg-white/80 backdrop-blur-xl border-r border-gray-100 p-6 hidden md:flex flex-col shadow-lg">
-        {/* HEADER */}
+      <div className="w-72 bg-white/80 backdrop-blur-xl border-r p-6 hidden md:flex flex-col shadow-lg">
         <div className="mb-8">
-          <h1 className="text-lg font-semibold text-gray-800">Stok Gudang</h1>
-          <p className="text-xs text-gray-400 mt-1">Manajemen gudang</p>
+          <h1 className="text-lg font-semibold">Stok Gudang</h1>
+          <p className="text-xs text-gray-400">Manajemen gudang</p>
         </div>
 
-        {/* MENU */}
         <div className="flex flex-col gap-2">
           {menuList.map((menu) => {
             const Icon = menu.icon;
-
             return (
               <button
                 key={menu.key}
                 onClick={() => setActiveTab(menu.key as TabType)}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all
-          ${
-            activeTab === menu.key
-              ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md"
-              : "text-gray-600 hover:bg-gray-100"
-          }`}
+                className={`flex items-center gap-3 px-4 py-2 rounded-xl text-sm
+                ${
+                  activeTab === menu.key
+                    ? "bg-orange-500 text-white"
+                    : "hover:bg-gray-100"
+                }`}
               >
                 <Icon size={18} />
-                <span className="font-medium">{menu.label}</span>
+                {menu.label}
               </button>
             );
           })}
         </div>
 
-        {/* LOGOUT */}
-        <div className="mt-auto pt-6 border-t border-gray-100">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 transition"
-          >
-            <LogOut size={18} />
-            <span className="font-medium">Logout</span>
-          </button>
-        </div>
+        <button
+          onClick={handleLogout}
+          className="mt-auto bg-red-50 text-red-500 py-2 rounded-xl"
+        >
+          Logout
+        </button>
       </div>
 
       {/* MAIN */}
@@ -116,640 +79,29 @@ export default function StokGudangWeb({ handleLogout }: any) {
 
         {/* STATS */}
         <div className="grid grid-cols-4 gap-4 mb-6">
-          <Stat
-            title="Box Masuk"
-            value={boxMasuk?.length || 0}
-            icon={<Archive />}
-          />
-
-          <Stat
-            title="Data Box"
-            value={dataBox?.length || 0}
-            icon={<Package />}
-          />
-
-          <Stat title="Permintaan Resi" value={0} icon={<ClipboardList />} />
-
-          <Stat
-            title="Minta Potong"
-            value={permintaanPotong?.length || 0}
-            icon={<CheckCircle />}
-          />
+          <Stat title="Box Masuk" value={boxMasuk?.length || 0} />
+          <Stat title="Data Box" value={dataBox?.length || 0} />
+          <Stat title="Permintaan Resi" value={0} />
+          <Stat title="Minta Potong" value={permintaanPotong?.length || 0} />
         </div>
 
-        {/* LIST */}
-        <div className="bg-gray-50 rounded-2xl p-4">
-          <h3 className="font-semibold mb-4">
-            {menuList.find((m) => m.key === activeTab)?.label}
-          </h3>
-
-          {/* 🔥 KHUSUS BOX MASUK */}
-          {activeTab === "boxMasuk" ? (
-            <BoxMasukWeb />
-          ) : activeTab === "dataBox" ? (
-            <DataBoxWeb />
-          ) : activeTab === "permintaanResi" ? (
-            <PermintaanResiWeb />
-          ) : activeTab === "mintaPotong" ? (
-            <MintaPotongWeb />
-          ) : (
-            <>
-              <div className="space-y-3">
-                <div className="text-center text-gray-400 text-sm mt-6">
-                  Belum ada fitur
-                </div>
-              </div>
-            </>
-          )}
+        {/* CONTENT */}
+        <div className="bg-gray-50 p-4 rounded-2xl">
+          {activeTab === "boxMasuk" && <BoxMasuk />}
+          {activeTab === "dataBox" && <DataBox />}
+          {activeTab === "permintaanResi" && <PermintaanResi />}
+          {activeTab === "mintaPotong" && <MintaPotong />}
         </div>
       </div>
     </div>
   );
 }
 
-/* ================= BOX MASUK ================= */
-function BoxMasukWeb() {
-  const [selected, setSelected] = useState<IBoxMasuk | null>(null);
-  const [idPenerimaBox, setIdPenerimaBox] = useState("");
-  const [openCollapse, setOpenCollapse] = useState<string | null>(null);
-
-  const { data, isLoading, isError } = useGetBoxMasuk();
-  const { data: penerima } = useGetPenerimaBox();
-  const mutation = usePutBoxMasuk();
-  const queryClient = useQueryClient();
-
-  if (isLoading) return <p className="text-center">Loading...</p>;
-  if (isError) return <p className="text-center text-red-500">Error</p>;
-
+function Stat({ title, value }: any) {
   return (
-    <>
-      {/* GRID */}
-      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {data?.length === 0 ? (
-          <div className="col-span-full text-center text-gray-400 py-10">
-            Belum ada box masuk
-          </div>
-        ) : (
-          data?.map((box) => {
-            const isOpen = openCollapse === box.idBox;
-
-            return (
-              <div key={box.idBox} className="bg-white rounded-2xl border p-4">
-                {/* HEADER */}
-                <div
-                  onClick={() => setSelected(box)}
-                  className="cursor-pointer"
-                >
-                  <p className="font-bold">{box.namaBox}</p>
-
-                  <div className="text-xs text-gray-500 mb-2">
-                    <p>Penanggung Jawab: {box.namaPenanggungJawab}</p>
-                    <p>
-                      Tgl Masuk:{" "}
-                      {new Date(box.tanggalMasukStok).toLocaleString("id-ID")}
-                    </p>
-                  </div>
-                </div>
-
-                {/* COLLAPSE */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setOpenCollapse(isOpen ? null : box.idBox);
-                  }}
-                  className="w-full flex justify-between items-center bg-gray-50 px-3 py-2 rounded-xl border"
-                >
-                  <span className="flex items-center gap-2 text-sm">
-                    <PackageSearch size={16} />
-                    Lihat Isi Box
-                  </span>
-
-                  <ChevronDown
-                    className={`transition ${isOpen ? "rotate-180" : ""}`}
-                  />
-                </button>
-
-                {/* CONTENT */}
-                {isOpen && (
-                  <div className="mt-3 space-y-2">
-                    {box.stokPotongan?.map((item) => (
-                      <div
-                        key={item.idQC}
-                        className="bg-gray-50 border rounded-lg p-3"
-                      >
-                        <div className="flex justify-between">
-                          <div>
-                            <p className="text-sm font-medium">
-                              {item.namaBarang} - {item.ukuran}
-                            </p>
-
-                            <p className="text-xs text-gray-500">
-                              Kode: {item.kodeStokPotongan}
-                            </p>
-
-                            <p className="text-xs text-gray-500">
-                              QC:{" "}
-                              {new Date(
-                                item.tanggalSelesaiQC,
-                              ).toLocaleDateString("id-ID")}
-                            </p>
-                          </div>
-
-                          <b>{item.jumlah}</b>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* BARCODE */}
-                <div className="mt-4 flex flex-col items-center">
-                  <BarcodeGenerator value={box.kodeBox} />
-                  <span className="text-xs mt-1">{box.kodeBox}</span>
-                </div>
-              </div>
-            );
-          })
-        )}
-      </div>
-
-      {/* MODAL */}
-      {selected && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-[400px] rounded-2xl p-5 relative">
-            <button
-              onClick={() => setSelected(null)}
-              className="absolute right-4 top-4"
-            >
-              <X />
-            </button>
-
-            <h3 className="font-bold mb-2">{selected.namaBox}</h3>
-
-            <select
-              value={idPenerimaBox}
-              onChange={(e) => setIdPenerimaBox(e.target.value)}
-              className="w-full border rounded-lg p-2 mb-3"
-            >
-              <option value="">Pilih Penerima</option>
-              {penerima?.map((p: any) => (
-                <option key={p.id} value={p.id}>
-                  {p.nama}
-                </option>
-              ))}
-            </select>
-
-            <button
-              onClick={() => {
-                if (!idPenerimaBox) return alert("Pilih penerima!");
-
-                mutation.mutate(
-                  {
-                    idBox: selected.idBox,
-                    payload: { idPenerimaBox },
-                  },
-                  {
-                    onSuccess: () => {
-                      setSelected(null);
-                      setIdPenerimaBox("");
-
-                      queryClient.invalidateQueries({
-                        queryKey: ["boxMasuk"],
-                      });
-                      queryClient.invalidateQueries({
-                        queryKey: ["dataBox"],
-                      });
-                    },
-                  },
-                );
-              }}
-              className="w-full bg-orange-500 text-white py-2 rounded-xl"
-            >
-              ACC BOX .
-            </button>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
-//
-function DataBoxWeb() {
-  const [selected, setSelected] = useState<IDataBox | null>(null);
-  const [openCollapse, setOpenCollapse] = useState<string | null>(null);
-
-  const { data, isLoading, isError } = useGetDatabox();
-
-  if (isLoading) return <p className="text-center">Loading...</p>;
-  if (isError) return <p className="text-center text-red-500">Error</p>;
-
-  return (
-    <>
-      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {data?.map((box) => {
-          const isOpen = openCollapse === box.idBox;
-
-          return (
-            <div key={box.idBox} className="bg-white border rounded-2xl p-4">
-              {/* HEADER */}
-              <div onClick={() => setSelected(box)} className="cursor-pointer">
-                <p className="font-bold">{box.namaBox}</p>
-
-                <div className="text-xs text-gray-500 mt-1">
-                  <p>Penerima: {box.namaPenerimaBox}</p>
-                  <p>
-                    Tanggal:{" "}
-                    {new Date(box.tanggalMasukGudang).toLocaleDateString(
-                      "id-ID",
-                    )}
-                  </p>
-                </div>
-              </div>
-
-              {/* COLLAPSE */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setOpenCollapse(isOpen ? null : box.idBox);
-                }}
-                className="w-full mt-3 flex justify-between items-center bg-gray-50 px-3 py-2 rounded-xl border"
-              >
-                <span className="flex items-center gap-2 text-sm">
-                  <PackageSearch size={16} />
-                  Lihat Isi Box
-                </span>
-
-                <ChevronDown
-                  className={`transition ${isOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-
-              {/* CONTENT */}
-              {isOpen && (
-                <div className="mt-3 space-y-2">
-                  {box.stokPotongan.map((item: any) => (
-                    <div
-                      key={item.idQC}
-                      className="bg-gray-50 border rounded-lg p-2"
-                    >
-                      <div className="flex justify-between">
-                        <div>
-                          <p className="text-sm">{item.namaBarang}</p>
-                          <p className="text-xs text-blue-600 font-bold">
-                            Ukuran: {item.ukuran}
-                          </p>
-                        </div>
-
-                        <b>{item.jumlah}</b>
-                      </div>
-
-                      <div className="text-xs text-gray-500 mt-2 border-t pt-2">
-                        {item.isUrgent && (
-                          <p className="text-red-500 font-bold mb-1">URGENT</p>
-                        )}
-
-                        <p>Kode: {item.kodeStokPotongan}</p>
-
-                        <p>
-                          QC Selesai:{" "}
-                          {new Date(item.tanggalSelesaiQC).toLocaleDateString(
-                            "id-ID",
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* BARCODE */}
-              <div className="mt-4 flex flex-col items-center">
-                <BarcodeGenerator value={box.kodeBox} />
-                <span className="text-xs mt-1">{box.kodeBox}</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* MODAL */}
-      {selected && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-[420px] rounded-2xl p-5 relative">
-            <button
-              onClick={() => setSelected(null)}
-              className="absolute right-4 top-4"
-            >
-              <X />
-            </button>
-
-            <h3 className="font-bold mb-2">{selected.namaBox}</h3>
-
-            <div className="text-sm text-gray-600 mb-3">
-              <p>Penerima: {selected.namaPenerimaBox}</p>
-              <p>
-                Masuk:{" "}
-                {new Date(selected.tanggalMasukGudang).toLocaleString("id-ID")}
-              </p>
-              <p>Kode: {selected.kodeBox}</p>
-            </div>
-
-            <p className="text-xs font-bold text-gray-400 mb-2">ISI BOX:</p>
-
-            <div className="space-y-2 max-h-52 overflow-auto">
-              {selected.stokPotongan.map((item: any) => (
-                <div key={item.idQC} className="bg-gray-50 p-2 rounded">
-                  <div className="flex justify-between">
-                    <p>{item.namaBarang}</p>
-                    <b>{item.jumlah}</b>
-                  </div>
-
-                  <p className="text-xs text-blue-600">{item.ukuran}</p>
-                  <p className="text-xs text-gray-500">
-                    QC:{" "}
-                    {new Date(item.tanggalSelesaiQC).toLocaleDateString(
-                      "id-ID",
-                    )}
-                  </p>
-
-                  {item.isUrgent && (
-                    <p className="text-xs text-red-500 font-bold">URGENT</p>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <div className="my-4 flex flex-col items-center">
-              <BarcodeGenerator value={selected.kodeBox} />
-              <span className="text-xs">{selected.kodeBox}</span>
-            </div>
-
-            <button
-              onClick={() => setSelected(null)}
-              className="w-full bg-gray-100 py-2 rounded-xl"
-            >
-              Tutup
-            </button>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
-//
-function MintaPotongWeb() {
-  const [open, setOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  const { data, isLoading } = useGetPermintaanPotong();
-  const { data: kategori } = useGetKategori();
-  const { data: tracking, isLoading: isTracking } = useGetTracking(
-    selectedId || "",
-  );
-
-  const mutation = usePostMintaPotong();
-
-  const { register, handleSubmit, reset } = useForm();
-
-  const onSubmit = (form: any) => {
-    mutation.mutate(
-      {
-        namaBarang: form.nama,
-        kategori: form.kategori,
-        ukuran: form.ukuran,
-        isUrgent: form.isUrgent || false,
-        jumlahMinta: Number(form.jumlah),
-      },
-      {
-        onSuccess: () => {
-          setOpen(false);
-          reset();
-        },
-      },
-    );
-  };
-
-  if (isLoading) return <p className="text-center">Loading...</p>;
-
-  return (
-    <>
-      {/* LIST */}
-      <div className="space-y-3">
-        {data?.map((item: PermintaanPotong) => (
-          <div
-            key={item.idPermintaan}
-            className="bg-white border rounded-xl p-4"
-          >
-            {item.isUrgent && (
-              <p className="text-xs text-red-500 font-bold">URGENT</p>
-            )}
-
-            <div className="flex justify-between">
-              <p>
-                {item.namaBarang} - {item.ukuran}
-              </p>
-              <b>{item.jumlahMinta}</b>
-            </div>
-
-            <div className="flex justify-between mt-2">
-              <p className="text-xs text-gray-500">
-                {item.status.replace(/_/g, " ")}
-              </p>
-
-              <button
-                onClick={() => setSelectedId(item.idPermintaan)}
-                className="text-xs bg-gray-200 px-2 py-1 rounded"
-              >
-                TRACK
-              </button>
-            </div>
-          </div>
-        ))}
-
-        {/* BUTTON */}
-        <button
-          onClick={() => setOpen(true)}
-          className="w-full bg-orange-500 text-white py-2 rounded-xl"
-        >
-          MINTA POTONG
-        </button>
-      </div>
-
-      {/* MODAL FORM */}
-      {open && (
-        <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="bg-white p-5 rounded-xl w-[400px]"
-          >
-            <h3 className="mb-3 font-bold">Permintaan</h3>
-
-            <input
-              {...register("nama")}
-              placeholder="Nama"
-              className="w-full border p-2 mb-2"
-            />
-
-            <input
-              {...register("jumlah")}
-              placeholder="Jumlah"
-              type="number"
-              className="w-full border p-2 mb-2"
-            />
-
-            <select {...register("ukuran")} className="w-full border p-2 mb-2">
-              <option value="">Ukuran</option>
-              <option value="M">M</option>
-              <option value="L">L</option>
-              <option value="XL">XL</option>
-            </select>
-
-            <select
-              {...register("kategori")}
-              className="w-full border p-2 mb-2"
-            >
-              <option value="">Kategori</option>
-              {kategori?.map((k: any) => (
-                <option key={k.id} value={k.slug}>
-                  {k.namaKategori}
-                </option>
-              ))}
-            </select>
-
-            <label className="text-xs">
-              <input type="checkbox" {...register("isUrgent")} /> Urgent
-            </label>
-
-            <div className="flex justify-end gap-2 mt-3">
-              <button type="button" onClick={() => setOpen(false)}>
-                Batal
-              </button>
-              <button
-                type="submit"
-                className="bg-blue-500 text-white px-3 py-1 rounded"
-              >
-                {mutation.isPending ? "MENGIRIM..." : "KIRIM"}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* MODAL TRACKING */}
-      {selectedId && (
-        <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
-          <div className="bg-white p-5 rounded-xl w-[400px] max-h-[80vh] overflow-auto">
-            <h3 className="font-bold mb-3">Tracking</h3>
-
-            {isTracking ? (
-              <p>Loading...</p>
-            ) : (
-              <>
-                <p>{tracking?.namaBarang}</p>
-
-                {tracking?.logPermintaan?.map((log: any, i: number) => (
-                  <div key={i} className="border p-2 mt-2 text-xs">
-                    <p>{log.status}</p>
-                    <p>{log.keterangan}</p>
-                  </div>
-                ))}
-              </>
-            )}
-
-            <button
-              onClick={() => setSelectedId(null)}
-              className="mt-3 w-full bg-gray-100 py-2"
-            >
-              Tutup
-            </button>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
-//
-function PermintaanResiWeb() {
-  const { data, isLoading, isError } = useGetPermintaan();
-  const [selected, setSelected] = useState<PermintaanBarang | null>(null);
-
-  if (isLoading) return <p className="text-center">Loading...</p>;
-  if (isError) return <p className="text-center text-red-500">Error</p>;
-
-  return (
-    <>
-      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {data?.map((item) => (
-          <div
-            key={item.idPermintaan}
-            onClick={() => setSelected(item)}
-            className="bg-white border rounded-xl p-4 cursor-pointer hover:border-blue-400"
-          >
-            {item.isUrgent && (
-              <p className="text-xs text-red-500 font-bold mb-1">URGENT</p>
-            )}
-
-            <div className="flex justify-between">
-              <p className="font-medium">
-                {item.namaBarang} - {item.ukuran}
-              </p>
-              <b>{item.jumlahMinta}</b>
-            </div>
-
-            <div className="text-xs text-gray-500 mt-2">
-              <p>Kategori: {item.kategori}</p>
-              <p>Dari: {item.jenisPermintaan}</p>
-            </div>
-          </div>
-        ))}
-
-        {data?.length === 0 && (
-          <p className="text-center text-gray-400 col-span-full">
-            Tidak ada permintaan
-          </p>
-        )}
-      </div>
-
-      {/* MODAL SIMPLE */}
-      {selected && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white p-5 rounded-xl w-[400px]">
-            <h3 className="font-bold mb-2">{selected.namaBarang}</h3>
-
-            <div className="text-sm text-gray-600">
-              {selected.isUrgent && (
-                <p className="text-red-500 font-bold">URGENT</p>
-              )}
-              <p>Kategori: {selected.kategori}</p>
-              <p>Ukuran: {selected.ukuran}</p>
-              <p>Jumlah: {selected.jumlahMinta}</p>
-            </div>
-
-            <button
-              onClick={() => setSelected(null)}
-              className="mt-4 w-full bg-gray-100 py-2 rounded"
-            >
-              Tutup
-            </button>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
-/* ================= STAT ================= */
-function Stat({ title, value, icon }: any) {
-  return (
-    <div className="bg-white p-4 rounded-2xl flex items-center gap-3">
-      <div className="text-orange-500">{icon}</div>
-      <div>
-        <p className="text-xs text-gray-500">{title}</p>
-        <p className="text-lg font-bold">{value}</p>
-      </div>
+    <div className="bg-white p-4 rounded-xl text-center">
+      <p className="text-xs text-gray-400">{title}</p>
+      <p className="text-xl font-bold">{value}</p>
     </div>
   );
 }

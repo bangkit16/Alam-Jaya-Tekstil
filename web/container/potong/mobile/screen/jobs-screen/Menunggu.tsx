@@ -1,8 +1,8 @@
 "use client";
 
-import { useGetPermintaan } from "@/services/potong/useGetPermintaan";
+import { useGetPermintaanInfinite ,  } from "@/services/potong/useGetPermintaan"; // Menggunakan hook infinite
 import { usePutPermintaan } from "@/services/potong/usePutPermintaan";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react"; // Tambah useEffect & useRef
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -24,20 +24,53 @@ type permintaanType = {
   idPermintaan: string;
   namaBarang: string;
   kategori: string;
-  jumlahMinta: number;
-  ukuran: "M" | "L" | "XL" | "XXL";
+  jenisPermintaan: string;
+  ukuran: string;
   isUrgent: boolean;
+  jumlahMinta: number;
+  tanggalMasukPermintaan: string;
 };
 
 export default function Menunggu() {
   const [selectedPermintaan, setSelectedPermintaan] =
     useState<permintaanType | null>(null);
 
-  const { data: dataPermintaan, isLoading: isLoadingPermintaan } =
-    useGetPermintaan();
-  const { mutate: mutatePermintaan, data: dataMutate } = usePutPermintaan();
+  // 1. Ganti ke useGetPermintaanInfinite
+  const {
+    data: dataInfinite,
+    isLoading: isLoadingPermintaan,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useGetPermintaanInfinite();
 
-  // Inisialisasi React Hook Form
+  const { mutate: mutatePermintaan, data: dataMutate } = usePutPermintaan();
+  const queryClient = useQueryClient();
+
+  // 2. Ref untuk sensor scroll
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // 3. Flatten data dari pages
+  const allData = dataInfinite?.pages.flatMap((page) => page.data) || [];
+
+  // 4. Intersection Observer Logic
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   const {
     register,
     handleSubmit,
@@ -62,7 +95,7 @@ export default function Menunggu() {
 
     mutatePermintaan(submitData, {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["permintaans"] }); // 🔥 TAMBAH INI
+        queryClient.invalidateQueries({ queryKey: ["potong", "menunggu"] });
         handleCloseModal();
         toast.success((dataMutate as any)?.message);
       },
@@ -71,17 +104,11 @@ export default function Menunggu() {
 
   const handleCloseModal = () => {
     setSelectedPermintaan(null);
-    reset(); // Reset form ke default
+    reset();
   };
 
-  // 🔥 helper capitalize (biar UI rapi)
   const capitalize = (text: string) =>
     text.charAt(0).toUpperCase() + text.slice(1);
-
-  //
-  const queryClient = useQueryClient();
-
-  // console.log(dataPermintaan)
 
   return (
     <>
@@ -89,9 +116,9 @@ export default function Menunggu() {
       <div className="flex flex-col gap-3 overflow-y-auto">
         {isLoadingPermintaan ? (
           <LoadingSpinner />
-        ) : dataPermintaan.data && dataPermintaan.data.length > 0 ? (
-          dataPermintaan.data.map(
-            (permintaan: permintaanType, index: number) => (
+        ) : allData.length > 0 ? (
+          <>
+            {allData.map((permintaan: permintaanType, index: number) => (
               <div
                 key={`${permintaan.idPermintaan}-${index}`}
                 onClick={() => setSelectedPermintaan(permintaan)}
@@ -140,18 +167,22 @@ export default function Menunggu() {
                   </p>
                 </div>
               </div>
-            ),
-          )
+            ))}
+
+            {/* 5. Sensor Element */}
+            <div
+              ref={loadMoreRef}
+              className="h-10 flex items-center justify-center"
+            >
+              {isFetchingNextPage && <LoadingSpinner />}
+            </div>
+          </>
         ) : (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
               <Package size={30} />
             </div>
-
-            <p className="font-semibold text-gray-500 mb-1">
-              Belum ada data
-            </p>
-
+            <p className="font-semibold text-gray-500 mb-1">Belum ada data</p>
             <p className="text-xs text-gray-400">Data akan muncul di sini</p>
           </div>
         )}
@@ -167,7 +198,6 @@ export default function Menunggu() {
             className="bg-white p-4 rounded-2xl w-full max-w-sm shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* URGENT BADGE */}
             {selectedPermintaan.isUrgent && (
               <div className="mb-2">
                 <span className="bg-red-100 text-red-500 text-[10px] font-semibold px-2 py-0.5 rounded-full">
@@ -176,21 +206,17 @@ export default function Menunggu() {
               </div>
             )}
 
-            {/* HEADER */}
             <div className="flex justify-between items-start gap-2 mb-3">
               <p className="text-sm font-semibold text-gray-800 leading-snug">
                 {selectedPermintaan.namaBarang} - {selectedPermintaan.ukuran}
               </p>
-
               <p className="text-xl font-bold text-gray-900">
                 {selectedPermintaan.jumlahMinta}
               </p>
             </div>
 
-            {/* DIVIDER */}
             <div className="h-px bg-gray-200 mb-3" />
 
-            {/* DETAIL */}
             <div className="text-xs text-gray-600 space-y-1 mb-4">
               <p>
                 Jumlah diminta :
@@ -206,14 +232,11 @@ export default function Menunggu() {
               </p>
             </div>
 
-            {/* ACTION TEXT */}
             <p className="text-xs text-gray-500 text-center mb-3">
               Lanjut ke proses?
             </p>
 
-            {/* BUTTON */}
             <div className="flex gap-2">
-              {/* PROSES */}
               <button
                 onClick={() => {
                   mutatePermintaan(
@@ -226,10 +249,10 @@ export default function Menunggu() {
                       },
                     },
                     {
-                      onSuccess: (data) => {
+                      onSuccess: () => {
                         queryClient.invalidateQueries({
-                          queryKey: ["permintaans"],
-                        }); // 🔥 TAMBAH INI
+                          queryKey: ["potong", "menunggu"],
+                        });
                         handleCloseModal();
                         toast.success("Berhasil dipindah ke proses");
                       },
@@ -241,7 +264,6 @@ export default function Menunggu() {
                 PROSES
               </button>
 
-              {/* TIDAK */}
               <button
                 onClick={handleCloseModal}
                 className="flex-1 bg-gray-100 text-gray-700 text-xs py-2.5 rounded-xl font-medium hover:bg-gray-200 active:scale-95 transition"

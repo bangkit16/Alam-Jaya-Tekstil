@@ -6,17 +6,21 @@ import { Package } from "lucide-react";
 import { useGetStock } from "@/services/stok-potong/useGetStock";
 import { useGetPenjahit } from "@/services/stok-potong/useGetPenjahit";
 import { usePutStock } from "@/services/stok-potong/usePutStock";
-import { useQueryClient } from "@tanstack/react-query";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import Pagination from "@/components/Pagination";
 
 export default function Stok() {
-  const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
 
-  const { data } = useGetStock();
+  const { data: dataStok, isLoading } = useGetStock(page);
   const { data: penjahitList } = useGetPenjahit();
   const { mutate, isPending } = usePutStock();
 
   const [selected, setSelected] = useState<any>(null);
   const [namaPenjahit, setNamaPenjahit] = useState("");
+
+  const data = dataStok?.data || [];
+  const meta = dataStok?.meta;
 
   const count = data?.length || 0;
 
@@ -30,9 +34,6 @@ export default function Stok() {
       },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: ["stok-potong-stock"],
-          });
           setSelected(null);
           setNamaPenjahit("");
         },
@@ -54,14 +55,14 @@ export default function Stok() {
         </div>
 
         {/* CONTENT */}
-        {count === 0 ? (
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : count === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <div className="bg-green-100 text-green-500 p-4 rounded-full mb-4">
               <Package size={28} />
             </div>
-
             <p className="font-medium text-gray-500 mb-1">Belum ada stok</p>
-
             <p className="text-xs text-gray-400">
               Data stok akan muncul di sini
             </p>
@@ -70,7 +71,6 @@ export default function Stok() {
           <div className="space-y-3">
             {(data || []).map((item: any) => {
               const isLocked = item.status !== "SELESAI";
-
               return (
                 <div
                   key={item.idStokPotong}
@@ -78,27 +78,26 @@ export default function Stok() {
                     if (!isLocked) setSelected(item);
                   }}
                   className={`bg-white border border-gray-100 rounded-xl p-4 shadow-sm transition
-                    ${
-                      isLocked
-                        ? "opacity-60 cursor-not-allowed"
-                        : "cursor-pointer hover:bg-gray-50"
-                    }`}
+            ${
+              isLocked
+                ? "opacity-60 cursor-not-allowed"
+                : "cursor-pointer hover:bg-gray-50"
+            }`}
                 >
                   {/* HEADER */}
                   <div className="flex justify-between items-center mb-2">
                     <p className="text-sm font-semibold text-gray-800">
                       {item.namaBarang} - {item.ukuran}
                     </p>
-
                     <span
                       className={`text-xs px-3 py-1 rounded-full font-medium
-                        ${
-                          item.status === "STOK"
-                            ? "bg-blue-100 text-blue-600"
-                            : item.status === "MENUNGGU_KURIR"
-                              ? "bg-yellow-100 text-yellow-600"
-                              : "bg-green-100 text-green-600"
-                        }`}
+                ${
+                  item.status === "STOK"
+                    ? "bg-blue-100 text-blue-600"
+                    : item.status === "MENUNGGU_KURIR"
+                      ? "bg-yellow-100 text-yellow-600"
+                      : "bg-green-100 text-green-600"
+                }`}
                     >
                       {item.status}
                     </span>
@@ -110,7 +109,6 @@ export default function Stok() {
                   {/* DETAIL */}
                   <div className="text-xs text-gray-500 space-y-1">
                     <p>Kode : {item.kodeStokPotongan}</p>
-
                     <p>
                       Masuk :{" "}
                       {item.tanggalMasukPotong &&
@@ -118,7 +116,6 @@ export default function Stok() {
                           "id-ID",
                         )}
                     </p>
-
                     <p>Jumlah : {item.jumlahLolos}</p>
                   </div>
 
@@ -131,6 +128,9 @@ export default function Stok() {
                 </div>
               );
             })}
+            {meta && meta.totalPages > 1 && (
+              <Pagination meta={meta} onPageChange={setPage} />
+            )}
           </div>
         )}
       </div>

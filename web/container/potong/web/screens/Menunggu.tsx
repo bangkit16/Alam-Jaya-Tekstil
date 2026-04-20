@@ -17,7 +17,7 @@ export default function Menunggu() {
   const { mutate: mutatePermintaan } = usePutPermintaan();
 
   const data = dataPermintaan?.data || [];
-  const meta = dataPermintaan?.meta || [];
+  const meta = dataPermintaan?.meta;
 
   const handlePermintaan = (item: any) => {
     mutatePermintaan(
