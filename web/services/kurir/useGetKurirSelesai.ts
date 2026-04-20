@@ -74,7 +74,7 @@ const fetchKurirSelesai = async (
 };
 
 // Exported Hook - Mendukung Query Params
-export const useGetKurirSelesai = (page: number = 1, search: string , limit : number = 3) => {
+export const useGetKurirSelesai = (page: number = 1, search: string , limit : number = 4) => {
   return useQuery<KurirSelesaiResponse, Error>({
     // Kembalikan SelesaiResponse agar meta bisa diakses
     queryKey: ["kurir", "selesai", page, search], // Tambahkan page & search ke key
