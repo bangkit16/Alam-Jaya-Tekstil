@@ -11,6 +11,8 @@ import { z } from "zod";
 import { useGetProses } from "@/services/potong/useGetProses";
 import { usePutProses } from "@/services/potong/usePutProses";
 import { useGetPemotong } from "@/services/potong/useGetPemotong";
+import Pagination from "@/components/Pagination";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 const schema = z.object({
   kode_potongan: z.string().min(1, "Kode kain wajib diisi"),
@@ -21,13 +23,15 @@ type FormValues = z.infer<typeof schema>;
 
 export default function Proses() {
   const [selectedProses, setSelectedProses] = useState<any>(null);
+  const [page, setPage] = useState(1);
   const [pemotongList, setPemotongList] = useState<string[]>([]);
 
-  const { data: dataProses, isLoading } = useGetProses();
+  const { data: dataProses, isLoading } = useGetProses(page);
   const { data: pemotongData } = useGetPemotong();
   const { mutate: mutateProses } = usePutProses();
 
   const data = dataProses?.data || [];
+  const meta = dataProses?.meta;
 
   const {
     register,
@@ -136,7 +140,7 @@ export default function Proses() {
         </div>
 
         {isLoading ? (
-          <p className="text-center text-gray-500">Loading...</p>
+          <LoadingSpinner />
         ) : data.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
@@ -155,34 +159,39 @@ export default function Proses() {
               <div
                 key={item.idPermintaan}
                 onClick={() => openModal(item)}
-                className="group bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                className="group bg-white border border-gray-300 rounded-2xl p-4  transition-all duration-300 cursor-pointer"
               >
                 {item.isUrgent && (
-                  <span className="inline-block bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full animate-pulse mb-1">
+                  <p className="text-sm font-semibold text-red-500 mb-2">
                     URGENT
-                  </span>
+                  </p>
                 )}
 
                 <div className="flex justify-between items-center">
-                  <p className="text-sm font-semibold text-gray-800">
+                  <p className="text-base font-semibold text-gray-800 hover:text-orange-500 transition-all">
                     {item.namaBarang} - {item.ukuran}
                   </p>
 
-                  <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
-                    Proses
-                  </span>
+                  <div className="text-right">
+                    <p className="text-xl font-bold text-gray-800">
+                      {item.jumlahMinta}
+                    </p>
+                    <p className="text-xs text-gray-500">Jumlah Minta</p>
+                  </div>
                 </div>
 
                 <div className="h-px bg-gray-200 my-2" />
 
                 <div className="text-xs text-gray-500 space-y-1">
-                  <p>NAMA PRODUK : {item.namaBarang}</p>
                   <p>UKURAN : {item.ukuran}</p>
                   <p>JUMLAH : {item.jumlahMinta}</p>
                 </div>
               </div>
             ))}
           </div>
+        )}
+        {meta && meta.totalPages > 1 && (
+          <Pagination meta={meta} onPageChange={setPage} />
         )}
       </div>
 
@@ -293,7 +302,7 @@ export default function Proses() {
               )}
             </div>
 
-            <button className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:scale-105 active:scale-95 transition text-white py-2.5 rounded-xl text-sm font-semibold">
+            <button className="w-full bg-linear-to-r from-orange-500 to-amber-500 hover:scale-105 active:scale-95 transition text-white py-2.5 rounded-xl text-sm font-semibold">
               SELESAI
             </button>
           </form>

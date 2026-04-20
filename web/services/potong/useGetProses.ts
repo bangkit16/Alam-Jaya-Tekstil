@@ -28,7 +28,7 @@ export type APIResponse = {
 // Kita pisahkan logic fetch agar reusable
 const fetchProses = async (page: number): Promise<APIResponse> => {
   const response = await api.get("/potong/proses", {
-    params: { page },
+    params: { page , limit : 4},
   });
   return response.data;
 };
@@ -41,7 +41,7 @@ const fetchProses = async (page: number): Promise<APIResponse> => {
  */
 export const useGetProses = (page: number = 1) => {
   return useQuery<APIResponse>({
-    queryKey: ["proses", page], // Key unik berdasarkan halaman
+    queryKey: ["potong","proses", page], // Key unik berdasarkan halaman
     queryFn: () => fetchProses(page),
     placeholderData: (previousData) => previousData, // UI tidak kedip saat ganti page
     staleTime: 1000 * 60 * 5, // Data dianggap segar selama 5 menit
@@ -54,7 +54,7 @@ export const useGetProses = (page: number = 1) => {
  */
 export const useGetProsesInfinite = () => {
   return useInfiniteQuery<APIResponse>({
-    queryKey: ["proses", "infinite"],
+    queryKey: ["potong","proses", "infinite"],
     queryFn: ({ pageParam = 1 }) => fetchProses(pageParam as number),
     initialPageParam: 1,
     /**

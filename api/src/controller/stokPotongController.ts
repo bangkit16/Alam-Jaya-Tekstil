@@ -8,14 +8,36 @@ import {
 import TrackLog from "../lib/trackLog.js";
 import z from "zod";
 import { Validator } from "../lib/validator.js";
+import { getPagination, wrapPagination } from "../utils/pagination.js";
+import { Prisma } from "../generated/prisma/browser.js";
 // import { UkuranProduk } from "../generated/prisma/enums";
 export default class StokPotongController {
   public static async getDataMenunggu(req: Request, res: Response) {
     try {
-      const result = await prisma.$transaction(async (tx) => {
-        // Implementation for fetching selesai data
-        const dataMenunggu = await tx.permintaan.findMany({
-          where: { status: "MENUNGGU_STOK_POTONG" },
+      // 1. Ambil parameter pagination
+      const { prisma: pg, page, limit } = getPagination(req);
+
+      const search = req.query.search as string;
+
+      // 2. Gunakan Promise.all untuk eksekusi paralel (data & total count)
+      const whereCondition: Prisma.PermintaanWhereInput = {
+        status: "MENUNGGU_STOK_POTONG",
+        namaBarang: {
+          contains: search,
+          mode: "insensitive",
+        },
+        stokPotong: {
+          kodeStokPotongan: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      };
+
+      const [rawData, total] = await Promise.all([
+        prisma.permintaan.findMany({
+          where: whereCondition,
+          ...pg, // 3. Masukkan skip & take dari helper
           select: {
             id: true,
             namaBarang: true,
@@ -24,6 +46,9 @@ export default class StokPotongController {
             isUrgent: true,
             stokPotong: {
               select: {
+                id: true,
+                kodeKain: true,
+                jumlahHasil: true,
                 pemotong: {
                   select: {
                     user: {
@@ -33,17 +58,17 @@ export default class StokPotongController {
                     },
                   },
                 },
-                id: true,
-                kodeKain: true,
-                jumlahHasil: true,
               },
             },
           },
-        });
-        return { dataMenunggu };
-      });
+        }),
+        prisma.permintaan.count({
+          where: whereCondition,
+        }),
+      ]);
 
-      const data = result.dataMenunggu.map((item: any) => ({
+      // 4. Transformasi data tanpa mengubah struktur
+      const data = rawData.map((item: any) => ({
         idPermintaan: item.id,
         idStokPotong: item.stokPotong.id,
         namaBarang: item.namaBarang,
@@ -55,7 +80,11 @@ export default class StokPotongController {
         isUrgent: item.isUrgent,
       }));
 
-      return res.status(200).json(data);
+      // 5. Return dengan format data & meta
+      return res.status(200).json({
+        data: data,
+        meta: wrapPagination(total, page, limit),
+      });
     } catch (error) {
       console.error("Error fetching selesai data:", error);
       return res.status(500).json({ message: "Internal server error" });
@@ -125,10 +154,25 @@ export default class StokPotongController {
 
   public static async getDataProses(req: Request, res: Response) {
     try {
-      const result = await prisma.$transaction(async (tx) => {
-        // Implementation for fetching selesai data
-        const dataProses = await tx.permintaan.findMany({
-          where: { status: "PROSES_STOK_POTONG" },
+      // 1. Ambil parameter pagination dari helper
+      const { prisma: pg, page, limit } = getPagination(req);
+
+      const search = req.query.search as string;
+
+      // Filter yang konsisten untuk data dan count
+      const whereCondition: Prisma.PermintaanWhereInput = {
+        status: "PROSES_STOK_POTONG",
+        namaBarang: {
+          contains: search,
+          mode: "insensitive",
+        },
+      };
+
+      // 2. Gunakan Promise.all untuk eksekusi paralel (findMany & count)
+      const [dataProses, total] = await Promise.all([
+        prisma.permintaan.findMany({
+          where: whereCondition,
+          ...pg, // 3. Masukkan skip dan take ke kueri Prisma
           select: {
             id: true,
             namaBarang: true,
@@ -137,6 +181,9 @@ export default class StokPotongController {
             isUrgent: true,
             stokPotong: {
               select: {
+                id: true,
+                kodeKain: true,
+                jumlahHasil: true,
                 pemotong: {
                   select: {
                     user: {
@@ -146,17 +193,17 @@ export default class StokPotongController {
                     },
                   },
                 },
-                id: true,
-                kodeKain: true,
-                jumlahHasil: true,
               },
             },
           },
-        });
-        return { dataProses };
-      });
+        }),
+        prisma.permintaan.count({
+          where: whereCondition,
+        }),
+      ]);
 
-      const data = result.dataProses.map((item: any) => ({
+      // 4. Transformasi data (mapping) tetap dipertahankan sesuai aslinya
+      const data = dataProses.map((item: any) => ({
         idPermintaan: item.id,
         idStokPotong: item.stokPotong.id,
         namaBarang: item.namaBarang,
@@ -168,7 +215,11 @@ export default class StokPotongController {
         tanggalSelesaiPotong: item.tanggalMasuk,
       }));
 
-      return res.status(200).json(data);
+      // 5. Kembalikan response dengan format data dan meta
+      return res.status(200).json({
+        data: data,
+        meta: wrapPagination(total, page, limit),
+      });
     } catch (error) {
       console.error("Error fetching selesai data:", error);
       return res.status(500).json({ message: "Internal server error" });
@@ -287,28 +338,54 @@ export default class StokPotongController {
 
   public static async getDataStok(req: Request, res: Response) {
     try {
-      const dataPotong = await prisma.stokPotong.findMany({
-        where: {
-          status: { in: [StatusStokPotong.KIRIM, StatusStokPotong.SELESAI] },
-        },
-        select: {
-          id: true,
-          status: true,
-          kodeStokPotongan: true,
-          jumlahLolos: true,
-          tanggalSelesai: true,
-          permintaan: {
-            select: {
-              id: true,
-              namaBarang: true,
-              ukuran: true,
-              tanggalMasuk: true,
-              isUrgent: true,
-            },
+      // 1. Ambil parameter pagination menggunakan helper
+      const { prisma: pg, page, limit } = getPagination(req);
+
+      const search = req.query.search as string;
+
+      // Filter yang digunakan untuk data dan penghitungan total
+      const whereCondition: Prisma.StokPotongWhereInput = {
+        status: { in: [StatusStokPotong.KIRIM, StatusStokPotong.SELESAI] },
+        permintaan: {
+          namaBarang: {
+            contains: search,
+            mode: "insensitive",
           },
         },
-      });
+        kodeStokPotongan: {
+          contains: search,
+          mode: "insensitive",
+        },
+      };
 
+      // 2. Gunakan Promise.all untuk menjalankan query secara paralel
+      const [dataPotong, total] = await Promise.all([
+        prisma.stokPotong.findMany({
+          where: whereCondition,
+          ...pg, // 3. Masukkan skip & take dari helper
+          select: {
+            id: true,
+            status: true,
+            kodeStokPotongan: true,
+            jumlahLolos: true,
+            tanggalSelesai: true,
+            permintaan: {
+              select: {
+                id: true,
+                namaBarang: true,
+                ukuran: true,
+                tanggalMasuk: true,
+                isUrgent: true,
+              },
+            },
+          },
+        }),
+        prisma.stokPotong.count({
+          where: whereCondition,
+        }),
+      ]);
+
+      // 4. Transformasi data (mapping) sesuai struktur asli
       const data = dataPotong.map((item: any) => ({
         idPermintaan: item.permintaan.id,
         idStokPotong: item.id,
@@ -321,7 +398,11 @@ export default class StokPotongController {
         tanggalMasukPotong: item.tanggalSelesai,
       }));
 
-      return res.status(200).json(data);
+      // 5. Kembalikan response dengan format data dan meta
+      return res.status(200).json({
+        data: data,
+        meta: wrapPagination(total, page, limit),
+      });
     } catch (error) {
       console.error("Error fetching selesai data:", error);
       return res.status(500).json({ message: "Internal server error" });

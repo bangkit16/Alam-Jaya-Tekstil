@@ -10,6 +10,7 @@ import useDebounce from "@/hooks/useDebounce";
 export default function Selesai() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [selectedSelesai, setSelectedSelesai] = useState<number | null>(null);
 
   const debouncedSearch = useDebounce(search, 500);
 
@@ -79,16 +80,24 @@ export default function Selesai() {
             {data.map((item: any) => (
               <div
                 key={item.idPermintaan}
-                className="group bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                className="group bg-white border border-gray-300 rounded-2xl p-4 transition-all duration-300"
               >
+                {item.isUrgent && (
+                  <p className="text-sm font-semibold text-red-500 mb-2">
+                    URGENT
+                  </p>
+                )}
                 <div className="flex justify-between mb-2">
-                  <p className="text-sm font-semibold text-gray-800">
+                  <p className="text-sm font-semibold text-gray-800 my-auto">
                     {item.namaBarang} - {item.ukuran}
                   </p>
 
-                  <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full">
-                    Selesai
-                  </span>
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-gray-800">
+                      {item.jumlahHasil}
+                    </p>
+                    <p className="text-xs text-gray-500">Jumlah Hasil</p>
+                  </div>
                 </div>
 
                 <div className="h-px bg-gray-200 mb-3" />
@@ -105,8 +114,18 @@ export default function Selesai() {
                       : item.pemotong || "-"}
                   </p>
 
-                  <p>Jumlah Diminta : {item.jumlahMinta}</p>
-                  <p>Jumlah Hasil : {item.jumlahHasil}</p>
+                  <div className="flex justify-between pt-2 mt-2 border-t border-dashed border-gray-100">
+                    <p>
+                      Jumlah Diminta :{" "}
+                      <span className="font-bold">{item.jumlahMinta}</span>
+                    </p>
+                    <p>
+                      Jumlah Hasil :{" "}
+                      <span className="font-bold text-green-600">
+                        {item.jumlahHasil}
+                      </span>
+                    </p>
+                  </div>
                 </div>
               </div>
             ))}

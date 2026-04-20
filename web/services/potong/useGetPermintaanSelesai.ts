@@ -84,7 +84,7 @@ const fetchSelesai = async (
 /** Web Hook (Pagination + Search) */
 export const useGetSelesai = (page: number = 1, search: string = "") => {
   return useQuery<SelesaiResponse>({
-    queryKey: ["selesai", page, search],
+    queryKey: ["potong" ,"selesai", page, search],
     queryFn: () => fetchSelesai(page, search),
     placeholderData: (prev) => prev,
     staleTime: 0,
