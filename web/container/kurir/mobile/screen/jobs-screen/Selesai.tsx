@@ -108,7 +108,7 @@ export default function Selesai({search} : {search: string}) {
         <div ref={loadMoreRef} className="py-6 flex justify-center">
           {isFetchingNextPage ? (
             <div className="flex items-center gap-2 text-xs text-gray-400">
-              <div className="w-4 h-4 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
+              <div className="w-4 h-4 border-2 border-gray-200 border-t-orange-500 rounded-full animate-spin"></div>
               Memuat data...
             </div>
           ) : hasNextPage ? (
