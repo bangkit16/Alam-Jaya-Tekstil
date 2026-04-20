@@ -28,8 +28,8 @@ export default function KurirWeb({ handleLogout }: any) {
   const { data: proses } = useGetKurirProses();
   const { data: selesai } = useGetKurirSelesai(1, "");
 
-  const countMenunggu = menunggu?.length || 0;
-  const countProses = proses?.length || 0;
+  const countMenunggu = menunggu?.data.length || 0;
+  const countProses = proses?.data.length || 0;
   const countSelesai = selesai?.data.length || 0;
 
   return (
