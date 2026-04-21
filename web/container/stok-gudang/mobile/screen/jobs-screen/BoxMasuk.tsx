@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Package, PackageSearch } from "lucide-react";
 
 import {
   useGetBoxMasuk,
   BoxMasuk as IBoxMasuk,
+  useGetBoxMasukInfinite,
 } from "@/services/stok-gudang/useGetBoxMasuk";
 
 import BarcodeGenerator from "@/components/BarcodeGenerator";
@@ -18,9 +19,36 @@ export default function BoxMasuk({ search = "" }: { search?: string }) {
   const [idPenerimaBox, setIdPenerimaBox] = useState<string>("");
   const [openCollapse, setOpenCollapse] = useState<string | null>(null);
 
-  const { data: boxMasukData, isLoading, isError } = useGetBoxMasuk();
   const { data: dataPenerimaBox } = useGetPenerimaBox();
   const mutation = usePutBoxMasuk();
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isError,
+  } = useGetBoxMasukInfinite();
+  const boxMasukData = data?.pages.flatMap((page) => page.data) ?? [];
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      {
+        threshold: 0.1,
+      },
+    );
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   const filtered =
     boxMasukData?.filter(
@@ -142,6 +170,17 @@ export default function BoxMasuk({ search = "" }: { search?: string }) {
             </p>
           </div>
         )}
+        <div
+          ref={loadMoreRef}
+          className="h-10 flex items-center justify-center"
+        >
+          {isFetchingNextPage && (
+            <div className="flex items-center gap-2 text-xs text-gray-400">
+              <div className="w-4 h-4 border-2 border-gray-200 border-t-orange-500 rounded-full animate-spin"></div>
+              Memuat data...
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ================= MODAL ================= */}

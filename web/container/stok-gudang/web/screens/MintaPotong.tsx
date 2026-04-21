@@ -9,11 +9,17 @@ import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useGetKategori } from "@/services/stok-gudang/useGetKategori";
+import Pagination from "@/components/Pagination";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function MintaPotong() {
-  const { data = [] } = useGetPermintaanPotong();
+  const [page, setPage] = useState(1);
+  const { data: dataPermintaan, isLoading } = useGetPermintaanPotong(page);
   const mutationPost = usePostMintaPotong();
   const { data: dataKategori } = useGetKategori();
+
+  const data = dataPermintaan?.data || [];
+  const meta = dataPermintaan?.meta;
 
   const [open, setOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -87,6 +93,7 @@ export default function MintaPotong() {
         Minta Potong
       </button>
       {/* ================= LIST ================= */}
+      {isLoading && <LoadingSpinner />}
       <div className=" grid grid-cols-1 md:grid-cols-2  gap-3">
         {data.map((i: any) => (
           <div
@@ -119,6 +126,9 @@ export default function MintaPotong() {
           </div>
         ))}
       </div>
+        {meta && meta.totalPages > 1 && (
+          <Pagination meta={meta} onPageChange={setPage} />
+        )}
 
       {/* ================= MODAL FORM ================= */}
       {open && (

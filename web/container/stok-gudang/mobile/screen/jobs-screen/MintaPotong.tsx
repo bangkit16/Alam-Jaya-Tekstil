@@ -1,14 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import {
-  useGetPermintaanPotong,
-  PermintaanPotong,
-} from "@/services/stok-gudang/useGetPermintaanPotong";
-import {
-  LogPermintaan,
-  useGetTracking,
-} from "@/services/stok-gudang/useGetTracking";
+import { useEffect, useRef, useState } from "react";
+import { useGetPermintaanPotongInfinite } from "@/services/stok-gudang/useGetPermintaanPotong";
+import { useGetTracking } from "@/services/stok-gudang/useGetTracking";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
@@ -18,13 +12,16 @@ import { Package } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function MintaPotong({ search = "" }: any) {
-  const [open, setOpen] = useState(false); // modal form
-  const [selectedId, setSelectedId] = useState<string | null>(null); // Simpan ID saja untuk trigger API
+  const [open, setOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const PermintaanSchema = z.object({
     nama: z.string().min(3, "Nama produk minimal 3 karakter"),
     jumlah: z
-      .any() // Menghindari konflik awal tipe data
+      .any()
       .refine((val) => val !== "", "Jumlah wajib diisi")
       .transform((val) => Number(val))
       .refine((val) => !isNaN(val), "Harus berupa angka")
@@ -34,10 +31,8 @@ export default function MintaPotong({ search = "" }: any) {
     isUrgent: z.boolean(),
   });
 
-  // Type untuk TypeScript
   type PermintaanFormData = z.infer<typeof PermintaanSchema>;
 
-  // ================= FORM VALIDATION =================
   const {
     register,
     handleSubmit,
@@ -58,6 +53,9 @@ export default function MintaPotong({ search = "" }: any) {
 
   const isUrgent = watch("isUrgent");
 
+  const mutationPost = usePostMintaPotong();
+  const { data: dataKategori = [] } = useGetKategori();
+
   const onSubmit = (data: PermintaanFormData) => {
     mutationPost.mutate(
       {
@@ -70,25 +68,47 @@ export default function MintaPotong({ search = "" }: any) {
       {
         onSuccess: () => {
           setOpen(false);
-          reset(); // Kosongkan form setelah sukses
+          reset();
         },
       },
     );
   };
 
-  // ================= DATA LIST =================
-  const { data: permintaanData, isLoading } = useGetPermintaanPotong();
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useGetPermintaanPotongInfinite(5);
 
-  const mutationPost = usePostMintaPotong();
-  const { data: dataKategori } = useGetKategori();
+  const permintaanData = data?.pages.flatMap((page: any) => page.data) ?? [];
 
-  // ================= DATA TRACKING (Hanya jalan jika selectedId tidak null) =================
+  useEffect(() => {
+    const target = loadMoreRef.current;
+    const root = scrollRef.current;
+
+    if (!target || !root) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      {
+        root,
+        threshold: 0,
+        rootMargin: "300px",
+      },
+    );
+
+    observer.observe(target);
+
+    return () => observer.disconnect();
+  }, [data?.pages.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   const { data: tracking, isLoading: isTrackingLoading } = useGetTracking(
     selectedId || "",
   );
 
   const filtered =
-    permintaanData?.filter((d) =>
+    permintaanData.filter((d: any) =>
       d.namaBarang.toLowerCase().includes(search.toLowerCase()),
     ) || [];
 
@@ -96,21 +116,19 @@ export default function MintaPotong({ search = "" }: any) {
 
   return (
     <>
-      {/* ================= HEADER BUTTON ================= */}
-
-      {/* ================= LIST ================= */}
       <div className="flex flex-col h-full gap-2">
-        <div className="flex flex-col gap-2 flex-1 overflow-auto">
+        <div
+          ref={scrollRef}
+          className="flex flex-col gap-2 flex-1 overflow-auto"
+        >
           {isLoading ? (
-            /* 1. KONDISI LOADING */
             <div className="flex flex-col items-center justify-center py-16">
               <div className="w-8 h-8 border-4 border-gray-200 border-t-orange-500 rounded-full animate-spin mb-2"></div>
               <p className="text-xs text-gray-400">Memuat data...</p>
             </div>
           ) : filtered.length > 0 ? (
-            /* 2. KONDISI ADA DATA */
             <>
-              {filtered.map((item) => (
+              {filtered.map((item: any) => (
                 <div
                   key={item.idPermintaan}
                   className="bg-white border rounded-xl p-3 shadow-sm"
@@ -125,6 +143,7 @@ export default function MintaPotong({ search = "" }: any) {
                     <p className="text-sm font-medium">
                       {item.namaBarang} - {item.ukuran}
                     </p>
+
                     <p className="text-lg font-bold">{item.jumlahMinta}</p>
                   </div>
 
@@ -142,9 +161,20 @@ export default function MintaPotong({ search = "" }: any) {
                   </div>
                 </div>
               ))}
+
+              <div
+                ref={loadMoreRef}
+                className="h-48 flex items-center justify-center"
+              >
+                {isFetchingNextPage && (
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                    <div className="w-4 h-4 border-2 border-gray-200 border-t-orange-500 rounded-full animate-spin"></div>
+                    Memuat data...
+                  </div>
+                )}
+              </div>
             </>
           ) : (
-            /* 3. KONDISI DATA KOSONG */
             <div className="flex flex-col items-center justify-center py-16 text-gray-400">
               <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
                 <Package size={30} />
@@ -157,7 +187,6 @@ export default function MintaPotong({ search = "" }: any) {
           )}
         </div>
 
-        {/* BUTTON PACKING */}
         <div className=" flex justify-center">
           <button
             onClick={() => setOpen(true)}
@@ -168,7 +197,6 @@ export default function MintaPotong({ search = "" }: any) {
         </div>
       </div>
 
-      {/* ================= MODAL FORM ================= */}
       {open && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <form
@@ -176,39 +204,42 @@ export default function MintaPotong({ search = "" }: any) {
             className="bg-white w-[90%] max-w-sm rounded-2xl p-4 shadow-xl"
           >
             <p className="text-sm font-semibold mb-3">Permintaan</p>
+
             <div className="space-y-2">
-              {/* Input Nama */}
               <input
-                {...register("nama", { required: "Nama produk wajib diisi" })}
+                {...register("nama")}
                 placeholder="Nama produk"
-                className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${errors.nama ? "border border-red-500" : ""}`}
+                className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${
+                  errors.nama ? "border border-red-500" : ""
+                }`}
               />
+
               {errors.nama && (
                 <p className="text-[10px] text-red-500">
                   {errors.nama.message}
                 </p>
               )}
 
-              {/* Input Jumlah */}
               <input
-                {...register("jumlah", {
-                  required: "Jumlah wajib diisi",
-                  min: { value: 1, message: "Minimal 1" },
-                })}
+                {...register("jumlah")}
                 type="number"
                 placeholder="Jumlah"
-                className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${errors.jumlah ? "border border-red-500" : ""}`}
+                className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${
+                  errors.jumlah ? "border border-red-500" : ""
+                }`}
               />
+
               {errors.jumlah && (
                 <p className="text-[10px] text-red-500">
                   {errors.jumlah.message}
                 </p>
               )}
 
-              {/* Select Ukuran */}
               <select
-                {...register("ukuran", { required: "Pilih ukuran" })}
-                className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${errors.ukuran ? "border border-red-500" : ""}`}
+                {...register("ukuran")}
+                className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${
+                  errors.ukuran ? "border border-red-500" : ""
+                }`}
               >
                 <option value="">Pilih Ukuran</option>
                 <option value="XL">XL</option>
@@ -216,33 +247,34 @@ export default function MintaPotong({ search = "" }: any) {
                 <option value="L">L</option>
                 <option value="M">M</option>
               </select>
+
               {errors.ukuran && (
                 <p className="text-[10px] text-red-500">
                   {errors.ukuran.message}
                 </p>
               )}
 
-              {/* Select Kategori */}
               <select
-                {...register("kategori", { required: "Pilih kategori" })}
-                className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${errors.kategori ? "border border-red-500" : ""}`}
+                {...register("kategori")}
+                className={`w-full bg-gray-100 px-3 py-2 rounded text-xs outline-none ${
+                  errors.kategori ? "border border-red-500" : ""
+                }`}
               >
                 <option value="">Pilih Kategori</option>
-                {dataKategori.map(
-                  (kat: { id: string; slug: string; namaKategori: string }) => (
-                    <option key={kat.id} value={kat.slug}>
-                      {kat.namaKategori}
-                    </option>
-                  ),
-                )}
+
+                {dataKategori.map((kat: any) => (
+                  <option key={kat.id} value={kat.slug}>
+                    {kat.namaKategori}
+                  </option>
+                ))}
               </select>
+
               {errors.kategori && (
                 <p className="text-[10px] text-red-500">
                   {errors.kategori.message}
                 </p>
               )}
 
-              {/* Button Urgent */}
               <button
                 type="button"
                 onClick={() => setValue("isUrgent", !isUrgent)}
@@ -267,6 +299,7 @@ export default function MintaPotong({ search = "" }: any) {
               >
                 Batal
               </button>
+
               <button
                 type="submit"
                 className="bg-orange-500 text-white text-xs px-4 py-1 rounded shadow hover:bg-blue-700"
@@ -275,6 +308,7 @@ export default function MintaPotong({ search = "" }: any) {
               </button>
             </div>
           </form>
+
           <div
             className="absolute inset-0 -z-10"
             onClick={() => setOpen(false)}
@@ -282,7 +316,6 @@ export default function MintaPotong({ search = "" }: any) {
         </div>
       )}
 
-      {/* ================= MODAL TRACKING DETAIL ================= */}
       {selectedId && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white w-[90%] max-w-sm rounded-2xl p-4 shadow-xl max-h-[80vh] flex flex-col">
@@ -294,25 +327,27 @@ export default function MintaPotong({ search = "" }: any) {
               </div>
             ) : tracking ? (
               <>
-                {/* Debug Console Log diletakkan di sini */}
-                {console.log("Data Tracking:", tracking)}
-
                 <div className="bg-gray-100 rounded-xl p-3 text-xs space-y-1">
                   {tracking.isUrgent && (
                     <p className="text-red-500 text-sm font-bold">URGENT</p>
                   )}
+
                   <p>
                     <b>Produk:</b> {tracking.namaBarang} ({tracking.ukuran})
                   </p>
+
                   <p>
                     <b>Jumlah:</b> {tracking.jumlahMinta}
                   </p>
+
                   <p>
                     <b>Kategori:</b> {tracking.kategori}
                   </p>
+
                   <p>
                     <b>Jenis Permintaan:</b> {tracking.jenisPermintaan}
                   </p>
+
                   <p>
                     <b>Status Terakhir:</b>{" "}
                     {tracking.logPermintaan[
@@ -321,26 +356,28 @@ export default function MintaPotong({ search = "" }: any) {
                   </p>
                 </div>
 
-                {/* TIMELINE LOG */}
                 <div className="mt-3 text-[11px] space-y-2 overflow-y-auto pr-1">
-                  {/* Tambahkan pengecekan Array.isArray atau fallback [] */}
                   {Array.isArray(tracking?.logPermintaan) ? (
-                    [...tracking.logPermintaan].reverse().map((log, idx) => (
-                      <div
-                        key={idx}
-                        className="bg-white border rounded p-2 border-l-4 border-l-amber-400"
-                      >
-                        <div className="flex justify-between items-start">
-                          <p className="font-bold text-gray-400 text-[9px]">
-                            {log.tanggal}
-                          </p>
-                          <span className="text-[8px] bg-amber-50 text-amber-600 px-1 rounded">
-                            {log.status?.replace(/_/g, " ")}
-                          </span>
+                    [...tracking.logPermintaan]
+                      .reverse()
+                      .map((log: any, idx: number) => (
+                        <div
+                          key={idx}
+                          className="bg-white border rounded p-2 border-l-4 border-l-amber-400"
+                        >
+                          <div className="flex justify-between items-start">
+                            <p className="font-bold text-gray-400 text-[9px]">
+                              {log.tanggal}
+                            </p>
+
+                            <span className="text-[8px] bg-amber-50 text-amber-600 px-1 rounded">
+                              {log.status?.replace(/_/g, " ")}
+                            </span>
+                          </div>
+
+                          <p className="text-gray-700 mt-1">{log.keterangan}</p>
                         </div>
-                        <p className="text-gray-700 mt-1">{log.keterangan}</p>
-                      </div>
-                    ))
+                      ))
                   ) : (
                     <p className="text-center text-gray-400 py-4">
                       Belum ada riwayat log.
@@ -363,7 +400,7 @@ export default function MintaPotong({ search = "" }: any) {
               </button>
             </div>
           </div>
-          {/* Overlay Click to Close */}
+
           <div
             className="absolute inset-0 -z-10"
             onClick={() => setSelectedId(null)}

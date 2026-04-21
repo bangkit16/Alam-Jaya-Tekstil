@@ -112,7 +112,7 @@ export default function Menunggu() {
                     <button
                       disabled={mutation.isPending}
                       onClick={() => setSelected(item)}
-                      className=" mt-auto disabled:bg-orange-300 bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1.5 text-xs rounded-lg font-semibold hover:scale-105 active:scale-95 transition"
+                      className=" mt-auto disabled:bg-orange-300 bg-linear-to-r from-orange-500 to-amber-500 text-white px-3 py-1.5 text-xs rounded-lg font-semibold hover:scale-105 active:scale-95 transition"
                     >
                       Ambil
                     </button>

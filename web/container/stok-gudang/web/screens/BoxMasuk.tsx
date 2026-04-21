@@ -5,20 +5,28 @@ import { ChevronDown, PackageSearch } from "lucide-react";
 import { useGetBoxMasuk } from "@/services/stok-gudang/useGetBoxMasuk";
 import { useGetPenanggungJawabBox } from "@/services/stok-gudang/useGetPenanggungJawabBox";
 import BarcodeGenerator from "@/components/BarcodeGenerator";
+import Pagination from "@/components/Pagination";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function BoxMasuk() {
-  const { data = [] } = useGetBoxMasuk();
+  const [page, setPage] = useState(1);
+
+  const { data: dataBoxMasuk, isLoading } = useGetBoxMasuk(page);
   const { data: listPJ = [] } = useGetPenanggungJawabBox();
 
   const [open, setOpen] = useState<string | null>(null);
   const [selectedBox, setSelectedBox] = useState<any>(null);
+
+  const data = dataBoxMasuk?.data || [];
+  const meta = dataBoxMasuk?.meta;
 
   // 🔥 state untuk select
   const [selectedPJ, setSelectedPJ] = useState("");
 
   return (
     <>
-      <div className="grid md:grid-cols-2 gap-4">
+      {isLoading && <LoadingSpinner />}
+      <div className="grid md:grid-cols-2 gap-4 justify-center">
         {data.map((box: any) => {
           const isOpen = open === box.idBox;
 
@@ -101,6 +109,9 @@ export default function BoxMasuk() {
           );
         })}
       </div>
+        {meta && meta.totalPages > 1 && (
+          <Pagination meta={meta} onPageChange={setPage} />
+        )}
 
       {/* ================= MODAL ================= */}
       {selectedBox && (

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   useGetPermintaan,
   PermintaanBarang,
+  useGetPermintaanInfinite,
 } from "@/services/stok-gudang/useGetPermintaan";
 import { useGetDatabox, DataBox } from "@/services/stok-gudang/useGetDataBox";
 import { useGetPenanggungJawabBox } from "@/services/stok-gudang/useGetPenanggungJawabBox";
@@ -19,8 +20,38 @@ export default function PermintaanResi({ search = "" }: { search?: string }) {
   const [penanggungJawab, setPenanggungJawab] = useState("");
 
   // ================= DATA FROM HOOKS =================
-  const { data: permintaanData, isLoading, isError } = useGetPermintaan();
-  const { data: databoxData, isLoading: isLoadingBox } = useGetDatabox();
+  // const { data: permintaanData, isLoading, isError } = useGetPermintaan();
+  const {
+      data,
+      isLoading,
+      fetchNextPage,
+      hasNextPage,
+      isFetchingNextPage,
+      isError,
+    } = useGetPermintaanInfinite();
+    const permintaanData = data?.pages.flatMap((page) => page.data) ?? [];
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  
+    useEffect(() => {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+          }
+        },
+        {
+          threshold: 0.1,
+        },
+      );
+      if (loadMoreRef.current) {
+        observer.observe(loadMoreRef.current);
+      }
+  
+      return () => observer.disconnect();
+    }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+
+  const { data: databoxData, isLoading: isLoadingBox } = useGetDatabox(1,100);
   const {
     data: dataPenanggungJawabBox,
     isLoading: isLoadingPenanggungJawabBox,
@@ -92,6 +123,17 @@ export default function PermintaanResi({ search = "" }: { search?: string }) {
             </div>
           </div>
         ))}
+        <div
+          ref={loadMoreRef}
+          className="h-10 flex items-center justify-center"
+        >
+          {isFetchingNextPage && (
+            <div className="flex items-center gap-2 text-xs text-gray-400">
+              <div className="w-4 h-4 border-2 border-gray-200 border-t-orange-500 rounded-full animate-spin"></div>
+              Memuat data...
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ================= MODAL ================= */}
@@ -135,7 +177,7 @@ export default function PermintaanResi({ search = "" }: { search?: string }) {
 
             {/* LIST BOX */}
             <div className="space-y-2">
-              {databoxData?.map((box: DataBox) => (
+              {databoxData?.data.map((box: DataBox) => (
                 <div key={box.idBox} className="bg-gray-100 rounded-xl p-2">
                   <div className="flex gap-2">
                     <input
@@ -195,7 +237,7 @@ export default function PermintaanResi({ search = "" }: { search?: string }) {
                 </div>
               ))}
 
-              {databoxData?.length === 0 && (
+              {databoxData?.data.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-16 text-gray-400">
                   <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
                     <Package size={30} />

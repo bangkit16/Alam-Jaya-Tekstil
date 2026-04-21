@@ -1,10 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { api } from "../../lib/axios";
 
 const use_mock = false;
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-// Type Definitions
+// --- Type Definitions ---
 export interface PermintaanPotong {
   idPermintaan: string;
   namaBarang: string;
@@ -17,85 +17,96 @@ export interface PermintaanPotong {
   status: "ACC_GUDANG" | "MENUNGGU_POTONG" | "MENUNGGU_QC" | string;
 }
 
-// Fetcher Function
-const fetchPermintaanPotong = async (): Promise<PermintaanPotong[]> => {
+export interface MetaType {
+  totalData: number;
+  totalPages: number;
+  currentPage: number;
+  nextPage: number | null;
+  prevPage: number | null;
+}
+
+export interface PaginatedPermintaanPotongResponse {
+  data: PermintaanPotong[];
+  meta: MetaType;
+}
+
+// --- Fetcher Function ---
+const fetchPermintaanPotong = async (
+  page = 1,
+  limit = 10,
+): Promise<PaginatedPermintaanPotongResponse> => {
   if (use_mock) {
     await delay(1000);
-    return [
-      {
-        idPermintaan: "mock-124",
-        namaBarang: "Oversized Tee Black",
-        kategori: "T-Shirt",
-        jenisPermintaan: "RESI",
-        ukuran: "XL",
-        isUrgent: true,
-        jumlahMinta: 50,
-        tanggalMasukPermintaan: new Date().toISOString(),
-        status: "MENUNGGU_POTONG",
+    return {
+      data: [
+        {
+          idPermintaan: "mock-124",
+          namaBarang: "Oversized Tee Black (Mock)",
+          kategori: "T-Shirt",
+          jenisPermintaan: "RESI",
+          ukuran: "XL",
+          isUrgent: true,
+          jumlahMinta: 50,
+          tanggalMasukPermintaan: new Date().toISOString(),
+          status: "MENUNGGU_POTONG",
+        },
+        {
+          idPermintaan: "mock-125",
+          namaBarang: "Coach Jacket Vintage (Mock)",
+          kategori: "Jacket",
+          jenisPermintaan: "RESI",
+          ukuran: "L",
+          isUrgent: false,
+          jumlahMinta: 15,
+          tanggalMasukPermintaan: new Date().toISOString(),
+          status: "PROSES_JAHIT",
+        },
+      ],
+      meta: {
+        totalData: 2,
+        totalPages: 1,
+        currentPage: page,
+        nextPage: null,
+        prevPage: null,
       },
-      {
-        idPermintaan: "mock-125",
-        namaBarang: "Coach Jacket Vintage",
-        kategori: "Jacket",
-        jenisPermintaan: "RESI",
-        ukuran: "L",
-        isUrgent: false,
-        jumlahMinta: 15,
-        tanggalMasukPermintaan: new Date().toISOString(),
-        status: "PROSES_JAHIT",
-      },
-      {
-        idPermintaan: "mock-126",
-        namaBarang: "Crewneck Misty Grey",
-        kategori: "Sweater",
-        jenisPermintaan: "RESI",
-        ukuran: "M",
-        isUrgent: false,
-        jumlahMinta: 30,
-        tanggalMasukPermintaan: new Date().toISOString(),
-        status: "MENUNGGU_POTONG",
-      },
-      {
-        idPermintaan: "mock-127",
-        namaBarang: "Cargo Pants Olive",
-        kategori: "Pants",
-        jenisPermintaan: "RESI",
-        ukuran: "32",
-        isUrgent: true,
-        jumlahMinta: 25,
-        tanggalMasukPermintaan: new Date().toISOString(),
-        status: "QC_PASSED",
-      },
-      {
-        idPermintaan: "mock-128",
-        namaBarang: "Hoodie Zipper Maroon",
-        kategori: "Hoodie",
-        jenisPermintaan: "RESI",
-        ukuran: "S",
-        isUrgent: false,
-        jumlahMinta: 10,
-        tanggalMasukPermintaan: new Date().toISOString(),
-        status: "MENUNGGU_POTONG",
-      },
-    ];
+    };
   }
 
-  const response = await api.get<PermintaanPotong[]>(
+  const response = await api.get<PaginatedPermintaanPotongResponse>(
     "/stokgudang/permintaanpotong",
+    {
+      params: { page, limit },
+    },
   );
+
   return response.data;
 };
 
-// Exported Hook
-export const useGetPermintaanPotong = () => {
-  return useQuery<PermintaanPotong[], Error>({
-    queryKey: ["permintaan-potong"],
-    queryFn: fetchPermintaanPotong,
+// --- Exported Hooks ---
+
+/**
+ * Standard Query (Single Page)
+ */
+export const useGetPermintaanPotong = (page: number = 1) => {
+  return useQuery<PaginatedPermintaanPotongResponse, Error>({
+    queryKey: ["permintaan-potong", page],
+    queryFn: () => fetchPermintaanPotong(page),
     meta: {
       onError: (error: Error) => {
         console.error("Gagal mengambil data permintaan potong:", error.message);
-        alert("Terjadi kesalahan saat memuat data permintaan potong.");
       },
     },
+  });
+};
+
+/**
+ * Infinite Query (Scroll)
+ */
+export const useGetPermintaanPotongInfinite = (limit: number = 10) => {
+  return useInfiniteQuery<PaginatedPermintaanPotongResponse, Error>({
+    queryKey: ["permintaan-potong", "infinite"],
+    queryFn: ({ pageParam = 1 }) => fetchPermintaanPotong(pageParam as number , limit),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => lastPage.meta.nextPage ?? undefined,
   });
 };

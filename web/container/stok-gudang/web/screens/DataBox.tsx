@@ -4,14 +4,22 @@ import { useState } from "react";
 import { ChevronDown, PackageSearch } from "lucide-react";
 import { useGetDatabox } from "@/services/stok-gudang/useGetDataBox";
 import BarcodeGenerator from "@/components/BarcodeGenerator";
+import Pagination from "@/components/Pagination";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function DataBox() {
-  const { data = [] } = useGetDatabox();
+  const [page, setPage] = useState(1);
+
+  const { data: dataDataBox, isLoading } = useGetDatabox(page);
   const [open, setOpen] = useState<string | null>(null);
   const [selectedBox, setSelectedBox] = useState<any>(null);
 
+  const data = dataDataBox?.data || [];
+  const meta = dataDataBox?.meta;
+
   return (
     <>
+      {isLoading && <LoadingSpinner />}
       <div className="grid md:grid-cols-2 gap-4">
         {data.map((box: any) => {
           const isOpen = open === box.idBox;
@@ -108,6 +116,9 @@ export default function DataBox() {
           );
         })}
       </div>
+        {meta && meta.totalPages > 1 && (
+          <Pagination meta={meta} onPageChange={setPage} />
+        )}
 
       {selectedBox && (
         <Modal
@@ -130,9 +141,7 @@ export default function DataBox() {
             <ul className="text-sm text-gray-700 space-y-2 mb-6 border-t pt-3">
               <li className="flex justify-between">
                 <span className="text-gray-400">Penerima Box</span>
-                <span className="font-bold">
-                  {selectedBox.namaPenerimaBox}
-                </span>
+                <span className="font-bold">{selectedBox.namaPenerimaBox}</span>
               </li>
               <li className="flex justify-between">
                 <span className="text-gray-400">Tanggal Masuk Gudang</span>

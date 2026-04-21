@@ -5,15 +5,21 @@ import { useGetPermintaan } from "@/services/stok-gudang/useGetPermintaan";
 import { useGetDatabox } from "@/services/stok-gudang/useGetDataBox";
 import { useGetPenerimaBox } from "@/services/stok-gudang/useGetPenerimaBox";
 import BarcodeGenerator from "@/components/BarcodeGenerator";
+import Pagination from "@/components/Pagination";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function PermintaanResi() {
-  const { data = [] } = useGetPermintaan();
-  const { data: dataBox = [] } = useGetDatabox();
+  const [page, setPage] = useState(1);
+  const { data: dataPermintaanResi, isLoading } = useGetPermintaan(page);
+  const { data: dataBox } = useGetDatabox(1, 100);
   const { data: penerima = [] } = useGetPenerimaBox();
 
   const [selected, setSelected] = useState<any>(null);
   const [selectedBox, setSelectedBox] = useState<string[]>([]);
   const [penerimaId, setPenerimaId] = useState("");
+
+  const data = dataPermintaanResi?.data || [];
+  const meta = dataPermintaanResi?.meta;
 
   const toggleBox = (id: string) => {
     setSelectedBox((prev) =>
@@ -22,7 +28,7 @@ export default function PermintaanResi() {
   };
 
   // 🔥 HITUNG TOTAL
-  const totalDipilih = dataBox
+  const totalDipilih = dataBox?.data
     .filter((box: any) => selectedBox.includes(box.idBox))
     .reduce((total: number, box: any) => {
       const jumlah = box.stokPotongan?.reduce(
@@ -32,11 +38,12 @@ export default function PermintaanResi() {
       return total + jumlah;
     }, 0);
 
-  const kurang = selected && totalDipilih < selected.jumlahMinta;
+  const kurang = selected && Number(totalDipilih) < selected.jumlahMinta;
 
   return (
     <>
       {/* ================= LIST ================= */}
+      {isLoading && <LoadingSpinner />}
       <div className="grid md:grid-cols-2 gap-4">
         {data.map((item: any) => (
           <div
@@ -63,6 +70,9 @@ export default function PermintaanResi() {
           </div>
         ))}
       </div>
+      {meta && meta.totalPages > 1 && (
+        <Pagination meta={meta} onPageChange={setPage} />
+      )}
 
       {/* ================= MODAL ================= */}
       {selected && (
@@ -126,7 +136,7 @@ export default function PermintaanResi() {
 
               {/* LIST BOX */}
               <div className=" mb-4 grid md:grid-cols-2 gap-4">
-                {dataBox.map((box: any) => (
+                {dataBox?.data.map((box: any) => (
                   <div key={box.idBox}>
                     <label className="flex items-center gap-3 cursor-pointer group mb-4">
                       <input

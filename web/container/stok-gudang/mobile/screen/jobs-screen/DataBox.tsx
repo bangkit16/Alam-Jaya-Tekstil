@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Package, PackageSearch } from "lucide-react";
 
 import {
   useGetDatabox,
   DataBox as IDataBox,
+  useGetDataboxInfinite,
 } from "@/services/stok-gudang/useGetDataBox";
 
 import BarcodeGenerator from "@/components/BarcodeGenerator";
@@ -15,19 +16,45 @@ export default function DataBox({ search = "" }: { search?: string }) {
   const [selected, setSelected] = useState<IDataBox | null>(null);
   const [openCollapse, setOpenCollapse] = useState<string | null>(null);
 
-  const { data: databoxData, isLoading, isError } = useGetDatabox();
+  // const { data: databoxData, isLoading, isError } = useGetDatabox();
+
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isError,
+  } = useGetDataboxInfinite();
+  const dataBoxData = data?.pages.flatMap((page) => page.data) ?? [];
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      {
+        threshold: 0.1,
+      },
+    );
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   const filtered =
-    databoxData?.filter(
+    dataBoxData?.filter(
       (d) =>
         d.namaBox.toLowerCase().includes(search.toLowerCase()) ||
         d.kodeBox.toLowerCase().includes(search.toLowerCase()),
     ) || [];
 
-  if (isLoading)
-    return (
-      <LoadingSpinner />
-    );
+  if (isLoading) return <LoadingSpinner />;
 
   if (isError)
     return (
@@ -169,6 +196,17 @@ export default function DataBox({ search = "" }: { search?: string }) {
             Data box tidak ditemukan.
           </div>
         )}
+        <div
+          ref={loadMoreRef}
+          className="h-10 flex items-center justify-center"
+        >
+          {isFetchingNextPage && (
+            <div className="flex items-center gap-2 text-xs text-gray-400">
+              <div className="w-4 h-4 border-2 border-gray-200 border-t-orange-500 rounded-full animate-spin"></div>
+              Memuat data...
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ================= MODAL ================= */}
