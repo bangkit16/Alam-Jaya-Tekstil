@@ -2,12 +2,22 @@
 
 import { useState } from "react";
 import { ClipboardList } from "lucide-react";
-import { PenjahitMenunggu, useGetPenjahitMenunggu } from "@/services/jahit/useGetPenjahitMenunggu";
+import {
+  PenjahitMenunggu,
+  useGetPenjahitMenunggu,
+} from "@/services/jahit/useGetPenjahitMenunggu";
 import { usePutMulaiJahit } from "@/services/jahit/usePutMulaiJahit";
 import { toast } from "sonner";
+import Pagination from "@/components/Pagination";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function Menunggu() {
-  const { data = [] } = useGetPenjahitMenunggu();
+  const [page, setPage] = useState(1);
+  const { data: dataMenunggu , isLoading } = useGetPenjahitMenunggu(page);
+
+  const data = dataMenunggu?.data || [];
+  const meta = dataMenunggu?.meta;
+
   const mutation = usePutMulaiJahit();
 
   const [selected, setSelected] = useState<PenjahitMenunggu | null>(null);
@@ -35,7 +45,9 @@ export default function Menunggu() {
   return (
     <>
       <div className="bg-white rounded-2xl p-6 space-y-3 shadow">
-        {data.length === 0 ? (
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : data.length === 0 ? (
           <Empty icon={<ClipboardList />} text="Belum ada data menunggu" />
         ) : (
           data.map((job: any) => (
@@ -72,17 +84,20 @@ export default function Menunggu() {
                   <span className="font-bold">
                     {new Date(job.tanggalKirim).toLocaleString("id-ID", {
                       day: "numeric",
-                      month: "short", // 'long' untuk bulan lengkap, 'short' untuk singkatan
+                      month: "short",
                       year: "numeric",
                       hour: "2-digit",
                       minute: "2-digit",
-                      hour12: false, // true untuk AM/PM, false untuk 24 jam
+                      hour12: false,
                     })}
                   </span>
                 </li>
               </ul>
             </div>
           ))
+        )}
+        {!isLoading && meta && meta.totalPages > 1 && (
+          <Pagination meta={meta} onPageChange={setPage} />
         )}
       </div>
 
@@ -96,11 +111,11 @@ export default function Menunggu() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* HEADER */}
-                {selected.isUrgent && (
-                  <span className="text-md font-bold text-red-600 uppercase">
-                    Urgent
-                  </span>
-                )}
+            {selected.isUrgent && (
+              <span className="text-md font-bold text-red-600 uppercase">
+                Urgent
+              </span>
+            )}
             <div className="flex justify-between items-center mb-3">
               <div>
                 <p className="text-lg font-bold text-gray-800">

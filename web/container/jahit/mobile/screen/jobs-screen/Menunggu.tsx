@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  useGetPenjahitMenunggu,
   PenjahitMenunggu,
+  useGetPenjahitMenungguInfinite,
 } from "@/services/jahit/useGetPenjahitMenunggu"; // Sesuaikan path hook
 import { usePutMulaiJahit } from "@/services/jahit/usePutMulaiJahit";
 import { toast } from "sonner";
@@ -15,11 +15,34 @@ export default function Menunggu() {
 
   // 🔥 Integrasi Hook TanStack Query
   const {
-    data: apiData = [],
+    data,
     isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     isError,
     refetch,
-  } = useGetPenjahitMenunggu();
+  } = useGetPenjahitMenungguInfinite();
+  const apiData = data?.pages.flatMap((page) => page.data) ?? [];
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      {
+        threshold: 0.1,
+      },
+    );
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   const mutation = usePutMulaiJahit();
 
@@ -32,7 +55,6 @@ export default function Menunggu() {
       // Eksekusi API PUT ke server
       await mutation.mutate(job.idProsesStokPotong, {
         onSuccess: (data) => {
-
           toast.success(data.message);
           handleClose();
         },
@@ -41,7 +63,7 @@ export default function Menunggu() {
       // Jika sukses, tutup modal (Invalidasi data diurus otomatis oleh hook)
     } catch (error) {
       // Error sudah dihandle oleh alert di dalam hook
-      console.error("Mutation failed");
+      console.error("Mutation failed", error);
     }
   };
 
@@ -115,6 +137,14 @@ export default function Menunggu() {
             </div>
           ))
         )}
+        <div ref={loadMoreRef} className="py-4 flex justify-center">
+          {isFetchingNextPage && (
+            <div className="flex items-center gap-2 text-xs text-gray-400">
+              <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+              Memuat data...
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ================= MODAL ================= */}

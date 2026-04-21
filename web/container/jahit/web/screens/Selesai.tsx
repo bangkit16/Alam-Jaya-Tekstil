@@ -3,16 +3,25 @@
 import { useState } from "react";
 import { CheckCircle } from "lucide-react";
 import { useGetPenjahitSelesai } from "@/services/jahit/useGetPenjahitSelesai";
+import Pagination from "@/components/Pagination";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function Selesai() {
-  const { data = [] } = useGetPenjahitSelesai();
+  const [page, setPage] = useState(1);
+  const { data: penjahitSelesai, isLoading } = useGetPenjahitSelesai(page);
+
+  const data = penjahitSelesai?.data || [];
+  const meta = penjahitSelesai?.meta;
+
   const [selected, setSelected] = useState<any>(null);
 
   return (
     <>
       {/* LIST */}
       <div className="bg-white rounded-2xl p-6 shadow">
-        {data.length === 0 ? (
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : data.length === 0 ? (
           <Empty icon={<CheckCircle />} text="Belum ada data selesai" />
         ) : (
           <div className="space-y-3">
@@ -44,11 +53,23 @@ export default function Selesai() {
 
                   <p>
                     Selesai pada :{" "}
-                    {new Date(item.tanggalSelesai).toLocaleString("id-ID")}
+                    {new Date(item.tanggalSelesai).toLocaleString("id-ID", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    })}
                   </p>
                 </div>
               </div>
             ))}
+          </div>
+        )}
+        {!isLoading && meta && meta.totalPages > 1 && (
+          <div className="mt-4">
+            <Pagination meta={meta} onPageChange={setPage} />
           </div>
         )}
       </div>

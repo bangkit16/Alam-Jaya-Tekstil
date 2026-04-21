@@ -10,22 +10,16 @@ import { toast } from 'sonner';
 
 export default function Menunggu() {
   // Service Data
-  const { data, isLoading: loadingJobs, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetKurirMenungguInfinite();
-
-  const jobs = data?.pages.flatMap((page) => page.data) ?? [];
   const { data: listKurir, isLoading: loadingKurir } = useGetListKurir();
-
+  
   const mutation = usePutAmbilJob();
-
+  
   const [selectedJob, setSelectedJob] = useState<KurirMenunggu | null>(null);
   const [selectedKurirId, setSelectedKurirId] = useState('');
 
+  const { data, isLoading: loadingJobs, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetKurirMenungguInfinite();
+  const jobs = data?.pages.flatMap((page) => page.data) ?? [];
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
-
-  const handleClose = () => {
-    setSelectedJob(null);
-    setSelectedKurirId('');
-  };
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -38,13 +32,18 @@ export default function Menunggu() {
         threshold: 1,
       }
     );
-
     if (loadMoreRef.current) {
       observer.observe(loadMoreRef.current);
     }
 
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+  
+  const handleClose = () => {
+    setSelectedJob(null);
+    setSelectedKurirId('');
+  };
+
 
   const handleConfirmAmbil = () => {
     if (!selectedJob || !selectedKurirId) return;

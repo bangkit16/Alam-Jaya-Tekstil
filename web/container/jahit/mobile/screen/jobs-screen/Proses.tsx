@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
   useGetPenjahitProses,
   PenjahitProses,
+  useGetPenjahitProsesInfinite,
 } from "@/services/jahit/useGetPenjahitProses";
 import { usePutDikerjakan } from "@/services/jahit/usePutDikerjakan";
 import { usePutJeda } from "@/services/jahit/usePutJeda";
@@ -28,7 +29,36 @@ type FormValues = z.infer<typeof schema>;
 
 export default function Proses() {
   const [selected, setSelected] = useState<PenjahitProses | null>(null);
-  const { data: apiData = [], isLoading } = useGetPenjahitProses();
+
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isError,
+    refetch,
+  } = useGetPenjahitProsesInfinite();
+  const apiData = data?.pages.flatMap((page) => page.data) ?? [];
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      {
+        threshold: 0.1,
+      },
+    );
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
   const mutasiDikerjakan = usePutDikerjakan();
   const mutasiJeda = usePutJeda();
   const mutasiSelesai = usePutSelesaiJahit();
@@ -64,9 +94,7 @@ export default function Proses() {
 
     if (newStatus === "JEDA") {
       await mutasiJeda.mutateAsync(selected.idProsesStokPotong, {
-        onSuccess: () => {
-
-        },
+        onSuccess: () => {},
       });
     } else {
       await mutasiDikerjakan.mutateAsync(selected.idProsesStokPotong);
@@ -74,7 +102,6 @@ export default function Proses() {
 
     handleClose();
   };
-
 
   return (
     <>
@@ -140,6 +167,14 @@ export default function Proses() {
             <p className="text-xs text-gray-400">Jahitan akan muncul di sini</p>
           </div>
         )}
+        <div ref={loadMoreRef} className="py-4 flex justify-center">
+          {isFetchingNextPage && (
+            <div className="flex items-center gap-2 text-xs text-gray-400">
+              <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+              Memuat data...
+            </div>
+          )}
+        </div>
       </div>
 
       {selected && (

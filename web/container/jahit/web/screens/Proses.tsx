@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { Package } from "lucide-react";
-import { PenjahitProses, useGetPenjahitProses } from "@/services/jahit/useGetPenjahitProses";
+import {
+  PenjahitProses,
+  useGetPenjahitProses,
+} from "@/services/jahit/useGetPenjahitProses";
 import { usePutJeda } from "@/services/jahit/usePutJeda";
 import { usePutDikerjakan } from "@/services/jahit/usePutDikerjakan";
 import { usePutSelesaiJahit } from "@/services/jahit/usePutSelesaiJahit";
@@ -10,6 +13,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 import { toast } from "sonner";
+import Pagination from "@/components/Pagination";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 const schema = z.object({
   jumlahSelesaiJahit: z
@@ -24,21 +29,24 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function Proses() {
-  const { data = [] } = useGetPenjahitProses();
+  const [page, setPage] = useState(1);
+
+  const { data: penjahitProses, isLoading } = useGetPenjahitProses(page);
   const mutasiDikerjakan = usePutDikerjakan();
   const mutasiJeda = usePutJeda();
   const mutasiSelesai = usePutSelesaiJahit();
 
+  const data = penjahitProses?.data || [];
+  const meta = penjahitProses?.meta;
 
   const {
-      register,
-      handleSubmit,
-      reset,
-      formState: { errors },
-    } = useForm<FormValues>({
-      resolver: zodResolver(schema),
-    });
-
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+  });
 
   const handleClose = () => {
     setSelected(null);
@@ -47,55 +55,51 @@ export default function Proses() {
 
   const [selected, setSelected] = useState<any>(null);
 
-  // 🔥 FORM
-  const [form, setForm] = useState({
-    jumlahSelesai: 0,
-    catatan: "",
-  });
+  const onConfirmSelesai = async (data: FormValues) => {
+    if (!selected) return;
 
-    const onConfirmSelesai = async (data: FormValues) => {
-      if (!selected) return;
-
-      await mutasiSelesai.mutate({
+    await mutasiSelesai.mutate(
+      {
         id: selected.idProsesStokPotong,
         jumlahSelesaiJahit: data.jumlahSelesaiJahit,
         catatan: data.catatan,
-      } , {
+      },
+      {
+        onSuccess: (data) => {
+          toast.success(data.message);
+          handleClose();
+        },
+      },
+    );
+  };
+
+  const handleUpdateStatus = async (newStatus: "DIKERJAKAN" | "JEDA") => {
+    if (!selected) return;
+
+    if (newStatus === "JEDA") {
+      await mutasiJeda.mutateAsync(selected.idProsesStokPotong, {
         onSuccess: (data) => {
           toast.success(data.message);
           handleClose();
         },
       });
-
-    };
-
-    const handleUpdateStatus = async (newStatus: "DIKERJAKAN" | "JEDA") => {
-      if (!selected) return;
-
-      if (newStatus === "JEDA") {
-        await mutasiJeda.mutateAsync(selected.idProsesStokPotong, {
-          onSuccess: (data) => {
-            toast.success(data.message);
-            handleClose()
-          },
-        });
-      } else {
-        await mutasiDikerjakan.mutateAsync(selected.idProsesStokPotong , {
-          onSuccess: (data) => {
-            toast.success(data.message);
-            handleClose()
-          },
-        });
-      }
-
-    };
-
+    } else {
+      await mutasiDikerjakan.mutateAsync(selected.idProsesStokPotong, {
+        onSuccess: (data) => {
+          toast.success(data.message);
+          handleClose();
+        },
+      });
+    }
+  };
 
   return (
     <>
       {/* LIST */}
       <div className="bg-white rounded-2xl p-6 shadow">
-        {data.length === 0 ? (
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : data.length === 0 ? (
           <Empty icon={<Package />} text="Belum ada data proses" />
         ) : (
           <div className="space-y-3">
@@ -129,11 +133,11 @@ export default function Proses() {
                       "id-ID",
                       {
                         day: "numeric",
-                        month: "short", // 'long' untuk bulan lengkap, 'short' untuk singkatan
+                        month: "short",
                         year: "numeric",
                         hour: "2-digit",
                         minute: "2-digit",
-                        hour12: false, // true untuk AM/PM, false untuk 24 jam
+                        hour12: false,
                       },
                     )}
                   </p>
@@ -153,6 +157,12 @@ export default function Proses() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {!isLoading && meta && meta.totalPages > 1 && (
+          <div className="mt-4">
+            <Pagination meta={meta} onPageChange={setPage} />
           </div>
         )}
       </div>
@@ -323,4 +333,3 @@ function Empty({ icon, text }: any) {
     </div>
   );
 }
-
