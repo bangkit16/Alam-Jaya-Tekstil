@@ -60,54 +60,76 @@ export default function Menunggu() {
       {/* ================= MODAL ================= */}
       {selected && (
         <Modal onClose={() => setSelected(null)}>
-          {/* 🔥 URGENT */}
-          {selected.isUrgent && (
-            <p className="text-red-500 font-bold mb-1">URGENT</p>
-          )}
+          <div className="">
+            {" "}
+            {/* Menambah padding agar lega sesuai style target */}
+            {/* HEADER */}
+            {selected.isUrgent && (
+              <span className="text-md font-bold text-red-600 uppercase">
+                Urgent
+              </span>
+            )}
+            <div className="flex justify-between items-center mb-3">
+              <div>
+                <p className="text-lg font-bold text-gray-800">
+                  {selected.namaBarang} - {selected.ukuran}
+                </p>
+              </div>
 
-          {/* HEADER */}
-          <div className="flex justify-between items-center mb-3">
-            <p className="font-semibold text-gray-800">
-              {selected.namaBarang} - {selected.ukuran}
-            </p>
+              <p className="text-xl font-bold text-gray-900">
+                {selected.jumlahSelesaiJahit}
+              </p>
+            </div>
+            {/* DETAIL - Menggunakan style border-t dan justify-between */}
+            <ul className="text-sm text-gray-700 space-y-2 mb-6 border-t pt-3">
+              <li className="flex justify-between">
+                <span className="text-gray-400">Kode Potongan</span>
+                <span className="font-bold">{selected.kodeStokPotongan}</span>
+              </li>
+              <li className="flex justify-between">
+                <span className="text-gray-400">Penjahit</span>
+                <span className="font-bold">{selected.namaPenjahit}</span>
+              </li>
+              <li className="flex justify-between">
+                <span className="text-gray-400">Tanggal</span>
+                <span>
+                  {new Date(selected.tanggalSelesaiJahit).toLocaleDateString(
+                    "id-ID",
+                    {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      hour: "numeric",
+                      minute: "numeric",
+                      hour12: false,
+                    },
+                  )}
+                </span>
+              </li>
+            </ul>
+            {/* BUTTON - Menggunakan gradient, rounded-sm, dan efek hover/scale */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  mutate(selected.idQC, {
+                    onSuccess: () => {
+                      setSelected(null);
+                    },
+                  });
+                }}
+                disabled={isPending}
+                className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-2.5 text-xs rounded-sm font-bold hover:scale-105 active:scale-95 transition disabled:opacity-50"
+              >
+                {isPending ? "MEMPROSES..." : "PROSES"}
+              </button>
 
-            <p className="text-lg font-bold">{selected.jumlahSelesaiJahit}</p>
-          </div>
-
-          {/* DETAIL */}
-          <ul className="text-sm text-gray-600 space-y-2 mb-5">
-            <li>• Kode Potongan: {selected.kodeStokPotongan}</li>
-            <li>• Penjahit: {selected.namaPenjahit}</li>
-            <li>
-              • Tanggal:{" "}
-              {new Date(selected.tanggalSelesaiJahit).toLocaleDateString(
-                "id-ID",
-              )}
-            </li>
-          </ul>
-
-          {/* BUTTON */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setSelected(null)}
-              className="flex-1 bg-gray-200 py-2 rounded-xl text-sm"
-            >
-              Tutup
-            </button>
-
-            <button
-              onClick={() => {
-                mutate(selected.idQC, {
-                  onSuccess: () => {
-                    setSelected(null);
-                  },
-                });
-              }}
-              disabled={isPending}
-              className="flex-1 bg-orange-500 text-white py-2 rounded-xl text-sm"
-            >
-              {isPending ? "Loading..." : "Proses"}
-            </button>
+              <button
+                onClick={() => setSelected(null)}
+                className="flex-1 bg-gray-200 text-gray-800 text-xs py-2.5 rounded-sm font-bold hover:scale-105 active:scale-95 transition"
+              >
+                TUTUP
+              </button>
+            </div>
           </div>
         </Modal>
       )}

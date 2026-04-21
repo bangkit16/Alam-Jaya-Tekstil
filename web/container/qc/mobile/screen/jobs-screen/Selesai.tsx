@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useGetQCSelesai, QCSelesaiBox } from "@/services/qc/useGetQCSelesai";
 import BarcodeGenerator from "@/components/BarcodeGenerator";
-import { Package } from "lucide-react";
+import { ChevronDown, Package, PackageSearch } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function Selesai({ search = "" }: { search: string }) {
   const [selected, setSelected] = useState<QCSelesaiBox | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   // ================= DATA FROM SERVICE =================
   const { data: boxes = [], isLoading } = useGetQCSelesai();
@@ -42,7 +43,7 @@ export default function Selesai({ search = "" }: { search: string }) {
             <div
               key={box.idBox}
               onClick={() => setSelected(box)}
-              className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm cursor-pointer"
+              className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm cursor-pointer h-fit"
             >
               {/* TITLE */}
               <p className="text-sm font-semibold mb-2">{box.namaBox}</p>
@@ -54,28 +55,60 @@ export default function Selesai({ search = "" }: { search: string }) {
                 </p>
               </div>
 
-              {/* ITEMS (Preview items dari array stokPotongan) */}
-              <div className="space-y-2">
-                {box.stokPotongan.map((item) => (
-                  <div key={item.idQC} className="border rounded-lg p-2">
-                    <div className="flex justify-between">
-                      <p className="text-xs">
-                        {item.namaBarang} - {item.ukuran}
-                      </p>
-                      <p className="text-sm font-bold">{item.jumlah}</p>
-                    </div>
+              {/* TOMBOL COLLAPSIBLE */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation(); // Mencegah setSelected terpanggil
+                  setOpenId(openId === box.idBox ? null : box.idBox);
+                }}
+                className="w-full flex justify-between items-center bg-gray-50 border px-3 py-2 rounded-lg text-[11px] hover:bg-gray-100 transition mb-2"
+              >
+                <span className="flex items-center gap-2 text-gray-600 font-medium">
+                  <PackageSearch size={16} />
+                  Lihat Isi Box
+                </span>
+                <ChevronDown
+                  size={14}
+                  className={`transition-transform duration-300 ${
+                    openId === box.idBox ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
 
-                    <div className="text-[10px] text-gray-500">
-                      <p>• {item.kodeStokPotongan}</p>
-                      <p>
-                        •{" "}
-                        {new Date(item.tanggalSelesaiQC).toLocaleDateString(
-                          "id-ID",
-                        )}
-                      </p>
-                    </div>
+              {/* ITEMS DENGAN ANIMASI COLLAPSE */}
+              <div
+                className={`grid transition-all duration-300 ease-in-out ${
+                  openId === box.idBox
+                    ? "grid-rows-[1fr] opacity-100"
+                    : "grid-rows-[0fr] opacity-0"
+                }`}
+              >
+                <div className="overflow-hidden">
+                  <div className="space-y-2 pb-1">
+                    {box.stokPotongan.map((item) => (
+                      <div
+                        key={item.idQC}
+                        className="border rounded-lg p-2 bg-white"
+                      >
+                        <div className="flex justify-between">
+                          <p className="text-xs">
+                            {item.namaBarang} - {item.ukuran}
+                          </p>
+                          <p className="text-sm font-bold">{item.jumlah}</p>
+                        </div>
+                        <div className="text-[10px] text-gray-500">
+                          <p>• {item.kodeStokPotongan}</p>
+                          <p>
+                            •{" "}
+                            {new Date(item.tanggalSelesaiQC).toLocaleDateString(
+                              "id-ID",
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
               </div>
 
               {/* BARCODE */}

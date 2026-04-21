@@ -110,8 +110,9 @@ export default function Menunggu() {
                   {/* BUTTON */}
                   <div className="text-right mt-auto">
                     <button
+                      disabled={mutation.isPending}
                       onClick={() => setSelected(item)}
-                      className=" mt-auto  bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1.5 text-xs rounded-lg font-semibold hover:scale-105 active:scale-95 transition"
+                      className=" mt-auto disabled:bg-orange-300 bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1.5 text-xs rounded-lg font-semibold hover:scale-105 active:scale-95 transition"
                     >
                       Ambil
                     </button>
@@ -177,10 +178,10 @@ export default function Menunggu() {
                   },
                 );
               }}
-              disabled={!kurirId}
+              disabled={!kurirId || mutation.isPending}
               className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2.5 rounded-xl font-semibold disabled:opacity-50"
             >
-              Simpan
+              {mutation.isPending ? "Mengambil Job..." : "Ambil Job"}
             </button>
           </div>
         </div>
