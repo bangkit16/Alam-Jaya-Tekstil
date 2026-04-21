@@ -132,3 +132,31 @@ body {
     @apply font-sans;
   }
 }
+
+
+@layer utilities {
+  /* Scrollbar Minimalis */
+  .scrollbar-minimal {
+    scrollbar-width: thin; /* Untuk Firefox */
+    scrollbar-color: #cbd5e1 transparent; /* Untuk Firefox */
+  }
+
+  /* Untuk Chrome, Safari, dan Edge */
+  .scrollbar-minimal::-webkit-scrollbar {
+    width: 5px; /* Lebar scrollbar */
+    height: 5px; /* Tinggi scrollbar horizontal */
+  }
+
+  .scrollbar-minimal::-webkit-scrollbar-track {
+    background: transparent; /* Latar belakang track */
+  }
+
+  .scrollbar-minimal::-webkit-scrollbar-thumb {
+    background: #cbd5e1; /* Warna batang scroll (gray-300) */
+    border-radius: 20px; /* Membuat bulat */
+  }
+
+  .scrollbar-minimal::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8; /* Warna saat di-hover (gray-400) */
+  }
+}

@@ -67,29 +67,49 @@ export default function PermintaanResi() {
       {/* ================= MODAL ================= */}
       {selected && (
         <div
-          className="fixed inset-0 bg-black/40 flex justify-center items-center z-50"
+          className="fixed inset-0 bg-black/40 flex justify-center items-center z-50 px-4 animate-in fade-in duration-200"
           onClick={() => setSelected(null)}
         >
           <div
-            className="bg-white w-full max-w-md rounded-2xl p-5 max-h-[90vh] overflow-auto"
+            className="bg-white w-full max-w-lg rounded-sm p-6 max-h-[90vh] flex flex-col shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* HEADER */}
-            <h2 className="font-semibold mb-3">
-              Permintaan - {selected.namaBarang}
-            </h2>
-
-            {/* INPUT PENERIMA */}
             <div className="mb-4">
-              <p className="text-xs text-gray-400 mb-1">INPUT PENERIMA</p>
+              <h3 className="text-xl font-bold text-gray-800 tracking-tight">
+                Permintaan: {selected.namaBarang}
+              </h3>
+              <p className="text-xs text-gray-400">
+                Pilih penangung jawab dan box yang akan dikirim.
+              </p>
+            </div>
 
+            {/* DETAIL PRODUK - Style List Justify Between */}
+            <ul className="text-sm text-gray-700 space-y-2 mb-6 border-t pt-4">
+              <li className="flex justify-between">
+                <span className="text-gray-400">Kategori</span>
+                <span className="font-bold uppercase text-[11px]">
+                  {selected.kategori}
+                </span>
+              </li>
+              <li className="flex justify-between">
+                <span className="text-gray-400">Ukuran / Jumlah</span>
+                <span className="font-bold">
+                  {selected.ukuran} — {selected.jumlahMinta} pcs
+                </span>
+              </li>
+            </ul>
+
+            <div className="mb-6">
+              <label className="block mb-1.5 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                Nama Penanggung Jawab
+              </label>
               <select
                 value={penerimaId}
                 onChange={(e) => setPenerimaId(e.target.value)}
-                className="w-full border rounded-xl p-2 text-sm"
+                className="w-full bg-gray-100 rounded-sm px-4 py-2.5 text-sm outline-none focus:ring-1 focus:ring-orange-500 transition"
               >
                 <option value="">Pilih Nama Penerima</option>
-
                 {penerima.map((p: any) => (
                   <option key={p.id} value={p.id}>
                     {p.nama}
@@ -98,102 +118,97 @@ export default function PermintaanResi() {
               </select>
             </div>
 
-            {/* DETAIL */}
-            <div className="text-sm text-gray-600 mb-4">
-              <p>Kategori: {selected.kategori}</p>
-              <p>Ukuran: {selected.ukuran}</p>
-              <p>Jumlah: {selected.jumlahMinta}</p>
-            </div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase mb-3 tracking-widest">
+                Box Tersedia
+              </p>
+            <div className="overflow-y-auto flex-1 pr-1 scrollbar-minimal">
+              {/* INPUT PENERIMA */}
 
-            {/* LIST BOX */}
-            <div className="space-y-4">
-              {dataBox.map((box: any) => (
-                <div
-                  key={box.idBox}
-                  className="border rounded-2xl p-3 bg-gray-50"
-                >
-                  <div className="flex justify-between items-center mb-2">
-                    <p className="font-semibold">{box.namaBox}</p>
+              {/* LIST BOX */}
+              <div className="space-y-4 mb-4 ">
+                {dataBox.map((box: any) => (
+                  <div key={box.idBox}>
+                    <label className="flex items-center gap-3 cursor-pointer group mb-4">
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 accent-orange-600 rounded-sm cursor-pointer"
+                        checked={selectedBox.includes(box.idBox)}
+                        onChange={() => toggleBox(box.idBox)}
+                      />
+                      <span className="text-xs font-bold text-gray-600 group-hover:text-orange-600">
+                        PILIH BOX
+                      </span>
+                    </label>
+                    <div
+                      className={`border rounded-sm p-4 transition-colors ${
+                        selectedBox.includes(box.idBox)
+                          ? "border-orange-500 bg-orange-50/30"
+                          : "border-gray-200 bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex justify-between items-center mb-3">
+                        <p className="font-bold text-gray-800">{box.namaBox}</p>
+                        <span className="font-mono text-[10px] text-gray-400 font-bold">
+                          {box.kodeBox}
+                        </span>
+                      </div>
 
-                    <span className="text-[10px] text-gray-400">
-                      {box.kodeBox}
-                    </span>
-                  </div>
-
-                  <div className="space-y-2 mb-3">
-                    {box.stokPotongan?.map((item: any) => (
-                      <div
-                        key={item.idQC}
-                        className="bg-white border rounded-xl p-2"
-                      >
-                        <div className="flex justify-between">
-                          <div>
-                            <p className="text-sm">
-                              {item.namaBarang} ({item.ukuran})
-                            </p>
-
-                            <p className="text-xs text-gray-500">
-                              Kode: {item.kodeStokPotongan}
-                            </p>
-
-                            <p className="text-xs text-gray-400">
-                              Selesai QC:{" "}
-                              {new Date(
-                                item.tanggalSelesaiQC,
-                              ).toLocaleDateString("id-ID")}
+                      <div className="space-y-2 mb-4">
+                        {box.stokPotongan?.map((item: any) => (
+                          <div
+                            key={item.idQC}
+                            className="bg-white border border-gray-100 rounded-sm p-3 flex justify-between items-start"
+                          >
+                            <div className="space-y-1">
+                              <p className="text-xs font-bold text-gray-700">
+                                {item.namaBarang} ({item.ukuran})
+                              </p>
+                              <p className="text-[10px] text-gray-400 font-mono uppercase">
+                                KODE: {item.kodeStokPotongan}
+                              </p>
+                            </div>
+                            <p className="text-sm font-black text-gray-900">
+                              {item.jumlah}
                             </p>
                           </div>
+                        ))}
+                      </div>
 
-                          <b>{item.jumlah}</b>
+                      {/* CHECKBOX & BARCODE */}
+                      <div className="flex justify-center items-end border-t border-gray-200/50 pt-3">
+                        <div className="flex flex-col justify-center items-center">
+                          <BarcodeGenerator value={box.kodeBox} />
+                          <p className="text-[10px] text-gray-400 font-mono uppercase mt-1">
+                            KODE: {box.kodeBox}
+                          </p>
                         </div>
                       </div>
-                    ))}
+                    </div>
                   </div>
-
-                  {/* CHECKBOX */}
-                  <label className="flex items-center gap-2 text-sm mb-3">
-                    <input
-                      type="checkbox"
-                      checked={selectedBox.includes(box.idBox)}
-                      onChange={() => toggleBox(box.idBox)}
-                    />
-                    Pilih Box
-                  </label>
-
-                  {/* BARCODE */}
-                  <div className="flex flex-col items-center">
-                    <BarcodeGenerator value={box.kodeBox} />
-                    <span className="text-[10px] text-gray-400">
-                      {box.kodeBox}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
-            {/* BUTTON */}
-            <div className="flex gap-2 mt-5">
-              {/* BATAL */}
+            {/* ACTION BUTTONS */}
+            <div className="grid grid-cols-3 gap-2 mt-6 pt-4 border-t border-gray-50">
               <button
                 onClick={() => setSelected(null)}
-                className="flex-1 bg-gray-200 py-2 rounded-xl"
+                className="bg-gray-100 text-gray-600 py-3 rounded-sm font-bold text-[10px] uppercase hover:bg-gray-200 transition"
               >
-                Batal
+                BATAL
               </button>
 
-              {/* MINTA POTONG */}
               <button
                 disabled={!kurang}
                 onClick={() => console.log("Minta potong")}
-                className="flex-1 bg-gray-400 text-white py-2 rounded-xl disabled:opacity-40"
+                className="bg-gray-800 text-white py-3 rounded-sm font-bold text-[10px] uppercase hover:bg-black transition disabled:opacity-30"
               >
                 MINTA POTONG
               </button>
 
-              {/* KIRIM */}
               <button
                 disabled={!penerimaId || selectedBox.length === 0 || kurang}
-                className="flex-1 bg-orange-500 text-white py-2 rounded-xl disabled:bg-gray-300"
+                className="bg-gradient-to-r from-orange-500 to-amber-500 text-white py-3 rounded-sm font-bold text-[10px] uppercase hover:scale-[1.02] active:scale-95 transition disabled:opacity-50 disabled:scale-100"
               >
                 KIRIM
               </button>
