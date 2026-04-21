@@ -6,9 +6,15 @@ import { CheckCircle } from "lucide-react";
 import { useGetQCSelesai } from "@/services/qc/useGetQCSelesai";
 import { ChevronDown, PackageSearch } from "lucide-react";
 import BarcodeGenerator from "@/components/BarcodeGenerator";
+import Pagination from "@/components/Pagination";
 
 export default function Selesai() {
-  const { data = [], isLoading } = useGetQCSelesai();
+  const [page, setPage] = useState(1);
+  const { data: dataSelesai, isLoading } = useGetQCSelesai(page);
+
+  const data = dataSelesai?.data || [];
+  const meta = dataSelesai?.meta;
+
   const [selected, setSelected] = useState<any>(null);
   const [openId, setOpenId] = useState<string | null>(null);
 
@@ -111,6 +117,9 @@ export default function Selesai() {
               );
             })}
           </div>
+        )}
+        {meta && meta.totalPages > 1 && (
+          <Pagination meta={meta} onPageChange={setPage} />
         )}
       </div>
 

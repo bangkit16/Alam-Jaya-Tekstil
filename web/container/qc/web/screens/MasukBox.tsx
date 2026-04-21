@@ -6,9 +6,15 @@ import { Archive } from "lucide-react";
 import { useGetQCMasukBox } from "@/services/qc/useGetQCBoxMasuk";
 import { useGetPenanggungJawabBox } from "@/services/qc/useGetPenanggungJawabBox";
 import { usePostPackingBox } from "@/services/qc/usePostPackingBox";
+import Pagination from "@/components/Pagination";
 
 export default function MasukBox() {
-  const { data = [], isLoading } = useGetQCMasukBox();
+  const [page, setPage] = useState(1);
+  const { data: dataMasukBox, isLoading } = useGetQCMasukBox(page);
+
+  const data = dataMasukBox?.data || [];
+  const meta = dataMasukBox?.meta;
+
   const { data: listPJ } = useGetPenanggungJawabBox();
   const { mutate, isPending } = usePostPackingBox();
 
@@ -87,6 +93,9 @@ export default function MasukBox() {
               );
             })}
           </div>
+        )}
+        {meta && meta.totalPages > 1 && (
+          <Pagination meta={meta} onPageChange={setPage} />
         )}
       </div>
 

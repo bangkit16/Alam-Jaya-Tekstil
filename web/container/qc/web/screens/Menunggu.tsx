@@ -4,14 +4,21 @@ import { useState } from "react";
 import { Package } from "lucide-react";
 import { useGetQCMenunggu } from "@/services/qc/useGetQCMenunggu";
 import { usePutMulaiQC } from "@/services/qc/usePutMulaiQC";
+import Pagination from "@/components/Pagination";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function Menunggu() {
-  const { data = [], isLoading } = useGetQCMenunggu();
+  const [page, setPage] = useState(1);
+
+  const { data: dataMenunggu, isLoading } = useGetQCMenunggu(page);
   const { mutate, isPending } = usePutMulaiQC();
+
+  const data = dataMenunggu?.data || [];
+  const meta = dataMenunggu?.meta;
 
   const [selected, setSelected] = useState<any>(null);
 
-  if (isLoading) return <p className="text-center">Loading...</p>;
+  if (isLoading) return <LoadingSpinner />;
 
   return (
     <>
@@ -54,6 +61,9 @@ export default function Menunggu() {
               </div>
             ))}
           </div>
+        )}
+        {meta && meta.totalPages > 1 && (
+          <Pagination meta={meta} onPageChange={setPage} />
         )}
       </div>
 

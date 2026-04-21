@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useGetPengecek } from "@/services/qc/useGetPengecek";
+import Pagination from "@/components/Pagination";
 
 const schema = (jumlahSelesaiJahit: number) =>
   z
@@ -78,9 +79,14 @@ const schema = (jumlahSelesaiJahit: number) =>
 type FormType = z.infer<ReturnType<typeof schema>>;
 
 export default function Proses() {
-  const { data = [], isLoading } = useGetQCProses();
+  const [page, setPage] = useState(1);
+
+  const { data: dataProses, isLoading } = useGetQCProses(page);
   const { mutate, isPending } = usePutQCProses();
   const { data: dataPengecek = [] } = useGetPengecek();
+
+  const data = dataProses?.data || [];
+  const meta = dataProses?.meta;
 
   const [selected, setSelected] = useState<any>(null);
 
@@ -190,6 +196,9 @@ export default function Proses() {
               </div>
             ))}
           </div>
+        )}
+        {meta && meta.totalPages > 1 && (
+          <Pagination meta={meta} onPageChange={setPage} />
         )}
       </div>
 

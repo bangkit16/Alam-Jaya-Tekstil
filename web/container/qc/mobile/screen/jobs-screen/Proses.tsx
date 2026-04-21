@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
-import { useGetQCProses, QCProses } from "@/services/qc/useGetQCProses";
+import {
+  useGetQCProses,
+  QCProses,
+  useGetQCProsesInfinite,
+} from "@/services/qc/useGetQCProses";
 import { useGetPengecek } from "@/services/qc/useGetPengecek";
 import { usePutQCProses } from "@/services/qc/usePutQCProses";
 import { Package } from "lucide-react";
@@ -82,7 +86,40 @@ type FormType = z.infer<ReturnType<typeof schema>>;
 export default function Proses({ search = "" }: { search: string }) {
   const [selected, setSelected] = useState<QCProses | null>(null);
 
-  const { data: orders = [], isLoading, isError } = useGetQCProses();
+  const {
+    data: dataProses,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isError,
+  } = useGetQCProsesInfinite();
+  const jobs = dataProses?.pages.flatMap((page) => page.data) ?? [];
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      {
+        threshold: 0.1,
+      },
+    );
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  // ================= FILTER =================
+  // const data = jobs.filter((o: any) =>
+  //   `${o.namaBarang} ${o.ukuran}`.toLowerCase().includes(search.toLowerCase()),
+  // );
+
   const { data: dataPengecek = [] } = useGetPengecek();
   const { mutate, isPending } = usePutQCProses();
 
@@ -137,14 +174,12 @@ export default function Proses({ search = "" }: { search: string }) {
     reset();
   };
 
-  const filteredData = orders.filter((o) =>
+  const filteredData = jobs.filter((o) =>
     o.namaBarang.toLowerCase().includes(search.toLowerCase()),
   );
 
   if (isLoading) {
-    return (
-      <LoadingSpinner />
-    );
+    return <LoadingSpinner />;
   }
 
   if (isError) {
@@ -170,7 +205,7 @@ export default function Proses({ search = "" }: { search: string }) {
             <p className="text-xs text-gray-400">Data akan muncul di sini</p>
           </div>
         ) : (
-          filteredData.map((o) => (
+          filteredData.map((o: any) => (
             <div
               key={o.idQC}
               onClick={() => setSelected(o)}
@@ -212,6 +247,17 @@ export default function Proses({ search = "" }: { search: string }) {
             </div>
           ))
         )}
+        <div
+          ref={loadMoreRef}
+          className="h-10 flex items-center justify-center"
+        >
+          {isFetchingNextPage && (
+            <div className="flex items-center gap-2 text-xs text-gray-400">
+              <div className="w-4 h-4 border-2 border-gray-200 border-t-orange-500 rounded-full animate-spin"></div>
+              Memuat data...
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ================= MODAL ================= */}

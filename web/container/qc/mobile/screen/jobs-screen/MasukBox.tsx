@@ -2,10 +2,13 @@
 
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useGetPenanggungJawabBox } from "@/services/qc/useGetPenanggungJawabBox";
-import { useGetQCMasukBox } from "@/services/qc/useGetQCBoxMasuk";
+import {
+  useGetQCMasukBox,
+  useGetQCMasukBoxInfinite,
+} from "@/services/qc/useGetQCBoxMasuk";
 import { usePostPackingBox } from "@/services/qc/usePostPackingBox";
 import { Package } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 // Asumsi hook ini mengembalikan { id, nama }
 
@@ -16,13 +19,40 @@ export default function MasukBox({ search = "" }: { search: string }) {
   const [penanggungJawabId, setPenanggungJawabId] = useState("");
 
   // ================= DATA FROM SERVICE =================
-  const { data: boxItems = [], isLoading: loadingItems } = useGetQCMasukBox();
+  const {
+    data: dataMenunggu,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isError,
+  } = useGetQCMasukBoxInfinite();
+  const jobs = dataMenunggu?.pages.flatMap((page) => page.data) ?? [];
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      {
+        threshold: 0.1,
+      },
+    );
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
   const { data: listPJ = [], isLoading: loadingPJ } =
     useGetPenanggungJawabBox();
   const { mutate: kirimPacking, isPending } = usePostPackingBox();
 
   // ================= FILTER LOGIC =================
-  const filteredData = boxItems.filter((o) =>
+  const filteredData = jobs.filter((o) =>
     o.namaBarang.toLowerCase().includes(search.toLowerCase()),
   );
 
@@ -63,7 +93,7 @@ export default function MasukBox({ search = "" }: { search: string }) {
       {/* ================= LIST ================= */}
       <div className="flex flex-col gap-3 h-full">
         <div className="flex flex-col gap-2 flex-1 overflow-auto">
-          {loadingItems ? (
+          {isLoading ? (
             <LoadingSpinner />
           ) : filteredData.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-gray-400">
@@ -100,6 +130,17 @@ export default function MasukBox({ search = "" }: { search: string }) {
               </div>
             ))
           )}
+          <div
+            ref={loadMoreRef}
+            className="h-10 flex items-center justify-center"
+          >
+            {isFetchingNextPage && (
+              <div className="flex items-center gap-2 text-xs text-gray-400">
+                <div className="w-4 h-4 border-2 border-gray-200 border-t-orange-500 rounded-full animate-spin"></div>
+                Memuat data...
+              </div>
+            )}
+          </div>
         </div>
 
         {/* BUTTON PACKING */}
@@ -162,7 +203,7 @@ export default function MasukBox({ search = "" }: { search: string }) {
               ITEM TERPILIH
             </p>
             <div className="bg-gray-50 rounded-xl p-2 max-h-[150px] overflow-auto border border-gray-100">
-              {boxItems
+              {jobs
                 .filter((item) => selectedItems.includes(item.idQC))
                 .map((o) => (
                   <div

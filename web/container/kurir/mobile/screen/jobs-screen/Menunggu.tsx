@@ -29,7 +29,7 @@ export default function Menunggu() {
         }
       },
       {
-        threshold: 1,
+        threshold: 0.1,
       }
     );
     if (loadMoreRef.current) {
