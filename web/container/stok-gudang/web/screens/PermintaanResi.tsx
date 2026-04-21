@@ -71,7 +71,7 @@ export default function PermintaanResi() {
           onClick={() => setSelected(null)}
         >
           <div
-            className="bg-white w-full max-w-lg rounded-sm p-6 max-h-[90vh] flex flex-col shadow-xl"
+            className="bg-white w-full max-w-3xl rounded-sm p-6 max-h-[90vh] flex flex-col shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* HEADER */}
@@ -95,7 +95,7 @@ export default function PermintaanResi() {
               <li className="flex justify-between">
                 <span className="text-gray-400">Ukuran / Jumlah</span>
                 <span className="font-bold">
-                  {selected.ukuran} — {selected.jumlahMinta} pcs
+                  {selected.ukuran} / {selected.jumlahMinta} pcs
                 </span>
               </li>
             </ul>
@@ -109,7 +109,7 @@ export default function PermintaanResi() {
                 onChange={(e) => setPenerimaId(e.target.value)}
                 className="w-full bg-gray-100 rounded-sm px-4 py-2.5 text-sm outline-none focus:ring-1 focus:ring-orange-500 transition"
               >
-                <option value="">Pilih Nama Penerima</option>
+                <option value="">Pilih Nama Penanggung Jawab</option>
                 {penerima.map((p: any) => (
                   <option key={p.id} value={p.id}>
                     {p.nama}
@@ -118,14 +118,14 @@ export default function PermintaanResi() {
               </select>
             </div>
 
-              <p className="text-[10px] font-bold text-gray-400 uppercase mb-3 tracking-widest">
-                Box Tersedia
-              </p>
-            <div className="overflow-y-auto flex-1 pr-1 scrollbar-minimal">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-3 tracking-widest">
+              Box Tersedia
+            </p>
+            <div className="overflow-y-auto flex-1 pr-1 scrollbar-minimal scroll-smooth">
               {/* INPUT PENERIMA */}
 
               {/* LIST BOX */}
-              <div className="space-y-4 mb-4 ">
+              <div className=" mb-4 grid md:grid-cols-2 gap-4">
                 {dataBox.map((box: any) => (
                   <div key={box.idBox}>
                     <label className="flex items-center gap-3 cursor-pointer group mb-4">

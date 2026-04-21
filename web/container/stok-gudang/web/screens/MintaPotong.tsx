@@ -280,7 +280,7 @@ export default function MintaPotong() {
       {/* ================= MODAL TRACKING ================= */}
       {selectedId && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4 animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-lg shadow-xl rounded-sm p-6 relative flex flex-col max-h-[85vh]">
+          <div className="bg-white w-full max-w-xl shadow-xl rounded-sm p-6 relative flex flex-col max-h-[85vh]">
             {/* HEADER */}
 
             <div className="mb-4">
@@ -334,22 +334,22 @@ export default function MintaPotong() {
                 </p>
 
                 {/* Scroll Area dengan style scrollbar minimalis */}
-                <div className="space-y-4 overflow-y-auto pr-4 flex-1 scrollbar-minimal">
+                <div className="space-y-4 overflow-y-auto pr-2 flex-1 scrollbar-minimal">
                   {Array.isArray(tracking?.logPermintaan) &&
                   tracking.logPermintaan.length > 0 ? (
                     [...tracking.logPermintaan].reverse().map((log, idx) => (
                       <div
                         key={idx}
-                        className="relative pl-6 border-l border-gray-200 pb-1"
+                        className="relative pl-3 border-l-4 border-gray-100 border py-2 pr-2 border-l-amber-500"
                       >
                         {/* Dot Indicator */}
-                        <div className="absolute -left-[4.5px] top-1 w-2 h-2 rounded-full bg-gray-300 border border-white"></div>
+                        {/* <div className="absolute -left-[4.5px] top-1 w-2 h-2 rounded-full bg-gray-300 border border-white"></div> */}
 
                         <div className="flex justify-between items-baseline mb-1">
                           <p className="text-[10px] text-gray-400 font-medium">
                             {log.tanggal}
                           </p>
-                          <span className="text-[9px] font-bold text-gray-500 uppercase tracking-tight italic">
+                          <span className="text-[9px] font-bold text-gray-500 uppercase tracking-tight ">
                             {log.status?.replace(/_/g, " ")}
                           </span>
                         </div>
