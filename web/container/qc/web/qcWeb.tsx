@@ -39,10 +39,10 @@ export default function QCWeb({ handleLogout }: any) {
   const { data: selesai } = useGetQCSelesai();
 
   const count = {
-    menunggu: menunggu?.length || 0,
-    proses: proses?.length || 0,
-    masuk_box: box?.length || 0,
-    selesai: selesai?.length || 0,
+    menunggu: menunggu?.data.length || 0,
+    proses: proses?.data.length || 0,
+    masuk_box: box?.data.length || 0,
+    selesai: selesai?.data.length || 0,
   };
 
   return (

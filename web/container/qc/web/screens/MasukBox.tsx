@@ -7,6 +7,7 @@ import { useGetQCMasukBox } from "@/services/qc/useGetQCBoxMasuk";
 import { useGetPenanggungJawabBox } from "@/services/qc/useGetPenanggungJawabBox";
 import { usePostPackingBox } from "@/services/qc/usePostPackingBox";
 import Pagination from "@/components/Pagination";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function MasukBox() {
   const [page, setPage] = useState(1);
@@ -39,13 +40,12 @@ export default function MasukBox() {
     });
   };
 
-  if (isLoading) return <p className="text-center py-4">Loading...</p>;
 
   return (
     <>
       {/* CARD */}
       <div className="bg-white rounded-2xl p-6 shadow">
-        {data.length === 0 ? (
+        {isLoading ? <LoadingSpinner /> :data.length === 0 ? (
           <Empty />
         ) : (
           <div className="space-y-3">

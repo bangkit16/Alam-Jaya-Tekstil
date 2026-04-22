@@ -7,6 +7,7 @@ import { useGetQCSelesai } from "@/services/qc/useGetQCSelesai";
 import { ChevronDown, PackageSearch } from "lucide-react";
 import BarcodeGenerator from "@/components/BarcodeGenerator";
 import Pagination from "@/components/Pagination";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function Selesai() {
   const [page, setPage] = useState(1);
@@ -18,13 +19,13 @@ export default function Selesai() {
   const [selected, setSelected] = useState<any>(null);
   const [openId, setOpenId] = useState<string | null>(null);
 
-  if (isLoading) return <p className="text-center py-4">Loading...</p>;
-
   return (
     <>
       {/* ================= CARD ================= */}
       <div className="bg-white rounded-2xl p-6 shadow">
-        {data.length === 0 ? (
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : data.length === 0 ? (
           <Empty />
         ) : (
           <div className="grid grid-cols-2 gap-3">

@@ -25,7 +25,6 @@ export default function Selesai() {
 
   console.log(dataSelesai);
 
-  if (isLoading) return <LoadingSpinner />;
 
   return (
     <>
@@ -52,7 +51,9 @@ export default function Selesai() {
         </div>
 
         {/* CONTENT */}
-        {data.length === 0 ? (
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : data.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <div className="bg-green-100 text-green-500 p-4 rounded-full mb-4">
               <CheckCircle size={28} />

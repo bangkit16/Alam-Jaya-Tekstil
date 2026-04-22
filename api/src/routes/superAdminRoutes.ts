@@ -197,4 +197,21 @@ router.post("/add-user", SuperAdminController.createUser);
 router.put("/edit-user/:idUser", SuperAdminController.updateUser);
 router.delete("/delete-user/:idUser", SuperAdminController.deleteUser);
 
+/**
+ * @swagger
+ * /admin/role:
+ *   get:
+ *     summary: Mendapatkan daftar semua Role
+ *     tags: [SuperAdmin]
+ *     responses:
+ *       200:
+ *         description: Berhasil mendapatkan list role
+ *         content:
+ *           application/json:
+ *             example:
+ *               - id: "KURIR"
+ *                 namaRole: "KURIR"
+ */
+// router.get("/role", SuperAdminController.getListRoles);
+
 export default router;

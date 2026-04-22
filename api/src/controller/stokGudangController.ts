@@ -635,8 +635,6 @@ export default class StokGudangController {
     }
   }
 
-  // public static get
-
   public static async getListPenerimaBox(req: Request, res: Response) {
     try {
       const penerimaBox = await prisma.user.findMany({

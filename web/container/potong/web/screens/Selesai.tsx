@@ -6,6 +6,7 @@ import { Package } from "lucide-react";
 import { useGetSelesai } from "@/services/potong/useGetPermintaanSelesai";
 import Pagination from "@/components/Pagination";
 import useDebounce from "@/hooks/useDebounce";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function Selesai() {
   const [search, setSearch] = useState("");
@@ -62,7 +63,7 @@ export default function Selesai() {
         />
 
         {isLoading ? (
-          <p className="text-center text-gray-500">Loading...</p>
+          <LoadingSpinner />
         ) : data.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">

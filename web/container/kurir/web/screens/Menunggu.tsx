@@ -12,6 +12,7 @@ import { usePutAmbilJob } from "@/services/kurir/usePutAmbilJob";
 import Pagination from "@/components/Pagination";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { toast } from "sonner";
+import { is } from "zod/v4/locales";
 
 export default function Menunggu() {
   const [page, setPage] = useState(1);
@@ -28,7 +29,6 @@ export default function Menunggu() {
   const data = dataMenunggu?.data || [];
   const meta = dataMenunggu?.meta;
 
-  if (isLoading) return <LoadingSpinner />;
 
   return (
     <>
@@ -46,7 +46,8 @@ export default function Menunggu() {
         </div>
 
         {/* CONTENT */}
-        {count === 0 ? (
+        {/* {isLoading && <LoadingSpinner />} */}
+        {isLoading ? <LoadingSpinner /> : count === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <div className="bg-yellow-100 text-yellow-500 p-4 rounded-full mb-4">
               <ClipboardList size={28} />

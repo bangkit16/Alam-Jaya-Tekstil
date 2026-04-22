@@ -18,12 +18,13 @@ export default function Menunggu() {
 
   const [selected, setSelected] = useState<any>(null);
 
-  if (isLoading) return <LoadingSpinner />;
 
   return (
     <>
       <div className="bg-white rounded-2xl p-6 shadow">
-        {data.length === 0 ? (
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : data.length === 0 ? (
           <Empty />
         ) : (
           <div className="space-y-3">

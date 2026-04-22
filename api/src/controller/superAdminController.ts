@@ -105,4 +105,5 @@ export class SuperAdminController {
       return res.status(500).json({ message: "Gagal menghapus user" });
     }
   }
+  
 }

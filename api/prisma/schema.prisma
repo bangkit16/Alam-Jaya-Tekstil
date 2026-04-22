@@ -66,6 +66,8 @@ model Permintaan {
   jenisPermintaan     JenisPermintaan
   isUrgent            Boolean  @default(false)
   tanggalMasuk        DateTime @default(now())
+
+  isDikirim           Boolean   @default(false)
   
   status              StatusPermintaan
 
@@ -75,6 +77,18 @@ model Permintaan {
   box                 Box[]
 
   logs                PermintaanLog[]
+}
+
+model PermintaanProduk {
+  id                  String   @id @default(uuid())
+  kategoriId          String
+  namaBarang          String
+  ukuran              UkuranProduk
+  jumlahMinta         Int
+  jenisPermintaan     JenisPermintaan
+  isUrgent            Boolean  @default(false)
+  tanggalPermintaan        DateTime @default(now())
+  box                 Box[]
 }
 
 model PermintaanLog {
@@ -196,6 +210,7 @@ pengecek           QCPengecek[]
 model Box {
   id                      String   @id @default(uuid())
   permintaanId            String?
+  permintaanProdukId      String?
 
   kodeBox                 String    @unique
   namaBox                 String
@@ -209,6 +224,7 @@ model Box {
   status                  StatusBox
 
   permintaan              Permintaan? @relation(fields: [permintaanId], references: [id])
+  permintaanProduk        PermintaanProduk? @relation(fields: [permintaanProdukId], references: [id])
   qc                      QCStokPotong[]
 
   penanggungJawab         User? @relation("PenanggungJawabBox", fields: [penanggungJawabId], references: [id])
@@ -249,6 +265,7 @@ enum StatusPermintaan {
   MASUK_BOX
   ACC_GUDANG
   KIRIM_RESI
+  ACC_STOK_RESI
 }
 
 enum StatusStokPotong {
@@ -256,6 +273,7 @@ enum StatusStokPotong {
   PROSES
   SELESAI
   KIRIM
+
 }
 
 enum StatusProses {

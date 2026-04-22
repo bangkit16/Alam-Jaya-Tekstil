@@ -11,6 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useGetPengecek } from "@/services/qc/useGetPengecek";
 import Pagination from "@/components/Pagination";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 const schema = (jumlahSelesaiJahit: number) =>
   z
@@ -141,13 +142,12 @@ export default function Proses() {
     reset();
   };
 
-  if (isLoading) return <p className="text-center py-4">Loading...</p>;
 
   return (
     <>
       {/* CARD */}
       <div className="bg-white rounded-2xl p-6 shadow">
-        {data.length === 0 ? (
+        {isLoading ? <LoadingSpinner /> :data.length === 0 ? (
           <Empty />
         ) : (
           <div className="space-y-3">
