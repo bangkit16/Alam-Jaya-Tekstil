@@ -24,29 +24,21 @@ export default function LoginPage() {
     JAHIT: "/penjahit",
     QC: "/qc",
     KURIR: "/kurir",
+    SUPERADMIN: "/superadmin", // 🔥 tambahan
   };
-  
-  // const sessionLog = async () => {
-  //   try {
-  //     const response = await api.get("auth/session");
-  //     const data = await response.data;
-  //     // if (data) {
-  //     //   setSession({
-  //     //     session: {
-  //     //       id: data.user.id,
-  //     //       user: data.user,
-  //     //       createdAt: new Date().toISOString(),
-  //     //     },
-  //     //   });
-  //     // }
-  //     if (data) router.push(redirectMap[data.user.role.toLowerCase()] || "/");
-  //   } catch (error) {
-  //     return;
-  //     // router.push("/login");
-  //   }
-  // };
 
-  // sessionLog();
+  // 🔥 NORMALIZE ROLE (biar aman dari backend format beda)
+  const normalizeRole = (role) => {
+    if (!role) return "";
+
+    const map = {
+      stokgudang: "STOK_GUDANG",
+      stokpotong: "STOK_POTONG",
+      superadmin: "SUPERADMIN",
+    };
+
+    return map[role.toLowerCase()] || role.toUpperCase();
+  };
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -59,15 +51,18 @@ export default function LoginPage() {
 
       const data = await response.data;
 
-      // console.log(response.data);
-      // return;
-      if (!response) {
-        throw new Error(data.message || "Login gagal");
+      // 🔥 FIX VALIDASI
+      if (!data?.accessToken) {
+        throw new Error("Login gagal / token tidak ada");
       }
+
+      // 🔥 DEBUG (boleh dihapus nanti)
+      console.log("ROLE BACKEND:", data.user.role);
 
       // simpan token & role
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("role", data.user.role.toLowerCase());
+      localStorage.setItem("user", JSON.stringify(data.user)); // tambahan aman
 
       setSession({
         session: {
@@ -77,9 +72,16 @@ export default function LoginPage() {
         },
       });
 
-      // redirect map (SUDAH pakai /penjahit)
+      // 🔥 NORMALIZE ROLE
+      const role = normalizeRole(data.user.role);
 
-      router.push(redirectMap[data.user.role.toUpperCase()] || "/");
+      console.log("ROLE NORMALIZED:", role);
+
+      if (!redirectMap[role]) {
+        console.warn("ROLE TIDAK ADA DI MAP:", role);
+      }
+
+      router.push(redirectMap[role] || "/");
     } catch (error) {
       console.log("LOGIN ERROR:", error);
       alert("Login gagal, cek username / password atau server");
@@ -112,9 +114,6 @@ export default function LoginPage() {
               className="mx-auto mb-6 h-auto w-auto"
               onClick={() => router.push("/")}
             />
-            {/* <h2 className="text-xl md:text-2xl text-center font-bold text-gray-800">
-              Alam Jaya Tekstil 👋
-            </h2> */}
           </div>
 
           {/* ROLE DROPDOWN */}
@@ -206,16 +205,12 @@ export default function LoginPage() {
             Sign In →
           </button>
 
-          {/* FOOTER (UPDATED) */}
+          {/* FOOTER */}
           <div className="mt-6 bg-gray-50 rounded-xl p-4 text-center">
             <p className="text-xs text-gray-600 font-semibold">
               Production Management System
             </p>
-            <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
-              {/* Sistem ini digunakan untuk mengelola alur produksi tekstil mulai
-              dari resi, potong, jahit, QC, hingga distribusi barang secara
-              terintegrasi dalam satu platform. */}
-            </p>
+            <p className="text-[11px] text-gray-500 mt-1 leading-relaxed"></p>
           </div>
         </div>
       </div>
