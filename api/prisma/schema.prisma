@@ -92,7 +92,6 @@ model PermintaanProduk {
   isUrgent            Boolean  @default(false)
   kategori            Kategori @relation(fields: [kategoriId], references: [id])
   tanggalPermintaan   DateTime @default(now())
-  statusPermintaan    Enum(DIPROSES , DIBATALKAN, SELESAI)
   box                 Box[]
   permintaanId        String?         @unique 
   permintaan          Permintaan?     @relation(fields: [permintaanId], references: [id])
