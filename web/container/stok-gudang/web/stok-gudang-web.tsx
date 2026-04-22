@@ -79,10 +79,13 @@ export default function StokGudangWeb({ handleLogout }: any) {
 
         {/* STATS */}
         <div className="grid grid-cols-4 gap-4 mb-6">
-          <Stat title="Box Masuk" value={boxMasuk?.length || 0} />
-          <Stat title="Data Box" value={dataBox?.length || 0} />
+          <Stat title="Box Masuk" value={boxMasuk?.data.length || 0} />
+          <Stat title="Data Box" value={dataBox?.data.length || 0} />
           <Stat title="Permintaan Resi" value={0} />
-          <Stat title="Minta Potong" value={permintaanPotong?.length || 0} />
+          <Stat
+            title="Minta Potong"
+            value={permintaanPotong?.data.length || 0}
+          />
         </div>
 
         {/* CONTENT */}
