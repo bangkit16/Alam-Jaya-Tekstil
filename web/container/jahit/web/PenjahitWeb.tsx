@@ -24,9 +24,9 @@ export default function PenjahitWeb({ handleLogout }: any) {
   const [activeTab, setActiveTab] = useState<TabType>("menunggu");
 
   // 🔥 COUNT
-  const { data: menunggu = [] } = useGetPenjahitMenunggu();
-  const { data: proses = [] } = useGetPenjahitProses();
-  const { data: selesai = [] } = useGetPenjahitSelesai();
+  const { data: menunggu } = useGetPenjahitMenunggu();
+  const { data: proses } = useGetPenjahitProses();
+  const { data: selesai } = useGetPenjahitSelesai();
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-gray-100 to-orange-50">
@@ -74,9 +74,9 @@ export default function PenjahitWeb({ handleLogout }: any) {
       <div className="flex-1 p-6 space-y-6">
         {/* STATS */}
         <div className="grid grid-cols-3 gap-4">
-          <Stat title="Menunggu" value={menunggu.length} />
-          <Stat title="Proses" value={proses.length} />
-          <Stat title="Selesai" value={selesai.length} />
+          <Stat title="Menunggu" value={menunggu?.data.length} />
+          <Stat title="Proses" value={proses?.data.length} />
+          <Stat title="Selesai" value={selesai?.data.length} />
         </div>
 
         {/* SCREEN */}
