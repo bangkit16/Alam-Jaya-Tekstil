@@ -11,7 +11,21 @@ interface AuthRequest extends Request {
   };
 }
 
-export const authMiddleware = (allowedRoles?: string[]) => {
+type allowedRoles =
+  | "SUPERADMIN"
+  | "ADMIN"
+  | "POTONG"
+  | "STOK_POTONG"
+  | "KURIR"
+  | "JAHIT"
+  | "QC"
+  | "STOK_GUDANG"
+  | "STOK_RESI"
+  | "RESI"
+  | "PRINT"
+  | "PRESS";
+
+export const authMiddleware = (allowedRoles?: allowedRoles[]) => {
   return async (req: AuthRequest, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
 

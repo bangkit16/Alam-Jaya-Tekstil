@@ -121,10 +121,6 @@ const swaggerOptions = {
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
-// Debug
-// console.log("Swagger Paths:", swaggerSpec.paths);
-
-// Swagger UI Fix Vercel
 app.use(
   "/api-docs",
   swaggerUi.serve,
@@ -137,7 +133,6 @@ app.use(
     ],
   }),
 );
-// app.get("/api-docs", swaggerUi.setup(swaggerSpec));
 
 // JSON Swagger
 app.get("/api-docs.json", (req: Request, res: Response) => {
@@ -231,7 +226,7 @@ app.post("/create/permintaan", async (req: Request, res: Response) => {
       });
     }
 
-    const newPermintaan = await prisma.permintaan.create({
+    const newPermintaan = await prisma.permintaanProduk.create({
       data: {
         namaBarang,
         kategoriId: kategoriData.id,
@@ -271,14 +266,14 @@ app.post("/create/permintaan", async (req: Request, res: Response) => {
 // ==========================
 // ROUTES
 // ==========================
-app.use("/admin", superAdminRoutes);
+app.use("/admin", authMiddleware(["SUPERADMIN"]), superAdminRoutes);
 app.use("/auth", authRoutes);
-app.use("/potong", potongRoutes);
-app.use("/stokpotong", stokPotongRoutes);
-app.use("/kurir", kurirRoutes);
+app.use("/potong", authMiddleware(["POTONG"]), potongRoutes);
+app.use("/stokpotong", authMiddleware(["STOK_POTONG"]), stokPotongRoutes);
+app.use("/kurir", authMiddleware(["KURIR"]), kurirRoutes);
 app.use("/penjahit", authMiddleware(["JAHIT"]), penjahitRoutes);
-app.use("/qc", qcRoutes);
-app.use("/stokgudang", stokGudangRoutes);
+app.use("/qc", authMiddleware(["QC"]), qcRoutes);
+app.use("/stokgudang", authMiddleware(["STOK_GUDANG"]), stokGudangRoutes);
 
 // ==========================
 // LOCAL SERVER ONLY

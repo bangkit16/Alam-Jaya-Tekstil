@@ -54,7 +54,8 @@ model Kategori {
   slug         String   @unique
   kodeKategori String
 
-  permintaan   Permintaan[]
+  permintaan          Permintaan[]
+  permintaanProduk    PermintaanProduk[]
 }
 
 model Permintaan {
@@ -77,6 +78,8 @@ model Permintaan {
   box                 Box[]
 
   logs                PermintaanLog[]
+
+  permintaanProduk    PermintaanProduk? 
 }
 
 model PermintaanProduk {
@@ -87,8 +90,12 @@ model PermintaanProduk {
   jumlahMinta         Int
   jenisPermintaan     JenisPermintaan
   isUrgent            Boolean  @default(false)
-  tanggalPermintaan        DateTime @default(now())
+  kategori            Kategori @relation(fields: [kategoriId], references: [id])
+  tanggalPermintaan   DateTime @default(now())
+  statusPermintaan    Enum(DIPROSES , DIBATALKAN, SELESAI)
   box                 Box[]
+  permintaanId        String?         @unique 
+  permintaan          Permintaan?     @relation(fields: [permintaanId], references: [id])
 }
 
 model PermintaanLog {
@@ -232,15 +239,18 @@ model Box {
 }
 
 enum Role {
+  SUPERADMIN
+  ADMIN
   POTONG
   STOK_POTONG
   KURIR
   JAHIT
   QC
   STOK_GUDANG
-  SUPERADMIN
+  STOK_RESI
   RESI
   PRINT
+  PRESS
 }
 
 enum JenisPermintaan {
