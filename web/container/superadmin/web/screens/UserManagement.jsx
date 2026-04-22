@@ -9,6 +9,7 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 const ROLE_OPTIONS = [
   "POTONG",
   "STOK_POTONG",
+  "STOK_RESI", // ✅ tambahan
   "KURIR",
   "JAHIT",
   "QC",
@@ -36,10 +37,9 @@ export default function UserManagement() {
 
   const [editId, setEditId] = useState(null);
 
-  const [loading, setLoading] = useState(false); // table
-  const [actionLoading, setActionLoading] = useState(false); // submit/delete
+  const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  // 🔥 FETCH USER (FIX DOUBLE LOADING)
   const fetchUsers = async (isFromAction = false) => {
     try {
       if (!isFromAction) setLoading(true);
@@ -68,7 +68,6 @@ export default function UserManagement() {
     fetchUsers();
   }, [page, debouncedSearch]);
 
-  // 🔥 SUBMIT
   const handleSubmit = async () => {
     if (
       !form.nama ||
@@ -99,7 +98,7 @@ export default function UserManagement() {
 
       setEditId(null);
 
-      await fetchUsers(true); // 🔥 FIX: tidak trigger loading table
+      await fetchUsers(true);
     } catch (err) {
       console.log("ERROR SUBMIT:", err);
     } finally {
@@ -107,7 +106,6 @@ export default function UserManagement() {
     }
   };
 
-  // 🔥 DELETE
   const handleDelete = async (id) => {
     if (!confirm("Yakin hapus user?")) return;
 
@@ -116,7 +114,7 @@ export default function UserManagement() {
 
       await api.delete(`/admin/delete-user/${id}`);
 
-      await fetchUsers(true); // 🔥 FIX
+      await fetchUsers(true);
     } catch (err) {
       console.log("ERROR DELETE:", err);
     } finally {
@@ -124,7 +122,6 @@ export default function UserManagement() {
     }
   };
 
-  // 🔥 EDIT
   const handleEdit = (user) => {
     setForm({
       nama: user.nama,
@@ -263,12 +260,10 @@ export default function UserManagement() {
         </table>
       </div>
 
-      {/* PAGINATION */}
       {meta && meta.totalPages > 1 && (
         <Pagination meta={meta} onPageChange={setPage} />
       )}
 
-      {/* ACTION LOADING */}
       {actionLoading && (
         <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
           <LoadingSpinner />

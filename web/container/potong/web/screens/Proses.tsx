@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Package } from "lucide-react";
 import { toast } from "sonner";
 
@@ -26,12 +26,18 @@ export default function Proses() {
   const [page, setPage] = useState(1);
   const [pemotongList, setPemotongList] = useState<string[]>([]);
 
-  const { data: dataProses, isLoading } = useGetProses(page);
+  const { data: dataProses, isLoading, refetch } = useGetProses(page);
+
   const { data: pemotongData } = useGetPemotong();
   const { mutate: mutateProses } = usePutProses();
 
   const data = dataProses?.data || [];
   const meta = dataProses?.meta;
+
+  // 🔥 AUTO REFRESH SAAT TAB / PAGE BERUBAH
+  useEffect(() => {
+    refetch();
+  }, [page]);
 
   const {
     register,
@@ -101,6 +107,7 @@ export default function Proses() {
         onSuccess: () => {
           toast.success("Berhasil dipindah ke selesai");
           closeModal();
+          refetch(); // 🔥 refresh setelah submit
         },
         onError: () => {
           toast.error("Gagal memproses data");
@@ -139,9 +146,14 @@ export default function Proses() {
           </span>
         </div>
 
-        {isLoading ? (
-          <LoadingSpinner />
-        ) : data.length === 0 ? (
+        {/* 🔥 LOADING TANPA MERUSAK LAYOUT */}
+        {isLoading && (
+          <div className="py-10">
+            <LoadingSpinner />
+          </div>
+        )}
+
+        {!isLoading && data.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
               <Package size={30} />
@@ -153,13 +165,15 @@ export default function Proses() {
 
             <p className="text-xs text-gray-400">Data akan muncul di sini</p>
           </div>
-        ) : (
+        )}
+
+        {!isLoading && data.length > 0 && (
           <div className="space-y-3">
             {data.map((item: any) => (
               <div
                 key={item.idPermintaan}
                 onClick={() => openModal(item)}
-                className="group bg-white border border-gray-300 rounded-2xl p-4  transition-all duration-300 cursor-pointer"
+                className="group bg-white border border-gray-300 rounded-2xl p-4 transition-all duration-300 cursor-pointer"
               >
                 {item.isUrgent && (
                   <p className="text-sm font-semibold text-red-500 mb-2">
@@ -190,12 +204,13 @@ export default function Proses() {
             ))}
           </div>
         )}
+
         {meta && meta.totalPages > 1 && (
           <Pagination meta={meta} onPageChange={setPage} />
         )}
       </div>
 
-      {/* MODAL */}
+      {/* MODAL (TIDAK DIUBAH) */}
       {selectedProses && (
         <div
           className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"

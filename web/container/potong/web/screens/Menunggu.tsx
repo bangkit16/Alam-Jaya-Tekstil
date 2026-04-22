@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Package } from "lucide-react";
 import { toast } from "sonner";
 
@@ -13,11 +13,17 @@ export default function Menunggu() {
   const [selectedMenunggu, setSelectedMenunggu] = useState<string | null>(null);
   const [page, setPage] = useState(1);
 
-  const { data: dataPermintaan, isLoading } = useGetPermintaan(page);
+  const { data: dataPermintaan, isLoading, refetch } = useGetPermintaan(page);
+
   const { mutate: mutatePermintaan } = usePutPermintaan();
 
   const data = dataPermintaan?.data || [];
   const meta = dataPermintaan?.meta;
+
+  // 🔥 AUTO REFRESH
+  useEffect(() => {
+    refetch();
+  }, [page]);
 
   const handlePermintaan = (item: any) => {
     mutatePermintaan(
@@ -33,6 +39,7 @@ export default function Menunggu() {
         onSuccess: () => {
           toast.success("Berhasil dipindah ke proses");
           setSelectedMenunggu(null);
+          refetch(); // 🔥 refresh setelah aksi
         },
         onError: () => {
           toast.error("Gagal memproses data");
@@ -71,9 +78,14 @@ export default function Menunggu() {
           </span>
         </div>
 
-        {isLoading ? (
-          <LoadingSpinner />
-        ) : data.length === 0 ? (
+        {/* 🔥 LOADING TANPA MERUSAK LAYOUT */}
+        {isLoading && (
+          <div className="py-10">
+            <LoadingSpinner />
+          </div>
+        )}
+
+        {!isLoading && data.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
               <Package size={30} />
@@ -85,7 +97,9 @@ export default function Menunggu() {
 
             <p className="text-xs text-gray-400">Data akan muncul di sini</p>
           </div>
-        ) : (
+        )}
+
+        {!isLoading && data.length > 0 && (
           <div className="space-y-3">
             {data.map((item: any) => {
               const isOpen = selectedMenunggu === item.idPermintaan;
@@ -131,7 +145,7 @@ export default function Menunggu() {
                     </div>
                   </div>
 
-                  {/* --- WRAPPER ANIMASI --- */}
+                  {/* ANIMASI */}
                   <div
                     className={`grid transition-all duration-300 ease-in-out ${
                       isOpen
@@ -174,12 +188,12 @@ export default function Menunggu() {
                       </div>
                     </div>
                   </div>
-                  {/* --- END WRAPPER ANIMASI --- */}
                 </div>
               );
             })}
           </div>
         )}
+
         {meta && meta.totalPages > 1 && (
           <Pagination meta={meta} onPageChange={setPage} />
         )}

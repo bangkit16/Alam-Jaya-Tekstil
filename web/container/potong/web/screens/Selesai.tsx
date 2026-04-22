@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Package } from "lucide-react";
 
 import { useGetSelesai } from "@/services/potong/useGetPermintaanSelesai";
@@ -15,10 +15,21 @@ export default function Selesai() {
 
   const debouncedSearch = useDebounce(search, 500);
 
-  const { data: response, isLoading } = useGetSelesai(page , debouncedSearch);
+  const {
+    data: response,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useGetSelesai(page, debouncedSearch);
 
   const data = response?.data || [];
   const meta = response?.meta;
+
+  const loading = isLoading || isFetching; // 🔥 tetap
+
+  useEffect(() => {
+    refetch();
+  }, [page, debouncedSearch]);
 
   return (
     <div className="flex flex-col h-full">
@@ -62,77 +73,91 @@ export default function Selesai() {
           className="w-full md:w-72 bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 mb-4"
         />
 
-        {isLoading ? (
-          <LoadingSpinner />
-        ) : data.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-            <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
-              <Package size={30} />
-            </div>
-
-            <p className="font-semibold text-gray-500 mb-1">
-              Belum ada data selesai
-            </p>
-
-            <p className="text-xs text-gray-400">Data akan muncul di sini</p>
-          </div>
-        ) : (
-          <div className="space-y-3 overflow-y-auto pe-5 flex-1 min-h-0">
-            {data.map((item: any) => (
-              <div
-                key={item.idPermintaan}
-                className="group bg-white border border-gray-300 rounded-2xl p-4 transition-all duration-300"
-              >
-                {item.isUrgent && (
-                  <p className="text-sm font-semibold text-red-500 mb-2">
-                    URGENT
-                  </p>
-                )}
-                <div className="flex justify-between mb-2">
-                  <p className="text-sm font-semibold text-gray-800 my-auto">
-                    {item.namaBarang} - {item.ukuran}
-                  </p>
-
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-gray-800">
-                      {item.jumlahHasil}
-                    </p>
-                    <p className="text-xs text-gray-500">Jumlah Hasil</p>
-                  </div>
-                </div>
-
-                <div className="h-px bg-gray-200 mb-3" />
-
-                <div className="text-xs text-gray-600 space-y-1">
-                  <p>Nama Produk : {item.namaBarang}</p>
-                  <p>Ukuran : {item.ukuran}</p>
-                  <p>Kode Kain : {item.kodeKain || "-"}</p>
-
-                  <p>
-                    Pemotong :{" "}
-                    {Array.isArray(item.pemotong)
-                      ? item.pemotong.join(", ")
-                      : item.pemotong || "-"}
-                  </p>
-
-                  <div className="flex justify-between pt-2 mt-2 border-t border-dashed border-gray-100">
-                    <p>
-                      Jumlah Diminta :{" "}
-                      <span className="font-bold">{item.jumlahMinta}</span>
-                    </p>
-                    <p>
-                      Jumlah Hasil :{" "}
-                      <span className="font-bold text-green-600">
-                        {item.jumlahHasil}
-                      </span>
-                    </p>
-                  </div>
-                </div>
+        {/* 🔥 WRAPPER BIAR LAYOUT STABIL */}
+        <div className="relative flex-1 min-h-0">
+          {/* EMPTY */}
+          {!loading && data.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+              <div className="bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+                <Package size={30} />
               </div>
-            ))}
-          </div>
-        )}
 
+              <p className="font-semibold text-gray-500 mb-1">
+                Belum ada data selesai
+              </p>
+
+              <p className="text-xs text-gray-400">Data akan muncul di sini</p>
+            </div>
+          )}
+
+          {/* LIST */}
+          {data.length > 0 && (
+            <div className="space-y-3 overflow-y-auto pe-5 h-full">
+              {data.map((item: any) => (
+                <div
+                  key={item.idPermintaan}
+                  className="group bg-white border border-gray-300 rounded-2xl p-4 transition-all duration-300"
+                >
+                  {item.isUrgent && (
+                    <p className="text-sm font-semibold text-red-500 mb-2">
+                      URGENT
+                    </p>
+                  )}
+
+                  <div className="flex justify-between mb-2">
+                    <p className="text-sm font-semibold text-gray-800 my-auto">
+                      {item.namaBarang} - {item.ukuran}
+                    </p>
+
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-gray-800">
+                        {item.jumlahHasil}
+                      </p>
+                      <p className="text-xs text-gray-500">Jumlah Hasil</p>
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-gray-200 mb-3" />
+
+                  <div className="text-xs text-gray-600 space-y-1">
+                    <p>Nama Produk : {item.namaBarang}</p>
+                    <p>Ukuran : {item.ukuran}</p>
+                    <p>Kode Kain : {item.kodeKain || "-"}</p>
+
+                    <p>
+                      Pemotong :{" "}
+                      {Array.isArray(item.pemotong)
+                        ? item.pemotong.join(", ")
+                        : item.pemotong || "-"}
+                    </p>
+
+                    <div className="flex justify-between pt-2 mt-2 border-t border-dashed border-gray-100">
+                      <p>
+                        Jumlah Diminta :{" "}
+                        <span className="font-bold">{item.jumlahMinta}</span>
+                      </p>
+                      <p>
+                        Jumlah Hasil :{" "}
+                        <span className="font-bold text-green-600">
+                          {item.jumlahHasil}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* 🔥 OVERLAY LOADING (TIDAK GANGGU LAYOUT) */}
+          {loading && (
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-10 rounded-2xl">
+              <LoadingSpinner />
+            </div>
+          )}
+        </div>
+
+        {/* PAGINATION TETAP DI BAWAH */}
         {meta && meta.totalPages > 1 && (
           <Pagination meta={meta} onPageChange={setPage} />
         )}
