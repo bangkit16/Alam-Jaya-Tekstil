@@ -35,8 +35,8 @@ model User {
   pemotongan   StokPotongPemotong[]
   pengecekan   StokPotongPengecek[]
   pengecekanQC QCPengecek[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  createdAt DateTime @default(now())    // Terisi otomatis saat record dibuat
+  updatedAt DateTime @updatedAt  @default(now()) 
 }
 
 model Session {
@@ -44,7 +44,8 @@ model Session {
   refreshToken String
   userId       String   @unique
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade) 
-  createdAt    DateTime @default(now())
+  createdAt DateTime @default(now())    // Terisi otomatis saat record dibuat
+  updatedAt DateTime @updatedAt  @default(now()) 
 
 }
 
@@ -56,6 +57,8 @@ model Kategori {
 
   permintaan          Permintaan[]
   permintaanProduk    PermintaanProduk[]
+  createdAt DateTime @default(now())    // Terisi otomatis saat record dibuat
+  updatedAt DateTime @updatedAt  @default(now()) 
 }
 
 model Permintaan {
@@ -67,7 +70,6 @@ model Permintaan {
   jenisPermintaan     JenisPermintaan
   isUrgent            Boolean  @default(false)
   tanggalMasuk        DateTime @default(now())
-
   isDikirim           Boolean   @default(false)
   
   status              StatusPermintaan
@@ -80,6 +82,8 @@ model Permintaan {
   logs                PermintaanLog[]
 
   permintaanProduk    PermintaanProduk? 
+  createdAt DateTime @default(now())    // Terisi otomatis saat record dibuat
+  updatedAt DateTime @updatedAt  @default(now()) 
 }
 
 model PermintaanProduk {
@@ -89,12 +93,16 @@ model PermintaanProduk {
   ukuran              UkuranProduk
   jumlahMinta         Int
   jenisPermintaan     JenisPermintaan
+  isDikirim           Boolean  @default(false)
+  StatusPermintaan    StatusPermintaanProduk @default(DIPROSES)
   isUrgent            Boolean  @default(false)
   kategori            Kategori @relation(fields: [kategoriId], references: [id])
   tanggalPermintaan   DateTime @default(now())
   box                 Box[]
   permintaanId        String?         @unique 
   permintaan          Permintaan?     @relation(fields: [permintaanId], references: [id])
+  createdAt DateTime @default(now())    // Terisi otomatis saat record dibuat
+  updatedAt DateTime @updatedAt  @default(now()) 
 }
 
 model PermintaanLog {
@@ -102,9 +110,11 @@ model PermintaanLog {
   permintaanId  String
   status        StatusPermintaan
   keterangan    String?
-  createdAt     DateTime @default(now())
 
   permintaan    Permintaan @relation(fields: [permintaanId], references: [id])
+  createdAt DateTime @default(now())    // Terisi otomatis saat record dibuat
+  updatedAt DateTime @updatedAt  @default(now()) 
+  
 }
 
 model StokPotong {
@@ -133,6 +143,8 @@ model StokPotong {
 
   pemotong           StokPotongPemotong[]
   pengecek           StokPotongPengecek[]
+  createdAt DateTime @default(now())    // Terisi otomatis saat record dibuat
+  updatedAt DateTime @updatedAt  @default(now()) 
 }
 
 model StokPotongPemotong {
@@ -142,6 +154,8 @@ model StokPotongPemotong {
 
   stokPotong    StokPotong @relation(fields: [stokPotongId], references: [id])
   user          User       @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())    // Terisi otomatis saat record dibuat
+  updatedAt DateTime @updatedAt  @default(now()) 
 }
 
 model StokPotongPengecek {
@@ -151,6 +165,8 @@ model StokPotongPengecek {
 
   stokPotong    StokPotong @relation(fields: [stokPotongId], references: [id])
   user          User       @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())    // Terisi otomatis saat record dibuat
+  updatedAt DateTime @updatedAt  @default(now()) 
 }
 
 model QCPengecek {
@@ -160,6 +176,8 @@ model QCPengecek {
 
   qc            QCStokPotong @relation(fields: [qcId], references: [id])
   user          User       @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())    // Terisi otomatis saat record dibuat
+  updatedAt DateTime @updatedAt  @default(now()) 
 }
 
 model ProsesStokPotong {
@@ -187,6 +205,8 @@ model ProsesStokPotong {
   penjahit            User? @relation("Penjahit", fields: [penjahitId], references: [id])
   kurir               User? @relation("KurirKePenjahit", fields: [kurirId], references: [id])
   kurirQC             User? @relation("KurirKeQC", fields: [kurirQCId], references: [id])
+  createdAt DateTime @default(now())    // Terisi otomatis saat record dibuat
+  updatedAt DateTime @updatedAt  @default(now()) 
 }
 
 model QCStokPotong {
@@ -207,10 +227,12 @@ model QCStokPotong {
 
   status             StatusQC
 
-pengecek           QCPengecek[]
+  pengecek           QCPengecek[]
 
   stokPotong         StokPotong @relation(fields: [stokPotongId], references: [id])
   box                Box?       @relation(fields: [boxId], references: [id])
+  createdAt DateTime @default(now())    // Terisi otomatis saat record dibuat
+  updatedAt DateTime @updatedAt  @default(now()) 
 }
 
 model Box {
@@ -235,6 +257,8 @@ model Box {
 
   penanggungJawab         User? @relation("PenanggungJawabBox", fields: [penanggungJawabId], references: [id])
   penerima                User? @relation("PenerimaBox", fields: [penerimaId], references: [id])
+  createdAt DateTime @default(now())    // Terisi otomatis saat record dibuat
+  updatedAt DateTime @updatedAt  @default(now()) 
 }
 
 enum Role {
@@ -256,6 +280,12 @@ enum JenisPermintaan {
   RESI
   BORDIR
   GUDANG
+}
+
+enum StatusPermintaanProduk {
+  DIPROSES
+  SELESAI
+  BATAL
 }
 
 enum StatusPermintaan {

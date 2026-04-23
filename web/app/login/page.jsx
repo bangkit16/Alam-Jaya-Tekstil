@@ -18,26 +18,30 @@ export default function LoginPage() {
 
   const redirectMap = {
     RESI: "/resi",
+    STOK_RESI: "/stok-resi",
     POTONG: "/potong",
     STOK_POTONG: "/stok-potong",
     STOK_GUDANG: "/stok-gudang",
     JAHIT: "/penjahit",
     QC: "/qc",
     KURIR: "/kurir",
-    SUPERADMIN: "/superadmin", // 🔥 tambahan
+    SUPERADMIN: "/superadmin",
   };
 
-  // 🔥 NORMALIZE ROLE (biar aman dari backend format beda)
+  // 🔥 normalize lebih kebal (handle stok-resi, stok_resi, dll)
   const normalizeRole = (role) => {
     if (!role) return "";
+
+    const cleaned = role.toLowerCase().replace(/[-_\s]/g, "");
 
     const map = {
       stokgudang: "STOK_GUDANG",
       stokpotong: "STOK_POTONG",
+      stokresi: "STOK_RESI",
       superadmin: "SUPERADMIN",
     };
 
-    return map[role.toLowerCase()] || role.toUpperCase();
+    return map[cleaned] || role.toUpperCase();
   };
 
   const handleLogin = async () => {
@@ -51,18 +55,19 @@ export default function LoginPage() {
 
       const data = await response.data;
 
-      // 🔥 FIX VALIDASI
       if (!data?.accessToken) {
         throw new Error("Login gagal / token tidak ada");
       }
 
-      // 🔥 DEBUG (boleh dihapus nanti)
       console.log("ROLE BACKEND:", data.user.role);
 
-      // simpan token & role
+      // simpan ke localStorage (tetap)
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("role", data.user.role.toLowerCase());
-      localStorage.setItem("user", JSON.stringify(data.user)); // tambahan aman
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // 🔥 tambahan cookie (biar middleware gak redirect balik login)
+      document.cookie = `accessToken=${data.accessToken}; path=/`;
 
       setSession({
         session: {
@@ -72,7 +77,6 @@ export default function LoginPage() {
         },
       });
 
-      // 🔥 NORMALIZE ROLE
       const role = normalizeRole(data.user.role);
 
       console.log("ROLE NORMALIZED:", role);
@@ -90,6 +94,7 @@ export default function LoginPage() {
 
   const roles = [
     "resi",
+    "stokresi",
     "potong",
     "stokpotong",
     "stokgudang",

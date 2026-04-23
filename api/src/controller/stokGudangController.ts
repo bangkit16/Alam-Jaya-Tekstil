@@ -5,6 +5,7 @@ import {
   JenisPermintaan,
   StatusBox,
   StatusPermintaan,
+  StatusPermintaanProduk,
   StatusQC,
   UkuranProduk,
 } from "../generated/prisma/enums.js";
@@ -317,8 +318,8 @@ export default class StokGudangController {
       const search = req.query.search as string;
 
       // Filter yang konsisten untuk data dan total count
-      const whereCondition: Prisma.PermintaanWhereInput = {
-        status: { notIn: [StatusPermintaan.KIRIM_RESI] },
+      const whereCondition: Prisma.PermintaanProdukWhereInput = {
+        StatusPermintaan: { in: [StatusPermintaanProduk.DIPROSES] },
 
         ...(search && {
           OR: [
@@ -334,7 +335,7 @@ export default class StokGudangController {
 
       // 2. Gunakan Promise.all untuk eksekusi findMany dan count secara paralel
       const [permintaan, total] = await Promise.all([
-        prisma.permintaan.findMany({
+        prisma.permintaanProduk.findMany({
           where: whereCondition,
           ...pg, // 3. Masukkan skip & take dari helper ke argumen Prisma
           select: {
@@ -349,10 +350,10 @@ export default class StokGudangController {
             ukuran: true,
             isUrgent: true,
             jumlahMinta: true,
-            tanggalMasuk: true,
+            tanggalPermintaan: true,
           },
         }),
-        prisma.permintaan.count({
+        prisma.permintaanProduk.count({
           where: whereCondition,
         }),
       ]);
@@ -366,7 +367,7 @@ export default class StokGudangController {
         ukuran: item.ukuran,
         isUrgent: item.isUrgent,
         jumlahMinta: item.jumlahMinta,
-        tanggalMasukPermintaan: item.tanggalMasuk,
+        tanggalMasukPermintaan: item.tanggalPermintaan,
       }));
 
       // 5. Format hasil akhir dengan properti data dan meta
