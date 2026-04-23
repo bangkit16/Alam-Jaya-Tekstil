@@ -1,14 +1,14 @@
-import express, { Request, Response } from "express";
-import cors from "cors";
-import cookieParser from "cookie-parser";
-import swaggerJSDoc from "swagger-jsdoc";
-import swaggerUi from "swagger-ui-express";
-import { prisma } from "./lib/prisma.js";
-import TrackLog from "./lib/trackLog.js";
-import { StatusPermintaan } from "./generated/prisma/browser.js";
-import path from "path";
-import { fileURLToPath } from "url";
-import "dotenv/config";
+import express, { Request, Response } from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import swaggerJSDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+import { prisma } from './lib/prisma.js';
+import TrackLog from './lib/trackLog.js';
+import { StatusPermintaan } from './generated/prisma/browser.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import 'dotenv/config';
 
 // ==========================
 // ES MODULE FIX (__dirname)
@@ -19,15 +19,15 @@ const __dirname = path.dirname(__filename);
 // ==========================
 // ROUTES
 // ==========================
-import superAdminRoutes from "./routes/superAdminRoutes.js";
-import authRoutes from "./routes/authRoutes.js";
-import potongRoutes from "./routes/potongRoutes.js";
-import stokPotongRoutes from "./routes/stokPotongRoutes.js";
-import kurirRoutes from "./routes/kurirRoutes.js";
-import penjahitRoutes from "./routes/penjahitRoutes.js";
-import qcRoutes from "./routes/qcRoutes.js";
-import stokGudangRoutes from "./routes/stokGudangRoutes.js";
-import { authMiddleware } from "./middleware/authMiddleware.js";
+import superAdminRoutes from './routes/superAdminRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+import potongRoutes from './routes/potongRoutes.js';
+import stokPotongRoutes from './routes/stokPotongRoutes.js';
+import kurirRoutes from './routes/kurirRoutes.js';
+import penjahitRoutes from './routes/penjahitRoutes.js';
+import qcRoutes from './routes/qcRoutes.js';
+import stokGudangRoutes from './routes/stokGudangRoutes.js';
+import { authMiddleware } from './middleware/authMiddleware.js';
 
 declare global {
   namespace Express {
@@ -52,10 +52,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 const allowedOrigins = [
-  "https://web-alam.vercel.app",
-  "http://localhost:3000",
-  "http://localhost:3001",
-  "https://api-alam.vercel.app",
+  process.env.WEB_URL_PROD,
+  'https://web-alam.vercel.app',
+  'https://api.alamjaya.tech',
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://api-alam.vercel.app',
 ];
 
 app.use(
@@ -64,29 +66,26 @@ app.use(
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        callback(new Error('Not allowed by CORS'));
       }
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-  }),
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  })
 );
 
 // ==========================
 // SWAGGER FIX FOR VERCEL
 // ==========================
-const serverUrl =
-  process.env.NODE_ENV === "production"
-    ? "https://api-alam.vercel.app"
-    : "http://localhost:3001";
+const serverUrl = process.env.NODE_ENV === 'production' ? 'https://api-alam.vercel.app' : 'http://localhost:3001';
 
 const swaggerOptions = {
   definition: {
-    openapi: "3.0.0",
+    openapi: '3.0.0',
     info: {
-      title: "Alam Jaya Textile API",
-      version: "1.0.0",
-      description: "REST API Documentation Alam Jaya Textile",
+      title: 'Alam Jaya Textile API',
+      version: '1.0.0',
+      description: 'REST API Documentation Alam Jaya Textile',
     },
     servers: [
       {
@@ -96,9 +95,9 @@ const swaggerOptions = {
     components: {
       securitySchemes: {
         bearerAuth: {
-          type: "http",
-          scheme: "bearer",
-          bearerFormat: "JWT",
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
         },
       },
     },
@@ -112,40 +111,39 @@ const swaggerOptions = {
 
   // Scan hasil build js + source ts
   apis: [
-    path.join(__dirname, "./routes/*.js"),
-    path.join(__dirname, "./index.js"),
-    path.join(__dirname, "../src/routes/*.ts"),
-    path.join(__dirname, "../src/index.ts"),
+    path.join(__dirname, './routes/*.js'),
+    path.join(__dirname, './index.js'),
+    path.join(__dirname, '../src/routes/*.ts'),
+    path.join(__dirname, '../src/index.ts'),
   ],
 };
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
 app.use(
-  "/api-docs",
+  '/api-docs',
   swaggerUi.serve,
   swaggerUi.setup(swaggerSpec, {
-    customCssUrl:
-      "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.1.1/swagger-ui.css",
+    customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.1.1/swagger-ui.css',
     customJs: [
-      "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.1.1/swagger-ui-bundle.js",
-      "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.1.1/swagger-ui-standalone-preset.js",
+      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.1.1/swagger-ui-bundle.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.1.1/swagger-ui-standalone-preset.js',
     ],
-  }),
+  })
 );
 
 // JSON Swagger
-app.get("/api-docs.json", (req: Request, res: Response) => {
-  res.setHeader("Content-Type", "application/json");
+app.get('/api-docs.json', (req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'application/json');
   res.send(swaggerSpec);
 });
 
 // ==========================
 // ROOT
 // ==========================
-app.get("/", (req: Request, res: Response) => {
+app.get('/', (req: Request, res: Response) => {
   res.json({
-    message: "Selamat datang di API Alam Jaya Textile",
+    message: 'Selamat datang di API Alam Jaya Textile',
   });
 });
 
@@ -203,16 +201,9 @@ app.get("/", (req: Request, res: Response) => {
  *               status: "MENUNGGU_GUDANG"
  */
 
-app.post("/create/permintaan", async (req: Request, res: Response) => {
+app.post('/create/permintaan', async (req: Request, res: Response) => {
   try {
-    const {
-      namaBarang,
-      kategori,
-      jenisPermintaan,
-      ukuran,
-      isUrgent,
-      jumlahMinta,
-    } = req.body;
+    const { namaBarang, kategori, jenisPermintaan, ukuran, isUrgent, jumlahMinta } = req.body;
 
     const kategoriData = await prisma.kategori.findUnique({
       where: {
@@ -222,7 +213,7 @@ app.post("/create/permintaan", async (req: Request, res: Response) => {
 
     if (!kategoriData) {
       return res.status(400).json({
-        message: "Kategori tidak ditemukan",
+        message: 'Kategori tidak ditemukan',
       });
     }
 
@@ -238,27 +229,20 @@ app.post("/create/permintaan", async (req: Request, res: Response) => {
       },
     });
 
-    await TrackLog.logPermintaan(
-      newPermintaan.id,
-      "Permintaan produk berhasil dibuat",
-      StatusPermintaan.MENUNGGU_GUDANG,
-    );
+    await TrackLog.logPermintaan(newPermintaan.id, 'Permintaan produk berhasil dibuat', StatusPermintaan.MENUNGGU_GUDANG);
 
-    await TrackLog.logStatus(
-      newPermintaan.id,
-      StatusPermintaan.MENUNGGU_GUDANG,
-    );
+    await TrackLog.logStatus(newPermintaan.id, StatusPermintaan.MENUNGGU_GUDANG);
 
     return res.json({
-      message: "Permintaan produk berhasil dikirim",
+      message: 'Permintaan produk berhasil dikirim',
       status: StatusPermintaan.MENUNGGU_GUDANG,
       data: newPermintaan,
     });
   } catch (error) {
-    console.error("Error create permintaan:", error);
+    console.error('Error create permintaan:', error);
 
     return res.status(500).json({
-      message: "Internal server error",
+      message: 'Internal server error',
     });
   }
 });
@@ -266,19 +250,19 @@ app.post("/create/permintaan", async (req: Request, res: Response) => {
 // ==========================
 // ROUTES
 // ==========================
-app.use("/admin", authMiddleware(["SUPERADMIN"]), superAdminRoutes);
-app.use("/auth", authRoutes);
-app.use("/potong", authMiddleware(["POTONG"]), potongRoutes);
-app.use("/stokpotong", authMiddleware(["STOK_POTONG"]), stokPotongRoutes);
-app.use("/kurir", authMiddleware(["KURIR"]), kurirRoutes);
-app.use("/penjahit", authMiddleware(["JAHIT"]), penjahitRoutes);
-app.use("/qc", authMiddleware(["QC"]), qcRoutes);
-app.use("/stokgudang", authMiddleware(["STOK_GUDANG"]), stokGudangRoutes);
+app.use('/admin', authMiddleware(['SUPERADMIN']), superAdminRoutes);
+app.use('/auth', authRoutes);
+app.use('/potong', authMiddleware(['POTONG']), potongRoutes);
+app.use('/stokpotong', authMiddleware(['STOK_POTONG']), stokPotongRoutes);
+app.use('/kurir', authMiddleware(['KURIR']), kurirRoutes);
+app.use('/penjahit', authMiddleware(['JAHIT']), penjahitRoutes);
+app.use('/qc', authMiddleware(['QC']), qcRoutes);
+app.use('/stokgudang', authMiddleware(['STOK_GUDANG']), stokGudangRoutes);
 
 // ==========================
 // LOCAL SERVER ONLY
 // ==========================
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
     console.log(`Swagger docs at http://localhost:${PORT}/api-docs`);

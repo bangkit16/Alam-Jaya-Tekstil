@@ -5,7 +5,13 @@ import axios, {
   AxiosResponse,
 } from "axios";
 
-const BASE_URL = "https://api-alam.vercel.app"; // Ganti dengan URL BE Anda
+const BASE_URL = () => {
+  // Cek apakah variabel NEXT_ENV bernilai "production"
+  if (process.env.NEXT_ENV === "production") {
+    return process.env.NEXT_PUBLIC_API_PROD;
+  }
+  return process.env.NEXT_PUBLIC_API_LOCAL;
+}; // Ganti dengan URL BE Anda
 
 // 1. Definisikan tipe untuk response refresh token (sesuaikan dengan BE)
 interface RefreshResponse {
@@ -18,7 +24,7 @@ interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
 }
 
 export const api: AxiosInstance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: BASE_URL(),
   withCredentials: true, // Penting agar cookie dari BE terkirim
 });
 
