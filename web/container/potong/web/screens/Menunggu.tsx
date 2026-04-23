@@ -114,38 +114,53 @@ export default function Menunggu() {
                     isOpen ? "border-orange-400 shadow-lg" : "border-gray-300"
                   }`}
                 >
-                  <div className="flex justify-between items-start">
-                    <div>
+                  <div className="flex justify-between items-center gap-4">
+                    {/* LEFT */}
+                    <div className="w-full">
                       {item.isUrgent && (
-                        <p className="text-sm font-semibold text-red-500 mb-2">
+                        <p className="text-red-500 text-xs font-semibold uppercase">
                           URGENT
                         </p>
                       )}
-                      <p className="text-base font-semibold text-gray-800 group-hover:text-orange-500 transition">
+
+                      <p className="text-sm font-semibold text-gray-800 my-1">
                         {item.namaBarang} - {item.ukuran}
                       </p>
 
-                      <div className="flex gap-2 mt-2">
-                        <p className="text-sm text-gray-600">
-                          Tanggal Masuk Permintaan :{" "}
-                          <span className="font-bold">
-                            {new Date(
-                              item.tanggalMasukPermintaan,
-                            ).toLocaleString("id-ID")}
+                      {/* DETAIL KECIL (SAMA SEPERTI MOBILE) */}
+                      <div className="space-y-0.5">
+                        <p className="text-[11px] text-gray-400 uppercase">
+                          Nama Produk :
+                          <span className="font-semibold text-gray-600 ml-1">
+                            {item.namaBarang}
+                          </span>
+                        </p>
+
+                        <p className="text-[11px] text-gray-400 uppercase">
+                          Ukuran :
+                          <span className="font-semibold text-gray-600 ml-1">
+                            {item.ukuran}
+                          </span>
+                        </p>
+
+                        <p className="text-[11px] text-gray-400 uppercase">
+                          Jumlah Diminta :
+                          <span className="font-semibold text-gray-600 ml-1">
+                            {item.jumlahMinta}
                           </span>
                         </p>
                       </div>
                     </div>
 
-                    <div className="text-right">
-                      <p className="text-xl font-bold text-gray-800">
+                    {/* RIGHT */}
+                    <div className="text-right min-w-[60px]">
+                      <p className="text-2xl font-bold text-gray-800">
                         {item.jumlahMinta}
                       </p>
-                      <p className="text-[10px] text-gray-400">Jumlah Minta</p>
                     </div>
                   </div>
 
-                  {/* ANIMASI */}
+                  {/* EXPAND (TETAP PUNYA KAMU) */}
                   <div
                     className={`grid transition-all duration-300 ease-in-out ${
                       isOpen
@@ -159,6 +174,16 @@ export default function Menunggu() {
                       <div className="text-sm text-gray-600 space-y-1">
                         <p>Jumlah diminta : {item.jumlahMinta}</p>
                         <p>Kategori : {item.kategori || "Kaos"}</p>
+
+                        {/* Tambahin tanggal di dalam expand (lebih clean) */}
+                        <p>
+                          Tanggal :
+                          <span className="font-medium ml-1">
+                            {new Date(
+                              item.tanggalMasukPermintaan,
+                            ).toLocaleString("id-ID")}
+                          </span>
+                        </p>
                       </div>
 
                       <p className="text-center text-gray-400 text-sm mt-3">
