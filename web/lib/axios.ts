@@ -7,7 +7,7 @@ import axios, {
 
 const BASE_URL = () => {
   // Cek apakah variabel NEXT_ENV bernilai "production"
-  if (process.env.NEXT_ENV === "production") {
+  if (process.env.NEXT_PUBLIC_NEXT_ENV === "production") {
     return process.env.NEXT_PUBLIC_API_PROD;
   }
   return process.env.NEXT_PUBLIC_API_LOCAL;
@@ -22,6 +22,8 @@ interface RefreshResponse {
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
+
+console.log(BASE_URL())
 
 export const api: AxiosInstance = axios.create({
   baseURL: BASE_URL(),
