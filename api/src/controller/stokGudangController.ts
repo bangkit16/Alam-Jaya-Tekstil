@@ -319,7 +319,12 @@ export default class StokGudangController {
 
       // Filter yang konsisten untuk data dan total count
       const whereCondition: Prisma.PermintaanProdukWhereInput = {
-        StatusPermintaan: { in: [StatusPermintaanProduk.DIPROSES] },
+        StatusPermintaan: {
+          in: [
+            StatusPermintaanProduk.DIPROSES,
+            StatusPermintaanProduk.MENUNGGU,
+          ],
+        },
 
         ...(search && {
           OR: [
@@ -351,6 +356,7 @@ export default class StokGudangController {
             isUrgent: true,
             jumlahMinta: true,
             tanggalPermintaan: true,
+            StatusPermintaan: true,
           },
         }),
         prisma.permintaanProduk.count({
@@ -367,6 +373,7 @@ export default class StokGudangController {
         ukuran: item.ukuran,
         isUrgent: item.isUrgent,
         jumlahMinta: item.jumlahMinta,
+        statusPermintaan: item.StatusPermintaan,
         tanggalMasukPermintaan: item.tanggalPermintaan,
       }));
 
@@ -397,8 +404,11 @@ export default class StokGudangController {
           .json({ message: "ID permintaan must be a single value" });
       }
 
-      const permintaanProduk = await prisma.permintaanProduk.findUnique({
+      const permintaanProduk = await prisma.permintaanProduk.update({
         where: { id: String(idPermintaan) },
+        data: {
+          StatusPermintaan: StatusPermintaanProduk.DIPROSES,
+        },
         select: {
           id: true,
           namaBarang: true,
@@ -465,6 +475,99 @@ export default class StokGudangController {
       }
       console.error("Error updating permintaan status:", error);
       return res.status(500).json({ message: "Internal server error" });
+    }
+  }
+
+  public static async updateBoxKirimKeResi(req: Request, res: Response) {
+    const schema = z.object({
+      params: z.object({ idPermintaanProduk: z.string().uuid() }),
+      body: z.object({
+        idPenanggungJawab: z.string().uuid(),
+        idBox: z.preprocess(
+          (val) => (Array.isArray(val) ? val : [val]),
+          z.array(z.string().uuid()),
+        ),
+      }),
+    });
+
+    try {
+      const validated = Validator(schema)(req, res);
+      if (!validated) return;
+
+      const { idPermintaanProduk } = validated.params;
+      const { idBox, idPenanggungJawab } = validated.body;
+
+      // 1. Validasi Keberadaan Data secara Parallel (Efisiensi)
+      const [penanggungJawab, permintaanExists, existingBoxes] =
+        await Promise.all([
+          prisma.user.findUnique({ where: { id: idPenanggungJawab } }),
+          prisma.permintaanProduk.findUnique({
+            where: { id: idPermintaanProduk },
+          }),
+          prisma.box.findMany({ where: { id: { in: idBox } } }),
+        ]);
+
+      // ERROR HANDLER: idPenanggungJawab
+      if (!penanggungJawab) {
+        return res
+          .status(404)
+          .json({ message: "Penanggung Jawab tidak ditemukan" });
+      }
+
+      // ERROR HANDLER: idPermintaanProduk
+      if (!permintaanExists) {
+        return res
+          .status(404)
+          .json({ message: "Permintaan Produk tidak ditemukan" });
+      }
+
+      // ERROR HANDLER: idBox (Mengecek apakah semua ID yang dikirim ada di database)
+      if (existingBoxes.length !== idBox.length) {
+        const foundIds = existingBoxes.map((b) => b.id);
+        const missingIds = idBox.filter((id) => !foundIds.includes(id));
+        return res.status(404).json({
+          message: "Beberapa ID Box tidak ditemukan",
+          missingIds,
+        });
+      }
+
+      // Gunakan $transaction agar kedua proses (update box & update relasi) berjalan bersamaan
+      const result = await prisma.$transaction([
+        // 1. Update status semua box yang ada di dalam array idBox
+        prisma.box.updateMany({
+          where: {
+            id: { in: idBox },
+          },
+          data: {
+            status: StatusBox.MASUK_STOK_RESI, // Sesuaikan dengan nama field dan value status Anda
+            penanggungJawab: {
+              connect: {
+                id: idPenanggungJawab,
+              },
+            },
+            tanggalMasukStokResi: new Date(),
+          },
+        }),
+
+        // 2. Hubungkan box tersebut ke PermintaanProduk (seperti kode awal Anda)
+        prisma.permintaanProduk.update({
+          where: { id: idPermintaanProduk },
+          data: {
+            box: {
+              connect: idBox.map((id) => ({ id })),
+            },
+            StatusPermintaan: StatusPermintaanProduk.SELESAI,
+          },
+        }),
+      ]);
+
+      return res.status(200).json({
+        message: "Box berhasil dikirim ke STOK resi",
+        data: "DIKIRIM KE RESI", // mengembalikan hasil permintaanProduk
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Terjadi kesalahan server" });
     }
   }
 
