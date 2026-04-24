@@ -13,6 +13,8 @@ import { usePutMintaPotong } from "@/services/stok-gudang/usePutMintaPotong";
 import BarcodeGenerator from "@/components/BarcodeGenerator";
 import { Package } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { usePutPermintaanProduk } from "@/services/stok-gudang/usePutPermintaanProduk";
+import { toast } from "sonner";
 
 export default function PermintaanResi({ search = "" }: { search?: string }) {
   const [selected, setSelected] = useState<PermintaanBarang | null>(null);
@@ -21,37 +23,37 @@ export default function PermintaanResi({ search = "" }: { search?: string }) {
 
   // ================= DATA FROM HOOKS =================
   // const { data: permintaanData, isLoading, isError } = useGetPermintaan();
+
   const {
-      data,
-      isLoading,
-      fetchNextPage,
-      hasNextPage,
-      isFetchingNextPage,
-      isError,
-    } = useGetPermintaanInfinite();
-    const permintaanData = data?.pages.flatMap((page) => page.data) ?? [];
-    const loadMoreRef = useRef<HTMLDivElement | null>(null);
-  
-    useEffect(() => {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
-          }
-        },
-        {
-          threshold: 0.1,
-        },
-      );
-      if (loadMoreRef.current) {
-        observer.observe(loadMoreRef.current);
-      }
-  
-      return () => observer.disconnect();
-    }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isError,
+  } = useGetPermintaanInfinite();
+  const permintaanData = data?.pages.flatMap((page) => page.data) ?? [];
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      {
+        threshold: 0.1,
+      },
+    );
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
 
-  const { data: databoxData, isLoading: isLoadingBox } = useGetDatabox(1,100);
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  const { data: databoxData, isLoading: isLoadingBox } = useGetDatabox(1, 100);
   const {
     data: dataPenanggungJawabBox,
     isLoading: isLoadingPenanggungJawabBox,
@@ -59,6 +61,8 @@ export default function PermintaanResi({ search = "" }: { search?: string }) {
 
   // 2. Inisialisasi mutation
   const mutationMintaPotong = usePutMintaPotong();
+
+  const mutationKirimBox = usePutPermintaanProduk();
 
   // Handle Loading & Error State
   if (isLoading || isLoadingBox || isLoadingPenanggungJawabBox)
@@ -96,6 +100,32 @@ export default function PermintaanResi({ search = "" }: { search?: string }) {
         },
       });
     }
+  };
+
+  const handleKirimBox = () => {
+    if (!selectedBox.length || !penanggungJawab || !selected) return;
+
+    console.log("KIRIM BOX", { selectedBox, penanggungJawab });
+
+    mutationKirimBox.mutate(
+      {
+        id: selected.idPermintaan,
+        payload: {
+          idPenanggungJawabBox: penanggungJawab,
+          idBox: selectedBox,
+        },
+      },
+      {
+        onSuccess: (data) => {
+          toast.success(data.message);
+          setSelected(null); // Tutup modal jika berhasil
+        },
+        onError: (error) => {
+          toast.error(error.response.data.message);
+        },
+      },
+    );
+    // setSelected(null);
   };
 
   return (
@@ -147,7 +177,7 @@ export default function PermintaanResi({ search = "" }: { search?: string }) {
             {/* INPUT PENERIMA */}
             <div className="mb-3">
               <label className="text-[10px] font-bold text-gray-400 uppercase">
-                Input Penerima
+                Input Penanggung Jawab Box
               </label>
               <select
                 value={penanggungJawab}
@@ -155,7 +185,7 @@ export default function PermintaanResi({ search = "" }: { search?: string }) {
                 className="w-full bg-gray-100 px-3 py-2 rounded text-xs mt-1 outline-none appearance-none"
               >
                 <option value="" disabled>
-                  Pilih Nama Penerima
+                  Pilih Nama Penanggung Jawab Box
                 </option>
                 {dataPenanggungJawabBox?.map((item: any) => (
                   <option key={item.id} value={item.id}>
@@ -268,18 +298,19 @@ export default function PermintaanResi({ search = "" }: { search?: string }) {
               </button>
 
               <button
-                onClick={() => {
-                  console.log("KIRIM BOX", { selectedBox, penanggungJawab });
-                  setSelected(null);
-                }}
-                disabled={selectedBox.length === 0 || !penanggungJawab}
+                onClick={handleKirimBox}
+                disabled={
+                  selectedBox.length === 0 ||
+                  !penanggungJawab ||
+                  mutationKirimBox.isPending
+                }
                 className={`${
                   selectedBox.length === 0 || !penanggungJawab
                     ? "bg-blue-300"
                     : "bg-blue-600"
                 } text-white text-xs px-3 py-1 rounded font-semibold`}
               >
-                KIRIM
+                {mutationKirimBox.isPending ? "MEMPROSES..." : "KIRIM BOX"}
               </button>
             </div>
           </div>

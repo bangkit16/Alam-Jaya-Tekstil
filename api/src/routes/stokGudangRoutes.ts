@@ -200,10 +200,16 @@ router.get("/permintaan", StokGudangController.getDataPermintaan);
 
 /**
  * @swagger
- * /stokgudang/permintaan/:
- *   post:
+ * /stokgudang/permintaanproduk/{idPermintaanProduk}:
+ *   put:
  *     summary: DIVISI GUDANG (Tab Permintaan - Modal acc permintaan dari RESI)
  *     tags: [StokGudang]
+ *     parameters:
+ *       - in: path
+ *         name: idPermintaanProduk
+ *         required: true
+ *         schema:
+ *           type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -234,7 +240,7 @@ router.get("/permintaan", StokGudangController.getDataPermintaan);
  *               status: "KIRIM_RESI"
  */
 
-router.post("/permintaan/", () => {});
+router.put("/permintaanproduk/:idPermintaanProduk", StokGudangController.updateBoxKirimKeResi);
 
 /**
  * @swagger
@@ -259,7 +265,10 @@ router.post("/permintaan/", () => {});
  *               status: "MENUNGGU_POTONG"
  */
 
-router.put("/permintaan/:idPermintaan", StokGudangController.updateStatusPermintaan);
+router.put(
+  "/permintaan/:idPermintaan",
+  StokGudangController.updateStatusPermintaan,
+);
 
 /**
  * @swagger
@@ -382,10 +391,13 @@ router.post("/permintaanpotong", StokGudangController.createPermintaanPotong);
  *                 logPermintaan:
  *                   - "Potong sedang di proses"
  *                   - "Potong selesai"
- *                    
+ *
  */
 
-router.get("/tracking/:idPermintaan", StokGudangController.getTrackingPermintaan);
+router.get(
+  "/tracking/:idPermintaan",
+  StokGudangController.getTrackingPermintaan,
+);
 
 /**
  * @swagger
@@ -419,7 +431,10 @@ router.get("/list-penerima-box", StokGudangController.getListPenerimaBox);
  *               - id: "uuid-pj-gudang-1"
  *                 nama: "Heri PJ Gudang"
  */
-router.get("/list-penanggung-jawab-box", StokGudangController.getListPenanggungJawabBox);
+router.get(
+  "/list-penanggung-jawab-box",
+  StokGudangController.getListPenanggungJawabBox,
+);
 
 /**
  * @swagger
@@ -438,6 +453,5 @@ router.get("/list-penanggung-jawab-box", StokGudangController.getListPenanggungJ
  *                 nama: "Hoodie"
  */
 router.get("/list-kategori", StokGudangController.getListKategori);
-
 
 export default router;

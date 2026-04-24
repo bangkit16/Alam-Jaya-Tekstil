@@ -7,6 +7,9 @@ import { useGetPenerimaBox } from "@/services/stok-gudang/useGetPenerimaBox";
 import BarcodeGenerator from "@/components/BarcodeGenerator";
 import Pagination from "@/components/Pagination";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { toast } from "sonner";
+import { usePutMintaPotong } from "@/services/stok-gudang/usePutMintaPotong";
+import { usePutPermintaanProduk } from "@/services/stok-gudang/usePutPermintaanProduk";
 
 export default function PermintaanResi() {
   const [page, setPage] = useState(1);
@@ -16,7 +19,7 @@ export default function PermintaanResi() {
 
   const [selected, setSelected] = useState<any>(null);
   const [selectedBox, setSelectedBox] = useState<string[]>([]);
-  const [penerimaId, setPenerimaId] = useState("");
+  const [penanggungJawab, setPenanggungJawab] = useState("");
 
   const data = dataPermintaanResi?.data || [];
   const meta = dataPermintaanResi?.meta;
@@ -24,6 +27,50 @@ export default function PermintaanResi() {
   const toggleBox = (id: string) => {
     setSelectedBox((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
+  };
+
+  const mutationMintaPotong = usePutMintaPotong();
+  const mutationKirimBox = usePutPermintaanProduk();
+
+  const handleMintaPotong = () => {
+    if (!selected) return;
+
+    const yakin = confirm(
+      `Apakah anda yakin ingin meminta potongan untuk ${selected.namaBarang}?`,
+    );
+    if (yakin) {
+      mutationMintaPotong.mutate(selected.idPermintaan, {
+        onSuccess: (data) => {
+          toast.success(data.message);
+          setSelected(null); // Tutup modal jika berhasil
+        },
+      });
+    }
+  };
+
+  const handleKirimBox = () => {
+    if (!selectedBox.length || !penanggungJawab || !selected) return;
+
+    console.log("KIRIM BOX", { selectedBox, penanggungJawab });
+
+    mutationKirimBox.mutate(
+      {
+        id: selected.idPermintaan,
+        payload: {
+          idPenanggungJawabBox: penanggungJawab,
+          idBox: selectedBox,
+        },
+      },
+      {
+        onSuccess: (data) => {
+          toast.success(data.message);
+          setSelected(null); // Tutup modal jika berhasil
+        },
+        onError: (error) => {
+          toast.error(error.response.data.message);
+        },
+      },
     );
   };
 
@@ -115,8 +162,8 @@ export default function PermintaanResi() {
                 Nama Penanggung Jawab
               </label>
               <select
-                value={penerimaId}
-                onChange={(e) => setPenerimaId(e.target.value)}
+                value={penanggungJawab}
+                onChange={(e) => setPenanggungJawab(e.target.value)}
                 className="w-full bg-gray-100 rounded-sm px-4 py-2.5 text-sm outline-none focus:ring-1 focus:ring-orange-500 transition"
               >
                 <option value="">Pilih Nama Penanggung Jawab</option>
@@ -210,17 +257,20 @@ export default function PermintaanResi() {
 
               <button
                 disabled={!kurang}
-                onClick={() => console.log("Minta potong")}
+                onClick={handleMintaPotong}
                 className="bg-gray-800 text-white py-3 rounded-sm font-bold text-[10px] uppercase hover:bg-black transition disabled:opacity-30"
               >
-                MINTA POTONG
+                {mutationMintaPotong.isPending ? "LOADING..." : "MINTA POTONG"}
               </button>
 
               <button
-                disabled={!penerimaId || selectedBox.length === 0 || kurang}
+                disabled={
+                  !penanggungJawab || selectedBox.length === 0 || kurang
+                }
+                onClick={handleKirimBox}
                 className="bg-gradient-to-r from-orange-500 to-amber-500 text-white py-3 rounded-sm font-bold text-[10px] uppercase hover:scale-[1.02] active:scale-95 transition disabled:opacity-50 disabled:scale-100"
               >
-                KIRIM
+                {mutationKirimBox.isPending ? "LOADING..." : "KIRIM BOX"}
               </button>
             </div>
           </div>
