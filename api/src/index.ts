@@ -27,6 +27,7 @@ import kurirRoutes from './routes/kurirRoutes.js';
 import penjahitRoutes from './routes/penjahitRoutes.js';
 import qcRoutes from './routes/qcRoutes.js';
 import stokGudangRoutes from './routes/stokGudangRoutes.js';
+import stokResiRoutes from './routes/stokResiRoutes.js';
 import { authMiddleware } from './middleware/authMiddleware.js';
 
 declare global {
@@ -258,6 +259,7 @@ app.use('/kurir', authMiddleware(['KURIR']), kurirRoutes);
 app.use('/penjahit', authMiddleware(['JAHIT']), penjahitRoutes);
 app.use('/qc', authMiddleware(['QC']), qcRoutes);
 app.use('/stokgudang', authMiddleware(['STOK_GUDANG']), stokGudangRoutes);
+app.use('/stokresi', authMiddleware(['STOK_RESI']), stokResiRoutes);
 
 // ==========================
 // LOCAL SERVER ONLY

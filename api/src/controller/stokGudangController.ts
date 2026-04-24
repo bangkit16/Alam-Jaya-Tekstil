@@ -397,18 +397,59 @@ export default class StokGudangController {
           .json({ message: "ID permintaan must be a single value" });
       }
 
-      const updatedPermintaan = await prisma.permintaan.update({
-        where: { id: String(idPermintaan), status: "MENUNGGU_GUDANG" },
-        data: { status: StatusPermintaan.MENUNGGU_POTONG },
+      const permintaanProduk = await prisma.permintaanProduk.findUnique({
+        where: { id: String(idPermintaan) },
+        select: {
+          id: true,
+          namaBarang: true,
+          kategori: {
+            select: {
+              id: true,
+            },
+          },
+          jenisPermintaan: true,
+          ukuran: true,
+          isUrgent: true,
+          jumlahMinta: true,
+        },
       });
 
-      if (!updatedPermintaan) {
-        return res.status(404).json({ message: "Permintaan tidak ditemukan" });
+      if (!permintaanProduk) {
+        return res
+          .status(404)
+          .json({ message: "Permintaan Produk tidak ditemukan" });
       }
 
+      const newPermintaan = await prisma.permintaan.create({
+        data: {
+          namaBarang: permintaanProduk.namaBarang,
+          kategoriId: permintaanProduk.kategori.id,
+          jenisPermintaan: permintaanProduk.jenisPermintaan,
+          ukuran:
+            UkuranProduk[permintaanProduk.ukuran as keyof typeof UkuranProduk],
+          isUrgent: permintaanProduk.isUrgent,
+          jumlahMinta: permintaanProduk.jumlahMinta,
+          status: StatusPermintaan.MENUNGGU_POTONG,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      await prisma.permintaanProduk.update({
+        where: { id: String(idPermintaan) },
+        data: {
+          permintaan: {
+            connect: {
+              id: newPermintaan.id,
+            },
+          },
+        },
+      });
+
       await TrackLog.logPermintaan(
-        idPermintaan,
-        "Permintaan dikirim ke potong",
+        newPermintaan.id,
+        "Permintaan potong berhasil dibuat",
         StatusPermintaan.MENUNGGU_POTONG,
       );
 
