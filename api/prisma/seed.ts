@@ -118,14 +118,38 @@ async function main() {
     {
       nama: "Dewi Lestari",
       username: "resi1",
-      noHandphone: "081900000001",
+      noHandphone: "081900090001",
+      role: Role.RESI,
+    },
+    {
+      nama: "Sari Kurnila",
+      username: "resi2",
+      noHandphone: "081900100431",
       role: Role.RESI,
     },
     {
       nama: "Andi Wijaya",
       username: "print1",
-      noHandphone: "082000000001",
+      noHandphone: "082000500001",
       role: Role.PRINT,
+    },
+    {
+      nama: "Tora Sudiro",
+      username: "print2",
+      noHandphone: "082000700001",
+      role: Role.PRINT,
+    },
+    {
+      nama: "Hartono",
+      username: "stokresi1",
+      noHandphone: "082000103001",
+      role: Role.STOK_RESI,
+    },
+    {
+      nama: "Ahmad Subarjo",
+      username: "stokresi2",
+      noHandphone: "082089000001",
+      role: Role.STOK_RESI,
     },
   ];
 
