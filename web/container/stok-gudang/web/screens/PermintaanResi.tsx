@@ -58,7 +58,7 @@ export default function PermintaanResi() {
       {
         id: selected.idPermintaan,
         payload: {
-          idPenanggungJawabBox: penanggungJawab,
+          idPenanggungJawab: penanggungJawab,
           idBox: selectedBox,
         },
       },

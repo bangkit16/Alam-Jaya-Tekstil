@@ -540,11 +540,7 @@ export default class StokGudangController {
           },
           data: {
             status: StatusBox.MASUK_STOK_RESI, // Sesuaikan dengan nama field dan value status Anda
-            penanggungJawab: {
-              connect: {
-                id: idPenanggungJawab,
-              },
-            },
+            penanggungJawabId: idPenanggungJawab,
             tanggalMasukStokResi: new Date(),
           },
         }),

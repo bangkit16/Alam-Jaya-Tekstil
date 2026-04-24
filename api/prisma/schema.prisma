@@ -26,6 +26,7 @@ model User {
 
   penanggungJawabBox Box[] @relation("PenanggungJawabBox")
   penerimaBox        Box[] @relation("PenerimaBox")
+  penerimaResi       Box[] @relation("PenerimaResi")
 
   penjahitProses     ProsesStokPotong[] @relation("Penjahit")
   kurirProses     ProsesStokPotong[] @relation("KurirKePenjahit")
@@ -245,6 +246,7 @@ model Box {
 
   penanggungJawabId       String?
   penerimaId              String?
+  penerimaResiId              String?
 
   tanggalMasuk            DateTime?
   tanggalMasukGudang      DateTime?
@@ -259,6 +261,7 @@ model Box {
 
   penanggungJawab         User? @relation("PenanggungJawabBox", fields: [penanggungJawabId], references: [id])
   penerima                User? @relation("PenerimaBox", fields: [penerimaId], references: [id])
+  penerimaResi            User? @relation("PenerimaResi", fields: [penerimaResiId], references: [id])
   createdAt DateTime @default(now())    // Terisi otomatis saat record dibuat
   updatedAt DateTime @updatedAt  @default(now()) 
 }
