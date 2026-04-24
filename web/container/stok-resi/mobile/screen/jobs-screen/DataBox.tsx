@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useGetDataBox } from "@/services/stok-resi/useGetDataBox";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import BarcodeGenerator from "@/components/BarcodeGenerator"; // ✅ TAMBAHAN
 
 export default function DataBox() {
   const { data = [], isLoading } = useGetDataBox();
@@ -59,8 +60,10 @@ export default function DataBox() {
             ))}
           </div>
 
-          {/* BARCODE */}
-          <div className="mt-3 h-10 bg-[repeating-linear-gradient(90deg,black,black_2px,white_2px,white_4px)]"></div>
+          {/* ✅ BARCODE FIX */}
+          <div className="mt-3 flex justify-center">
+            <BarcodeGenerator value={selected.kodeBox || selected.namaBox} />
+          </div>
 
           {/* BACK */}
           <button
@@ -91,8 +94,10 @@ export default function DataBox() {
             <li>Tgl Masuk Resi</li>
           </ul>
 
-          {/* BARCODE */}
-          <div className="h-10 bg-[repeating-linear-gradient(90deg,black,black_2px,white_2px,white_4px)] rounded"></div>
+          {/* ✅ BARCODE FIX */}
+          <div className="flex justify-center mt-2">
+            <BarcodeGenerator value={box.kodeBox || box.namaBox} />
+          </div>
         </div>
       ))}
     </div>

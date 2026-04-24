@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useGetBoxMasuk } from "@/services/stok-resi/useGetBoxMasuk";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import BarcodeGenerator from "@/components/BarcodeGenerator"; // ✅ TAMBAHAN
 
 type StokPotongan = {
   idQC: string;
@@ -77,8 +78,10 @@ export default function BoxMasuk() {
             ))}
           </div>
 
-          {/* BARCODE */}
-          <div className="mt-3 h-10 bg-[repeating-linear-gradient(90deg,black,black_2px,white_2px,white_4px)]"></div>
+          {/* ✅ BARCODE FIX */}
+          <div className="mt-3 flex justify-center">
+            <BarcodeGenerator value={selected.kodeBox || selected.namaBox} />
+          </div>
 
           {/* ACTION */}
           <button className="mt-3 w-full bg-gray-200 py-2 rounded text-xs font-medium">
@@ -124,8 +127,10 @@ export default function BoxMasuk() {
             </div>
           ))}
 
-          {/* BARCODE */}
-          <div className="mt-3 h-10 bg-[repeating-linear-gradient(90deg,black,black_2px,white_2px,white_4px)]"></div>
+          {/* ✅ BARCODE FIX */}
+          <div className="mt-3 flex justify-center">
+            <BarcodeGenerator value={box.kodeBox || box.namaBox} />
+          </div>
         </div>
       ))}
     </div>
