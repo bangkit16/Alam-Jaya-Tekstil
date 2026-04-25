@@ -1,7 +1,7 @@
 "use client";
 import { useBarcode } from "next-barcode";
 
-export default function BarcodeGenerator({ value } : { value: string }) {
+export default function BarcodeGenerator({ value }: { value: string }) {
   const { inputRef } = useBarcode({
     value: value,
     options: {
