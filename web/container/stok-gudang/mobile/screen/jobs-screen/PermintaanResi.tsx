@@ -111,7 +111,7 @@ export default function PermintaanResi({ search = "" }: { search?: string }) {
       {
         id: selected.idPermintaan,
         payload: {
-          idPenanggungJawabBox: penanggungJawab,
+          idPenanggungJawab: penanggungJawab,
           idBox: selectedBox,
         },
       },

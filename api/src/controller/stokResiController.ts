@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma.js";
 import TrackLog from "../lib/trackLog.js";
 import {
   JenisPermintaan,
+  Role,
   StatusBox,
   StatusPermintaan,
   StatusPermintaanProduk,
@@ -13,6 +14,8 @@ import z from "zod";
 import { Validator } from "../lib/validator.js";
 import { getPagination, wrapPagination } from "../utils/pagination.js";
 import { Prisma } from "../generated/prisma/browser.js";
+import { log } from "node:console";
+import { ca } from "zod/v4/locales";
 
 export class StokResiController {
   public static async getBoxMasuk(req: Request, res: Response) {
@@ -137,7 +140,7 @@ export class StokResiController {
       const { idPenerimaBox } = validated.body;
 
       const penerimaBox = await prisma.user.findUnique({
-        where: { id: idPenerimaBox },
+        where: { id: idPenerimaBox, role: Role.STOK_RESI },
         select: { id: true },
       });
 
@@ -167,18 +170,12 @@ export class StokResiController {
       }
 
       const updateBox = await prisma.box.update({
-        where: { id: idBox, status: StatusBox.ACC_STOK_RESI },
-        select: {
-          qc: {
-            select: {
-              id: true,
-            },
-          },
-        },
+        where: { id: idBox, status: { in: [StatusBox.MASUK_STOK_RESI] } },
         data: {
-          status: StatusBox.ACC,
+          status: StatusBox.ACC_STOK_RESI,
           tanggalACCStokResi: new Date(),
-          penerima: {
+
+          penerimaResi: {
             connect: {
               id: idPenerimaBox,
             },
@@ -206,6 +203,7 @@ export class StokResiController {
       });
     } catch (error: any) {
       if (error.code === "P2025") {
+        console.error("Error updating permintaan status:", error);
         return res.status(404).json({
           message:
             "ID Permintaan tidak ditemukan atau sudah diproses sebelumnya",
@@ -333,7 +331,7 @@ export class StokResiController {
       const search = req.query.search as string;
 
       const whereCondition: Prisma.PermintaanProdukWhereInput = {
-        StatusPermintaan: StatusPermintaanProduk.DIPROSES,
+        StatusPermintaan: { notIn: [StatusPermintaanProduk.BATAL] },
 
         ...(search && {
           OR: [
@@ -378,6 +376,7 @@ export class StokResiController {
         kategori: item.kategori.namaKategori,
         jenisPermintaan: item.jenisPermintaan,
         ukuran: item.ukuran,
+        status: item.StatusPermintaan,
         isUrgent: item.isUrgent,
         jumlahMinta: item.jumlahMinta,
         tanggalPermintaan: item.tanggalMasuk,
@@ -448,6 +447,197 @@ export class StokResiController {
       return res.status(500).json({
         message: "Internal server error",
       });
+    }
+  }
+
+  public static async putCancelPermintaanProduk(req: Request, res: Response) {
+    const schema = z.object({
+      params: z.object({ idPermintaanProduk: z.string().uuid() }),
+    });
+
+    try {
+      const validated = Validator(schema)(req, res);
+      if (!validated) return;
+
+      const { idPermintaanProduk } = validated.params;
+
+      const permintaanProduk = await prisma.permintaanProduk.update({
+        where: {
+          id: idPermintaanProduk,
+          jenisPermintaan: JenisPermintaan.RESI,
+          StatusPermintaan: {
+            in: [
+              StatusPermintaanProduk.MENUNGGU,
+              StatusPermintaanProduk.DIPROSES,
+            ],
+          },
+        },
+        data: { StatusPermintaan: StatusPermintaanProduk.BATAL },
+      });
+
+      return res.json({
+        message: "Permintaan produk berhasil di batalkan",
+        status: "PERMINTAAN_PRODUK_DIBATALKAN",
+      });
+    } catch (error: any) {
+      if (error.code === "P2025") {
+        console.error("Error updating permintaan status:", error);
+        return res.status(404).json({
+          message:
+            "ID Permintaan tidak ditemukan atau sudah diproses sebelumnya",
+        });
+      }
+      console.error("Error create permintaan produk:", error);
+
+      return res.status(500).json({
+        message: "Internal server error",
+      });
+    }
+  }
+
+  public static async getTrackingPermintaanProduk(req: Request, res: Response) {
+    try {
+      const { idPermintaan } = req.params;
+      if (!idPermintaan) {
+        return res
+          .status(400)
+          .json({ message: "ID permintaan tidak ditemukan" });
+      }
+      if (Array.isArray(idPermintaan)) {
+        // Handle the case where idPermintaan is an array
+        return res
+          .status(400)
+          .json({ message: "ID permintaan must be a single value" });
+      }
+
+      const permintaanProduk = await prisma.permintaanProduk.findUnique({
+        where: { id: String(idPermintaan) },
+        select: {
+          id: true,
+          namaBarang: true,
+          kategori: {
+            select: {
+              id: true,
+              namaKategori: true,
+            },
+          },
+          jenisPermintaan: true,
+          ukuran: true,
+          isUrgent: true,
+          jumlahMinta: true,
+          tanggalPermintaan: true,
+          StatusPermintaan: true,
+          permintaanId: true,
+          permintaan: {
+            select: {
+              logs: {
+                select: {
+                  id: true,
+                  keterangan: true,
+                  status: true,
+                  createdAt: true,
+                },
+                orderBy: {
+                  createdAt: "asc", // Bagus untuk ditambahkan agar log berurutan secara kronologis
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const dataLog = permintaanProduk?.permintaan?.logs.map((log) => {
+        const formattedDate = new Intl.DateTimeFormat("id-ID", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(new Date(log.createdAt));
+
+        return {
+          tanggal: formattedDate,
+          keterangan: log.keterangan,
+          status: log.status,
+        };
+      });
+
+      const dataLogSelesai = {
+        tanggal: new Date().toISOString(),
+        keterangan: "Permintaan sudah selesai dikirim ke stok resi",
+        status: StatusPermintaanProduk.SELESAI,
+      };
+
+      const data = {
+        idPermintaan: permintaanProduk?.id,
+        namaBarang: permintaanProduk?.namaBarang,
+        kategori: permintaanProduk?.kategori?.namaKategori,
+        jenisPermintaan: permintaanProduk?.jenisPermintaan,
+        ukuran: permintaanProduk?.ukuran,
+        isUrgent: permintaanProduk?.isUrgent,
+        jumlahMinta: permintaanProduk?.jumlahMinta,
+        tanggalMasukPermintaan: permintaanProduk?.tanggalPermintaan,
+        logPermintaan:
+          permintaanProduk?.StatusPermintaan === StatusPermintaanProduk.SELESAI
+            ? [dataLogSelesai, ...(dataLog || [])]
+            : dataLog || [],
+      };
+
+      // return res.json({
+      //   message: "Permintaan produk berhasil dikirim",
+      //   status: StatusPermintaanProduk.MENUNGGU,
+      //   data: permintaanProduk,
+      //   log: dataLog,
+      // });
+
+      return res.status(200).json(data);
+    } catch (error) {
+      console.error("Error fetching permintaan data:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  }
+
+  public static async getListPenerimaBox(req: Request, res: Response) {
+    try {
+      const penerimaBox = await prisma.user.findMany({
+        where: { role: "STOK_RESI" },
+        select: {
+          id: true,
+          nama: true,
+        },
+      });
+      return res.status(200).json(penerimaBox);
+    } catch (error) {
+      console.error("Error fetching penerimaBox data:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  }
+  public static async getListPemroses(req: Request, res: Response) {
+    try {
+      const pemroses = await prisma.user.findMany({
+        where: { role: "STOK_RESI" },
+        select: {
+          id: true,
+          nama: true,
+        },
+      });
+      return res.status(200).json(pemroses);
+    } catch (error) {
+      console.error("Error fetching pemroses data:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  }
+
+  public static async getListKategori(req: Request, res: Response) {
+    try {
+      const kategori = await prisma.kategori.findMany({
+        select: {
+          id: true,
+          slug: true,
+          namaKategori: true,
+        },
+      });
+      return res.status(200).json(kategori);
+    } catch (error) {
+      console.error("Error fetching kategori data:", error);
+      return res.status(500).json({ message: "Internal server error" });
     }
   }
 }

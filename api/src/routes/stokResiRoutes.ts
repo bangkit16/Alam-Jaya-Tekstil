@@ -92,7 +92,7 @@ const router = Router();
  *         description: Internal server error
  */
 
-router.get("/boxmasuk", () => {});
+router.get("/boxmasuk", StokResiController.getBoxMasuk);
 
 /**
  * @swagger
@@ -134,7 +134,7 @@ router.get("/boxmasuk", () => {});
  *
  */
 
-router.put("/boxmasuk/:idBox", () => {});
+router.put("/boxmasuk/:idBox", StokResiController.updateAccBoxMasuk);
 
 /**
  * @swagger
@@ -259,7 +259,7 @@ router.put("/boxmasuk/:idBox", () => {});
  *         description: Internal server error
  */
 
-router.get("/databox", () => {});
+router.get("/databox", StokResiController.getDataBox);
 
 /**
  * @swagger
@@ -339,7 +339,7 @@ router.post("/permintaanproduk/", StokResiController.createPermintaanProduk);
  *                   kategori: "hoodie"
  *                   jenisPermintaan: "RESI"
  *                   ukuran: "L"
- *                   status: "MENUNGGU_POTONG"
+ *                   status: "DIPROSES"
  *                   isUrgent: false
  *                   jumlahMinta: 20
  *                   tanggalMasukPermintaan: "2023-01-01T00:00:00.000Z"
@@ -355,7 +355,38 @@ router.post("/permintaanproduk/", StokResiController.createPermintaanProduk);
  *         description: Internal server error
  */
 
-router.get("/permintaanproduk/", () => {});
+router.get("/permintaanproduk/", StokResiController.getListPermintaanProduk);
+
+/**
+ * @swagger
+ * /stokresi/permintaanproduk/cancel/{idPermintaanProduk}:
+ *   put:
+ *     summary: Cancel penrmintaan produk berdasarkan ID permintaan produk
+ *     description: Endpoint untuk memproses pengiriman pesanan menggunakan data produk yang dipilih.
+ *     tags: [StokResi]
+ *     parameters:
+ *       - in: path
+ *         name: idPermintaanProduk
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID pesanan
+ *         example: "f13e5b1a-7b22-4c9e-bf9f-73d91327aa11"
+ *     responses:
+ *       200:
+ *         description: Pesanan berhasil dikirim
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Permintaan produk berhasil di batalkan"
+ *               status: "PERMINTAAN_PRODUK_DIBATALKAN"
+
+ */
+
+router.put(
+  "/permintaanproduk/cancel/:idPermintaanProduk",
+  StokResiController.putCancelPermintaanProduk,
+);
 
 /**
  * @swagger
@@ -419,7 +450,10 @@ router.get("/permintaanproduk/", () => {});
  *         description: Internal server error
  */
 
-router.get("/tracking/:idPermintaan", () => {});
+router.get(
+  "/tracking/:idPermintaan",
+  StokResiController.getTrackingPermintaanProduk,
+);
 
 /**
  * @swagger
@@ -648,7 +682,7 @@ router.put("/pesanan/kirim/:idPesanan", () => {});
  *                       kategoriDesign: "hoodie"
  *                       ukuran: "XL"
  *                       jumlah: 1
- *                       produk: 
+ *                       produk:
  *                         idProduk: "p13e5b1a-7b22-4c9e-bf9f-73d91327aa11"
  *                         namaProduk: "Hoodie Hitam"
  *                         gambarProduk: "http/img/12312"
@@ -684,11 +718,11 @@ router.get("/riwayatpesanan", () => {});
  *               - id: "uuid-penerima-1"
  *                 nama: "Dedi Penerima"
  */
-router.get("/list-penerima-box", () => {});
+router.get("/list-penerima-box", StokResiController.getListPenerimaBox);
 
 /**
  * @swagger
- * /stokresi/list-penanggung-jawab-box:
+ * /stokresi/list-pemroses:
  *   get:
  *     summary: Mendapatkan daftar semua user Penanggung Jawab Box (Gudang)
  *     tags: [StokResi]
@@ -701,7 +735,7 @@ router.get("/list-penerima-box", () => {});
  *               - id: "uuid-pj-gudang-1"
  *                 nama: "Heri PJ Gudang"
  */
-router.get("/list-penanggung-jawab-box", () => {});
+router.get("/list-pemroses", StokResiController.getListPemroses);
 
 /**
  * @swagger
@@ -719,6 +753,6 @@ router.get("/list-penanggung-jawab-box", () => {});
  *                 slug: "hoodie"
  *                 nama: "Hoodie"
  */
-router.get("/list-kategori", () => {});
+router.get("/list-kategori", StokResiController.getListKategori);
 
 export default router;

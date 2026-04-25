@@ -7,7 +7,7 @@ const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 // --- 1. Type Definitions ---
 
 export interface PutPermintaanProdukPayload {
-  idPenanggungJawabBox: string;
+  idPenanggungJawab: string;
   idBox: string[];
 }
 
