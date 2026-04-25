@@ -56,6 +56,7 @@ model Kategori {
   slug         String   @unique
   kodeKategori String
 
+  produks             Produk[]
   permintaan          Permintaan[]
   permintaanProduk    PermintaanProduk[]
   createdAt DateTime @default(now())    // Terisi otomatis saat record dibuat
@@ -236,6 +237,22 @@ model QCStokPotong {
   updatedAt DateTime @updatedAt  @default(now()) 
 }
 
+model Produk {
+  id            String @id @default(uuid())
+  boxId         String
+  kategoriId    String
+
+  namaBarang    String
+  ukuran        UkuranProduk
+  jumlah        Int
+  
+  kategori      Kategori  @relation(fields: [kategoriId], references: [id])
+  box           Box       @relation(fields: [boxId], references: [id])
+  createdAt     DateTime  @default(now())    // Terisi otomatis saat record dibuat
+  updatedAt     DateTime  @updatedAt  @default(now())
+}
+
+
 model Box {
   id                      String   @id @default(uuid())
   permintaanId            String?
@@ -246,7 +263,7 @@ model Box {
 
   penanggungJawabId       String?
   penerimaId              String?
-  penerimaResiId              String?
+  penerimaResiId          String?
 
   tanggalMasuk            DateTime?
   tanggalMasukGudang      DateTime?
@@ -258,6 +275,7 @@ model Box {
   permintaan              Permintaan? @relation(fields: [permintaanId], references: [id])
   permintaanProduk        PermintaanProduk? @relation(fields: [permintaanProdukId], references: [id])
   qc                      QCStokPotong[]
+  produk                  Produk[] 
 
   penanggungJawab         User? @relation("PenanggungJawabBox", fields: [penanggungJawabId], references: [id])
   penerima                User? @relation("PenerimaBox", fields: [penerimaId], references: [id])
