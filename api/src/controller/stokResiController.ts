@@ -14,6 +14,8 @@ import z from "zod";
 import { Validator } from "../lib/validator.js";
 import { getPagination, wrapPagination } from "../utils/pagination.js";
 import { Prisma } from "../generated/prisma/browser.js";
+import { log } from "node:console";
+import { ca } from "zod/v4/locales";
 
 export class StokResiController {
   public static async getBoxMasuk(req: Request, res: Response) {
@@ -448,27 +450,77 @@ export class StokResiController {
     }
   }
 
-  public static async putCancelPermintaanProduk(req: Request, res: Response) {}
+  public static async putCancelPermintaanProduk(req: Request, res: Response) {
+    const schema = z.object({
+      params: z.object({ idPermintaanProduk: z.string().uuid() }),
+    });
+
+    try {
+      const validated = Validator(schema)(req, res);
+      if (!validated) return;
+
+      const { idPermintaanProduk } = validated.params;
+
+      const permintaanProduk = await prisma.permintaanProduk.update({
+        where: {
+          id: idPermintaanProduk,
+          jenisPermintaan: JenisPermintaan.RESI,
+          StatusPermintaan: {
+            in: [
+              StatusPermintaanProduk.MENUNGGU,
+              StatusPermintaanProduk.DIPROSES,
+            ],
+          },
+        },
+        data: { StatusPermintaan: StatusPermintaanProduk.BATAL },
+      });
+
+      return res.json({
+        message: "Permintaan produk berhasil di batalkan",
+        status: "PERMINTAAN_PRODUK_DIBATALKAN",
+      });
+    } catch (error: any) {
+      if (error.code === "P2025") {
+        console.error("Error updating permintaan status:", error);
+        return res.status(404).json({
+          message:
+            "ID Permintaan tidak ditemukan atau sudah diproses sebelumnya",
+        });
+      }
+      console.error("Error create permintaan produk:", error);
+
+      return res.status(500).json({
+        message: "Internal server error",
+      });
+    }
+  }
 
   public static async getTrackingPermintaanProduk(req: Request, res: Response) {
     try {
       const { idPermintaan } = req.params;
-
-      if (!idPermintaan || Array.isArray(idPermintaan)) {
-        return res.status(400).json({
-          message: idPermintaan
-            ? "ID permintaan must be a single value"
-            : "ID permintaan tidak ditemukan",
-        });
+      if (!idPermintaan) {
+        return res
+          .status(400)
+          .json({ message: "ID permintaan tidak ditemukan" });
+      }
+      if (Array.isArray(idPermintaan)) {
+        // Handle the case where idPermintaan is an array
+        return res
+          .status(400)
+          .json({ message: "ID permintaan must be a single value" });
       }
 
-      // 1. Ambil data PermintaanProduk beserta relasi Permintaan-nya dalam satu query
       const permintaanProduk = await prisma.permintaanProduk.findUnique({
         where: { id: String(idPermintaan) },
         select: {
           id: true,
           namaBarang: true,
-          kategori: { select: { namaKategori: true } },
+          kategori: {
+            select: {
+              id: true,
+              namaKategori: true,
+            },
+          },
           jenisPermintaan: true,
           ukuran: true,
           isUrgent: true,
@@ -478,64 +530,62 @@ export class StokResiController {
           permintaanId: true,
           permintaan: {
             select: {
-              id: true,
-              namaBarang: true,
-              kategori: { select: { namaKategori: true } },
-              jenisPermintaan: true,
-              ukuran: true,
-              isUrgent: true,
-              jumlahMinta: true,
-              tanggalMasuk: true,
+              logs: {
+                select: {
+                  id: true,
+                  keterangan: true,
+                  status: true,
+                  createdAt: true,
+                },
+                orderBy: {
+                  createdAt: "asc", // Bagus untuk ditambahkan agar log berurutan secara kronologis
+                },
+              },
             },
           },
         },
       });
 
-      if (!permintaanProduk) {
-        return res.status(404).json({ message: "Permintaan tidak ditemukan" });
-      }
+      const dataLog = permintaanProduk?.permintaan?.logs.map((log) => {
+        const formattedDate = new Intl.DateTimeFormat("id-ID", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(new Date(log.createdAt));
 
-      // 2. Logic Log: Jika status MENUNGGU, log otomatis kosong. Jika tidak, ambil dari DB.
-      let dataLog: any[] = [];
-      if (permintaanProduk.StatusPermintaan !== "MENUNGGU") {
-        const permintaanLog = await prisma.permintaanLog.findMany({
-          where: { permintaanId: String(idPermintaan) },
-          select: {
-            keterangan: true,
-            status: true,
-            createdAt: true,
-          },
-          orderBy: { createdAt: "asc" },
-        });
-
-        dataLog = permintaanLog.map((log) => ({
-          tanggal: new Intl.DateTimeFormat("id-ID", {
-            dateStyle: "medium",
-            timeStyle: "short",
-          }).format(new Date(log.createdAt)),
+        return {
+          tanggal: formattedDate,
           keterangan: log.keterangan,
           status: log.status,
-        }));
-      }
+        };
+      });
 
-      // 3. Tentukan sumber data (prioritaskan data dari relasi 'permintaan' jika ada)
-      const dataSource = permintaanProduk.permintaan || permintaanProduk;
+      const dataLogSelesai = {
+        tanggal: new Date().toISOString(),
+        keterangan: "Permintaan sudah selesai dikirim ke stok resi",
+        status: StatusPermintaanProduk.SELESAI,
+      };
 
       const data = {
-        idPermintaan: permintaanProduk.id,
-        namaBarang: dataSource.namaBarang,
-        kategori: dataSource.kategori?.namaKategori || null,
-        jenisPermintaan: dataSource.jenisPermintaan,
-        ukuran: dataSource.ukuran,
-        status: permintaanProduk.StatusPermintaan,
-        isUrgent: dataSource.isUrgent,
-        jumlahMinta: dataSource.jumlahMinta,
-        // Gunakan tanggalMasuk jika dari relasi 'permintaan', jika tidak gunakan tanggalPermintaan
-        tanggalMasukPermintaan:
-          (dataSource as any).tanggalMasuk ||
-          (dataSource as any).tanggalPermintaan,
-        logPermintaan: dataLog,
+        idPermintaan: permintaanProduk?.id,
+        namaBarang: permintaanProduk?.namaBarang,
+        kategori: permintaanProduk?.kategori?.namaKategori,
+        jenisPermintaan: permintaanProduk?.jenisPermintaan,
+        ukuran: permintaanProduk?.ukuran,
+        isUrgent: permintaanProduk?.isUrgent,
+        jumlahMinta: permintaanProduk?.jumlahMinta,
+        tanggalMasukPermintaan: permintaanProduk?.tanggalPermintaan,
+        logPermintaan:
+          permintaanProduk?.StatusPermintaan === StatusPermintaanProduk.SELESAI
+            ? [dataLogSelesai, ...(dataLog || [])]
+            : dataLog || [],
       };
+
+      // return res.json({
+      //   message: "Permintaan produk berhasil dikirim",
+      //   status: StatusPermintaanProduk.MENUNGGU,
+      //   data: permintaanProduk,
+      //   log: dataLog,
+      // });
 
       return res.status(200).json(data);
     } catch (error) {

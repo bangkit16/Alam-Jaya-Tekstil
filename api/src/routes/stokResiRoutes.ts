@@ -359,14 +359,14 @@ router.get("/permintaanproduk/", StokResiController.getListPermintaanProduk);
 
 /**
  * @swagger
- * /stokresi/cancel/{idPermintaanProduk}:
+ * /stokresi/permintaanproduk/cancel/{idPermintaanProduk}:
  *   put:
  *     summary: Cancel penrmintaan produk berdasarkan ID permintaan produk
  *     description: Endpoint untuk memproses pengiriman pesanan menggunakan data produk yang dipilih.
  *     tags: [StokResi]
  *     parameters:
  *       - in: path
- *         name: idPesanan
+ *         name: idPermintaanProduk
  *         required: true
  *         schema:
  *           type: string
@@ -378,12 +378,15 @@ router.get("/permintaanproduk/", StokResiController.getListPermintaanProduk);
  *         content:
  *           application/json:
  *             example:
- *               message: "Pesanan berhasil dikirim"
- *               status: "PESANAN_DIKIRIM"
+ *               message: "Permintaan produk berhasil di batalkan"
+ *               status: "PERMINTAAN_PRODUK_DIBATALKAN"
 
  */
 
-router.put("/permintaanproduk/cancel/:idPermintaanProduk", () => {});
+router.put(
+  "/permintaanproduk/cancel/:idPermintaanProduk",
+  StokResiController.putCancelPermintaanProduk,
+);
 
 /**
  * @swagger
@@ -447,7 +450,10 @@ router.put("/permintaanproduk/cancel/:idPermintaanProduk", () => {});
  *         description: Internal server error
  */
 
-router.get("/tracking/:idPermintaan", StokResiController.getTrackingPermintaanProduk);
+router.get(
+  "/tracking/:idPermintaan",
+  StokResiController.getTrackingPermintaanProduk,
+);
 
 /**
  * @swagger
